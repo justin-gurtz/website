@@ -10,6 +10,15 @@ import { StravaActivity } from '@/types'
 import { cn } from '@/utils'
 import { Icon, IconRun } from '@tabler/icons-react'
 import Image from 'next/image'
+import map from 'lodash/map'
+import filter from 'lodash/filter'
+import padStart from 'lodash/padStart'
+import reduce from 'lodash/reduce'
+import sortBy from 'lodash/sortBy'
+import forEach from 'lodash/forEach'
+import includes from 'lodash/includes'
+import keys from 'lodash/keys'
+import startsWith from 'lodash/startsWith'
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN!
 
@@ -18,30 +27,29 @@ const href = 'https://www.strava.com/athletes/gurtz'
 const logoHeight = 16
 const logoWidth = (logoHeight / 91) * 432
 
-const NYC_LAT = 40.725
-const NYC_LNG = -73.97
-const RADIUS_MILES = 10
+const nycPoint = turf.point([-73.97, 40.725])
 
-const nycPoint = turf.point([NYC_LNG, NYC_LAT])
+const colorScale = map(
+  [
+    '#0000FF', // blue
+    '#8000FF', // purple
+    '#FF00FF', // magenta
+    '#FF0080', // pink
+    '#FF0000', // red
+    '#FF8000', // orange
+    '#FFFF00', // yellow
+  ],
+  (color, index, array) => ({
+    color,
+    position: index / (array.length - 1),
+    index,
+  })
+)
 
-const colorScale = [
-  '#0000FF', // blue
-  '#8000FF', // purple
-  '#FF00FF', // magenta
-  '#FF0080', // pink
-  '#FF0000', // red
-  '#FF8000', // orange
-  '#FFFF00', // yellow
-].map((color, index, array) => ({
-  color,
-  position: index / (array.length - 1),
-}))
+const padded = (value: number, radix?: number) =>
+  padStart(value.toString(radix), 2, '0')
 
-function interpolateColor(
-  color1: string,
-  color2: string,
-  factor: number
-): string {
+const interpolateColor = (color1: string, color2: string, factor: number) => {
   const r1 = parseInt(color1.substring(1, 3), 16)
   const g1 = parseInt(color1.substring(3, 5), 16)
   const b1 = parseInt(color1.substring(5, 7), 16)
@@ -53,30 +61,35 @@ function interpolateColor(
   const g = Math.round(g1 + factor * (g2 - g1))
   const b = Math.round(b1 + factor * (b2 - b1))
 
-  return `#${r.toString(16).padStart(2, '0')}${g
-    .toString(16)
-    .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  return `#${padded(r, 16)}${padded(g, 16)}${padded(b, 16)}`
 }
 
-function getColorForRun(position: number, totalRuns: number): string {
+const getColorForRun = (position: number, totalRuns: number) => {
   const normalizedPosition = position / (totalRuns - 1)
+  let { color } = colorScale[colorScale.length - 1]
 
-  for (let i = 1; i < colorScale.length; i++) {
-    if (normalizedPosition <= colorScale[i].position) {
+  forEach(colorScale, (scale) => {
+    const i = scale.index
+
+    if (i > 0 && normalizedPosition <= colorScale[i].position) {
       const t =
         (normalizedPosition - colorScale[i - 1].position) /
         (colorScale[i].position - colorScale[i - 1].position)
-      return interpolateColor(colorScale[i - 1].color, colorScale[i].color, t)
+      color = interpolateColor(colorScale[i - 1].color, colorScale[i].color, t)
+
+      return false
     }
-  }
-  return colorScale[colorScale.length - 1].color
+
+    return true
+  })
+
+  return color
 }
 
-function getComponents(seconds: number) {
+const getComponents = (seconds: number) => {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  console.log(seconds)
 
   return { days, hours, minutes }
 }
@@ -84,18 +97,21 @@ function getComponents(seconds: number) {
 const Stat = ({
   label,
   value,
-  icon: Icon,
+  icon: OptionalIcon,
 }: {
   label: string
   value: string
   icon?: Icon
 }) => (
   <div
-    className={cn('flex flex-col gap-0', Icon ? 'items-end' : 'items-start')}
+    className={cn(
+      'flex flex-col gap-0',
+      OptionalIcon ? 'items-end' : 'items-start'
+    )}
   >
     <p className="text-xs text-gray-500 -mb-0.5">{label}</p>
     <div className="flex items-center gap-0.5">
-      {Icon && <Icon size={18} stroke={2.5} />}
+      {OptionalIcon && <OptionalIcon size={18} stroke={2.5} />}
       <p className="text-lg font-semibold tabular-nums">{value}</p>
     </div>
   </div>
@@ -107,30 +123,22 @@ const Rule = () => (
   </div>
 )
 
-export default function Strava({
-  activities,
-}: {
-  activities: StravaActivity[]
-}) {
+const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null)
-  const map = useRef<mapboxgl.Map | null>(null)
+  const mapbox = useRef<mapboxgl.Map | null>(null)
 
   const [mapIsReady, setMapIsReady] = useState(false)
   const [hasAddedRunsToMap, setHasAddedRunsToMap] = useState(false)
   const [mapClassName, setMapClassName] = useState('opacity-0')
 
   const runs = useMemo(() => {
-    return activities
-      .filter((activity) => activity.type === 'Run')
-      .sort(
-        (a, b) =>
-          new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-      )
+    const filtered = filter(activities, ({ type }) => type === 'Run')
+    return sortBy(filtered, ({ start_date: d }) => new Date(d).getTime())
   }, [activities])
 
   const { distance, pace, time, totalRuns } = useMemo(() => {
-    const totalDistance = runs.reduce((acc, run) => acc + run.distance, 0)
-    const totalMovingTime = runs.reduce((acc, run) => acc + run.moving_time, 0)
+    const totalDistance = reduce(runs, (acc, run) => acc + run.distance, 0)
+    const totalMovingTime = reduce(runs, (acc, run) => acc + run.moving_time, 0)
     const miles = turf.convertLength(totalDistance, 'meters', 'miles')
     const avgPace = miles === 0 ? 0 : (totalMovingTime * 60) / miles
 
@@ -142,9 +150,7 @@ export default function Strava({
     const paceComponents = getComponents(avgPace)
     const timeComponents = getComponents(totalMovingTime)
 
-    const paceString = `${paceComponents.hours}:${paceComponents.minutes
-      .toString()
-      .padStart(2, '0')} /mi`
+    const paceString = `${paceComponents.hours}:${padded(paceComponents.minutes)} /mi`
 
     const timeString = timeComponents.days
       ? `${timeComponents.days}d ${timeComponents.hours}h`
@@ -160,14 +166,14 @@ export default function Strava({
 
   useEffect(() => {
     if (!mapContainer.current) return
-    if (map.current) return
+    if (mapbox.current) return
 
-    map.current = new mapboxgl.Map({
+    mapbox.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       attributionControl: false,
       logoPosition: 'bottom-left',
-      center: [NYC_LNG, NYC_LAT],
+      center: nycPoint.geometry.coordinates as [number, number],
       zoom: 10.5,
       interactive: false,
       dragPan: false,
@@ -179,29 +185,29 @@ export default function Strava({
       touchZoomRotate: false,
     })
 
-    map.current.on('load', () => {
+    mapbox.current.on('load', () => {
       setMapIsReady(true)
     })
   }, [])
 
   useEffect(() => {
     if (runs.length === 0) return
-    if (!map.current) return
+    if (!mapbox.current) return
     if (!mapIsReady) return
 
-    const currentMap = map.current
+    const currentMap = mapbox.current
 
     const bounds = new mapboxgl.LngLatBounds()
 
-    const newYorkRuns = runs.filter((run) => {
+    const newYorkRuns = filter(runs, (run) => {
       if (!run.start_latlng || run.start_latlng.length !== 2) return false
 
       const [startLat, startLng] = run.start_latlng
 
       const runPoint = turf.point([startLng, startLat])
-      const distance = turf.distance(nycPoint, runPoint, { units: 'miles' })
+      const radius = turf.distance(nycPoint, runPoint, { units: 'miles' })
 
-      return distance <= RADIUS_MILES
+      return radius <= 10
     })
 
     const runsToShow = newYorkRuns.length === 0 ? runs : newYorkRuns
@@ -209,17 +215,19 @@ export default function Strava({
     const style = currentMap.getStyle()
 
     if (style) {
-      const runSources = Object.keys(style.sources).filter((sourceId) =>
-        sourceId.startsWith('run-source-')
+      const runKeys = keys(style.sources)
+      const runSources = filter(runKeys, (sourceId) =>
+        startsWith(sourceId, 'run-source-')
       )
 
-      runSources.forEach((sourceId) => {
+      forEach(runSources, (sourceId) => {
         if (currentMap.getSource(sourceId)) {
-          const layers = style.layers.filter(
+          const layers = filter(
+            style.layers,
             (layer) => layer.source === sourceId
           )
 
-          layers.forEach((layer) => {
+          forEach(layers, (layer) => {
             if (currentMap.getLayer(layer.id)) {
               currentMap.removeLayer(layer.id)
             }
@@ -230,15 +238,14 @@ export default function Strava({
       })
     }
 
-    runsToShow.forEach((run, index) => {
+    forEach(runsToShow, (run, index) => {
       const sourceId = `run-source-${run.id}`
       const layerId = `run-layer-${run.id}`
 
-      const coordinates = polyline
-        .decode(run.map.summary_polyline)
-        .map(([lat, lng]) => [lng, lat])
+      const decoded = polyline.decode(run.map.summary_polyline)
+      const coordinates = map(decoded, ([lat, lng]) => [lng, lat])
 
-      coordinates.forEach((coord) => {
+      forEach(coordinates, (coord) => {
         bounds.extend(coord as [number, number])
       })
 
@@ -271,7 +278,7 @@ export default function Strava({
       })
     })
 
-    map.current.fitBounds(bounds, {
+    mapbox.current.fitBounds(bounds, {
       padding: 50,
       animate: hasAddedRunsToMap,
     })
@@ -280,14 +287,14 @@ export default function Strava({
   }, [mapIsReady, runs, hasAddedRunsToMap])
 
   useEffect(() => {
-    if (!map.current) return
+    if (!mapbox.current) return
     if (!hasAddedRunsToMap) return
-    if (mapClassName.includes('opacity-1')) return
+    if (includes(mapClassName, 'opacity-1')) return
 
-    const bounds = map.current.getBounds()
+    const bounds = mapbox.current.getBounds()
 
     if (bounds) {
-      map.current.fitBounds(bounds, {
+      mapbox.current.fitBounds(bounds, {
         padding: 25,
         animate: true,
         duration: 1000,
@@ -336,3 +343,5 @@ export default function Strava({
     </div>
   )
 }
+
+export default Strava

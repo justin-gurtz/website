@@ -1,3 +1,60 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": [
+    "airbnb",
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:lodash/recommended",
+    "plugin:prettier/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": "error",
+    "react/no-multi-comp": ["error", { "ignoreStateless": true }],
+    "react/require-default-props": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+    "import/no-unused-modules": [
+      "error",
+      { "unusedExports": true, "ignoreExports": ["app/**"] }
+    ],
+    // typescript enum fix
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error",
+    // allow arrow functions
+    "react/function-component-definition": [
+      "error",
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+    // allow jsx in typescript files
+    "react/jsx-filename-extension": [
+      "error",
+      { "extensions": [".js", ".jsx", ".ts", ".tsx"] }
+    ],
+    // don't require file extentions in imports
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    // absolute imports only
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [".*"]
+      }
+    ],
+    // prefer functions for type safety
+    "lodash/matches-shorthand": "off",
+    "lodash/matches-prop-shorthand": "off",
+    "lodash/prop-shorthand": "off"
+  }
 }

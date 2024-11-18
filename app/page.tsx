@@ -1,4 +1,5 @@
 import Strava from '@/components/strava'
+import filter from 'lodash/filter'
 
 export const revalidate = 3600
 
@@ -25,11 +26,10 @@ const getStravaActivities = async () => {
   }).then((response) => response.json())
 
   if (runs.errors) {
-    runs.errors.forEach(console.error)
     throw new Error('Strava API error')
   }
 
-  return runs.filter((run: { type: string }) => run.type === 'Run')
+  return filter(runs, (run: { type: string }) => run.type === 'Run')
 }
 
 export default async function Page() {

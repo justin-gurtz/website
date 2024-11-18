@@ -1,7 +1,8 @@
 import NextLink from 'next/link'
 import { useMemo } from 'react'
+import startsWith from 'lodash/startsWith'
 
-export default function Link({
+const Link = ({
   href,
   className,
   children,
@@ -9,9 +10,9 @@ export default function Link({
   href: string
   className?: string
   children: React.ReactNode
-}) {
+}) => {
   const target = useMemo(() => {
-    if (href.startsWith('http')) {
+    if (startsWith(href, 'http')) {
       return '_blank'
     }
 
@@ -24,3 +25,5 @@ export default function Link({
     </NextLink>
   )
 }
+
+export default Link
