@@ -11,7 +11,7 @@ import { cn } from '@/utils'
 import { Icon, IconRun } from '@tabler/icons-react'
 import Image from 'next/image'
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN!
 
 const href = 'https://www.strava.com/athletes/gurtz'
 
