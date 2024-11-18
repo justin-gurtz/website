@@ -105,20 +105,20 @@ const Stat = ({
 }) => (
   <div
     className={cn(
-      'flex flex-col gap-0',
-      OptionalIcon ? 'items-end' : 'items-start'
+      'flex flex-col gap-0 items-start',
+      OptionalIcon ? 'sm:items-end' : undefined
     )}
   >
     <p className="text-xs text-gray-500 -mb-0.5">{label}</p>
     <div className="flex items-center gap-0.5">
       {OptionalIcon && <OptionalIcon size={18} stroke={2.5} />}
-      <p className="text-lg font-semibold tabular-nums">{value}</p>
+      <p className="text-md font-semibold tabular-nums">{value}</p>
     </div>
   </div>
 )
 
 const Rule = () => (
-  <div className="py-0.5 -mt-0.5">
+  <div className="py-0.5 -mt-0.5 hidden sm:block">
     <div className="w-[1px] h-full bg-gray-200 dark:bg-gray-800" />
   </div>
 )
