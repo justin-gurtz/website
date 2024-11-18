@@ -9,11 +9,14 @@ import Link from '@/components/link'
 import { StravaActivity } from '@/types'
 import { cn } from '@/utils'
 import { Icon, IconRun } from '@tabler/icons-react'
-import StravaLogo from '@/svgs/strava.svg'
+import Image from 'next/image'
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
 const href = 'https://www.strava.com/athletes/gurtz'
+
+const logoHeight = 16
+const logoWidth = (logoHeight / 91) * 432
 
 const NYC_LAT = 40.725
 const NYC_LNG = -73.97
@@ -297,10 +300,11 @@ export default function Strava({
   return (
     <div className="flex flex-col gap-5">
       <Link href={href} className="self-start">
-        <StravaLogo
-          width="auto"
-          height={16}
-          className="fill-current text-[#FC4C02]"
+        <Image
+          src="/strava.svg"
+          alt="Strava"
+          width={logoWidth}
+          height={logoHeight}
         />
       </Link>
       <Link href={href}>
