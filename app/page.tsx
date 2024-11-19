@@ -1,5 +1,10 @@
-import Strava from '@/components/strava'
 import filter from 'lodash/filter'
+import Strava from '@/components/strava'
+import {
+  STRAVA_CLIENT_ID,
+  STRAVA_CLIENT_SECRET,
+  STRAVA_REFERSH_TOKEN,
+} from '@/env/secret'
 
 export const revalidate = 3600
 
@@ -7,9 +12,9 @@ const getStravaActivities = async () => {
   const token = await fetch('https://www.strava.com/oauth/token', {
     method: 'POST',
     body: new URLSearchParams({
-      client_id: process.env.STRAVA_CLIENT_ID || '',
-      client_secret: process.env.STRAVA_CLIENT_SECRET || '',
-      refresh_token: process.env.STRAVA_REFERSH_TOKEN || '',
+      client_id: STRAVA_CLIENT_ID,
+      client_secret: STRAVA_CLIENT_SECRET,
+      refresh_token: STRAVA_REFERSH_TOKEN,
       grant_type: 'refresh_token',
     }),
   }).then((response) => response.json())

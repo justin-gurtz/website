@@ -19,8 +19,9 @@ import forEach from 'lodash/forEach'
 import includes from 'lodash/includes'
 import keys from 'lodash/keys'
 import startsWith from 'lodash/startsWith'
+import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN!
+mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
 const href = 'https://www.strava.com/athletes/gurtz'
 
