@@ -16,7 +16,11 @@
     "@typescript-eslint/no-unused-vars": "error",
     "import/no-unused-modules": [
       "error",
-      { "unusedExports": true, "ignoreExports": ["app/**"] }
+      {
+        "missingExports": true,
+        "unusedExports": true,
+        "src": ["src/**"]
+      }
     ],
     // typescript enum fix
     "no-shadow": "off",
@@ -56,5 +60,13 @@
     "lodash/matches-shorthand": "off",
     "lodash/matches-prop-shorthand": "off",
     "lodash/prop-shorthand": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts", ".tsx", ".d.ts"],
+        "moduleDirectory": ["src", "node_modules"]
+      }
+    }
   }
 }
