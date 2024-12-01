@@ -10,7 +10,7 @@ import {
 } from '@/env/secret'
 import Spotify from '@/components/spotify'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 const getSpotify = async () => {
   const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
