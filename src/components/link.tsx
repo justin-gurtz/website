@@ -1,6 +1,7 @@
 import NextLink from 'next/link'
 import { useMemo } from 'react'
 import startsWith from 'lodash/startsWith'
+import { cn } from '@/utils'
 
 const Link = ({
   href,
@@ -20,7 +21,14 @@ const Link = ({
   }, [href])
 
   return (
-    <NextLink target={target} href={href} className={className}>
+    <NextLink
+      target={target}
+      href={href}
+      className={cn(
+        className,
+        'transition-[filter] duration-200 hover:brightness-[70%]'
+      )}
+    >
       {children}
     </NextLink>
   )

@@ -1,3 +1,24 @@
+export interface SpotifyMusic {
+  is_playing: boolean
+  item: {
+    id: string
+    name: string
+    artists: {
+      id: string
+      name: string
+    }[]
+    album: {
+      id: string
+      name: string
+      images: {
+        height: number
+        url: string
+        width: number
+      }[]
+    }
+  }
+}
+
 export interface StravaActivity {
   id: number
   type: string
