@@ -88,17 +88,19 @@ const getStrava = async () => {
   return filter(runs, (run: { type: string }) => run.type === 'Run')
 }
 
-export default async function Page() {
+const Page = async () => {
   const music = await getSpotify()
   const activities = await getStrava()
 
   return (
     <div className="flex flex-col justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto gap-5">
-      <div className="flex items-center justify-between gap-5 sm:gap-10">
-        <h1 className="text-3xl font-semibold">Justin Gurtz</h1>
+      <h1 className="text-3xl font-semibold">Justin Gurtz</h1>
+      <div className="self-end">
         <Spotify music={music} />
       </div>
       <Strava activities={activities} />
     </div>
   )
 }
+
+export default Page

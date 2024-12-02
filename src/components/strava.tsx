@@ -107,20 +107,22 @@ const Stat = ({
   <div
     className={cn(
       'flex flex-col gap-0 items-start',
-      OptionalIcon ? 'sm:items-end' : undefined
+      OptionalIcon ? 'items-end' : undefined
     )}
   >
-    <p className="text-xs text-gray-500 -mb-0.5">{label}</p>
+    <p className="text-xs text-white/50 -mb-0.5">{label}</p>
     <div className="flex items-center gap-0.5">
-      {OptionalIcon && <OptionalIcon size={18} stroke={2.5} />}
-      <p className="text-md font-semibold tabular-nums">{value}</p>
+      {OptionalIcon && (
+        <OptionalIcon size={18} stroke={2.5} className="stroke-white" />
+      )}
+      <p className="text-md text-white font-semibold tabular-nums">{value}</p>
     </div>
   </div>
 )
 
 const Rule = () => (
-  <div className="py-0.5 -mt-0.5 hidden sm:block">
-    <div className="w-[1px] h-full bg-gray-200 dark:bg-gray-800" />
+  <div className="py-0.5 -mt-0.5">
+    <div className="w-[1px] h-full bg-white/25" />
   </div>
 )
 
@@ -306,42 +308,35 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   }, [hasAddedRunsToMap, mapClassName])
 
   return (
-    <div className="flex flex-col gap-5">
-      <Link href={href} className="self-start">
-        <Image
-          src="/strava.svg"
-          alt="Strava"
-          width={logoWidth}
-          height={logoHeight}
-        />
-      </Link>
-      <Link href={href}>
-        <div className="relative w-full pb-[125%] rounded-lg overflow-hidden">
-          <div className="absolute w-full h-full bg-neutral-800 duration-1">
-            <div
-              ref={mapContainer}
-              className={cn(
-                'absolute w-full h-full [&_.mapboxgl-ctrl]:!hidden',
-                mapClassName
-              )}
-            />
-          </div>
+    <Link href={href}>
+      <div className="relative w-full pb-[125%] rounded-lg overflow-hidden">
+        <div className="absolute w-full h-full bg-neutral-800">
+          <div
+            ref={mapContainer}
+            className={cn(
+              'absolute w-full h-full [&_.mapboxgl-ctrl]:!hidden',
+              mapClassName
+            )}
+          />
         </div>
-      </Link>
-      <div className="flex flex-wrap gap-5">
-        <Link href={href} className="flex flex-wrap gap-5">
+        <div className="absolute top-0 right-0 left-0 p-3 sm:p-5 bg-gradient-to-b from-black/50 to-black/0 flex items-start justify-between">
+          <Image
+            src="/strava.svg"
+            alt="Strava"
+            width={logoWidth}
+            height={logoHeight}
+          />
+          <Stat label="Total Runs" value={totalRuns} icon={IconRun} />
+        </div>
+        <div className="absolute right-0 bottom-0 left-0 p-3 sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 sm:gap-5">
           <Stat label="Distance" value={distance} />
           <Rule />
           <Stat label="Pace" value={pace} />
           <Rule />
           <Stat label="Time" value={time} />
-        </Link>
-        <div className="flex-1" />
-        <Link href={href}>
-          <Stat label="Total Runs" value={totalRuns} icon={IconRun} />
-        </Link>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
