@@ -282,7 +282,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     })
 
     mapbox.current.fitBounds(bounds, {
-      padding: 50,
+      padding: { top: 100, right: 50, bottom: 100, left: 50 },
       animate: hasAddedRunsToMap,
     })
 
