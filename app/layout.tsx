@@ -17,7 +17,7 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased font-sans text-neutral-900 dark:text-white bg-white dark:bg-neutral-900`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased font-sans text-neutral-800 dark:text-white bg-neutral-100 dark:bg-neutral-900`}
       >
         {children}
         <Analytics />

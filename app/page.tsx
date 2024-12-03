@@ -7,10 +7,36 @@ import {
   STRAVA_CLIENT_ID,
   STRAVA_CLIENT_SECRET,
   STRAVA_REFERSH_TOKEN,
+  SUPABASE_SERVICE_ROLE_KEY,
 } from '@/env/secret'
 import Spotify from '@/components/spotify'
+import Header from '@/components/header'
+import { NEXT_PUBLIC_SUPABASE_URL } from '@/env/public'
+import { Database } from '@/types/database'
+import { createClient } from '@supabase/supabase-js'
 
 export const revalidate = 60
+
+const getLocation = async () => {
+  const supabase = await createClient<Database>(
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
+  )
+
+  const { data, error } = await supabase
+    .from('movements')
+    .select('moved_at,city,region,country,time_zone_id')
+    .eq('vercel_env', 'production')
+    .order('moved_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data
+}
 
 const getSpotify = async () => {
   const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
@@ -89,16 +115,19 @@ const getStrava = async () => {
 }
 
 const Page = async () => {
+  const location = await getLocation()
   const music = await getSpotify()
   const activities = await getStrava()
 
   return (
-    <div className="flex flex-col justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto gap-5">
-      <h1 className="text-3xl font-semibold">Justin Gurtz</h1>
-      <div className="self-end">
-        <Spotify music={music} />
+    <div className="flex flex-col gap-20 justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto">
+      <Header location={location} />
+      <div className="flex flex-col gap-3">
+        <div className="self-end">
+          <Spotify music={music} />
+        </div>
+        <Strava activities={activities} />
       </div>
-      <Strava activities={activities} />
     </div>
   )
 }

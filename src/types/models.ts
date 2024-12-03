@@ -1,4 +1,8 @@
-export interface SpotifyMusic {
+import { Database } from '@/types/database'
+
+export type Movement = Database['public']['Tables']['movements']['Row']
+
+export type SpotifyMusic = {
   is_playing: boolean
   item: {
     id: string
@@ -19,7 +23,7 @@ export interface SpotifyMusic {
   }
 }
 
-export interface StravaActivity {
+export type StravaActivity = {
   id: number
   type: string
   name: string

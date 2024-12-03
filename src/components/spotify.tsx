@@ -1,4 +1,4 @@
-import { SpotifyMusic } from '@/types'
+import { SpotifyMusic } from '@/types/models'
 import Link from '@/components/link'
 import Image from 'next/image'
 import { IconPlayerPause } from '@tabler/icons-react'
