@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mapbox/polyline": "^1.2.1",
+    "@sentry/nextjs": "^8",
     "@supabase/supabase-js": "^2.46.2",
     "@tabler/icons-react": "^3.22.0",
     "@turf/turf": "^7.1.0",
