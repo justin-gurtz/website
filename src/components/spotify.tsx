@@ -52,7 +52,7 @@ const Spotify = ({ music }: { music: SpotifyMusic | null }) => {
 
   return (
     <Link href="https://open.spotify.com/user/gurtz">
-      <div className="relative bg-slate-200 dark:bg-neutral-700 w-[160px] h-[160px] rounded-lg overflow-hidden">
+      <div className="relative bg-slate-200 dark:bg-neutral-700 w-[160px] h-[160px] rounded-xl overflow-hidden">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

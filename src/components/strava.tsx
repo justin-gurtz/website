@@ -20,6 +20,7 @@ import includes from 'lodash/includes'
 import keys from 'lodash/keys'
 import startsWith from 'lodash/startsWith'
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
+import { addSeconds, subYears } from 'date-fns'
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
@@ -135,7 +136,18 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   const [mapClassName, setMapClassName] = useState('opacity-0')
 
   const runs = useMemo(() => {
-    const filtered = filter(activities, ({ type }) => type === 'Run')
+    const oneYearAgo = subYears(new Date(), 1)
+    const filtered = filter(
+      activities,
+      ({ type, visibility, start_date: d, elapsed_time: seconds }) => {
+        return (
+          type === 'Run' &&
+          visibility === 'everyone' &&
+          addSeconds(new Date(d), seconds) > oneYearAgo
+        )
+      }
+    )
+
     return sortBy(filtered, ({ start_date: d }) => new Date(d).getTime())
   }, [activities])
 
@@ -309,7 +321,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
 
   return (
     <Link href={href}>
-      <div className="relative w-full pb-[125%] rounded-lg overflow-hidden">
+      <div className="relative w-full pb-[125%] rounded-xl overflow-hidden">
         <div className="absolute w-full h-full bg-neutral-800">
           <div
             ref={mapContainer}
@@ -326,7 +338,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
             width={logoWidth}
             height={logoHeight}
           />
-          <Stat label="Total Runs" value={totalRuns} icon={IconRun} />
+          <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
         </div>
         <div className="absolute right-0 bottom-0 left-0 p-3 sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 sm:gap-5">
           <Stat label="Distance" value={distance} />

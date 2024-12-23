@@ -31,6 +31,8 @@ export type StravaActivity = {
   start_latlng: [number, number]
   distance: number
   moving_time: number
+  elapsed_time: number
+  visibility: string
   map: {
     summary_polyline: string
   }
