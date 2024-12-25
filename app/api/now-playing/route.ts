@@ -95,28 +95,34 @@ export async function POST() {
     throw new Error('Spotify currently playing request failed')
   }
 
+  let currentlyPlaying: SpotifyCurrentlyPlaying | undefined
+
   try {
-    const music: SpotifyCurrentlyPlaying = await currentlyPlayingRes.json()
-
-    const { is_playing: isPlaying, item } = music
-
-    if (isPlaying && item) {
-      const supabase = await createClient<Database>(
-        NEXT_PUBLIC_SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY
-      )
-
-      const image = getBestImage(item.album.images)
-
-      await supabase.from('now_playing').insert({
-        image: image?.url,
-        name: item.name,
-        artists: map(item.artists, (artist) => artist.name),
-        payload: music,
-      })
-    }
+    currentlyPlaying = await currentlyPlayingRes.json()
   } catch (_) {
     // No music playing
+  }
+
+  const { is_playing: isPlaying, item } = currentlyPlaying || {}
+
+  if (isPlaying && item && currentlyPlaying) {
+    const supabase = await createClient<Database>(
+      NEXT_PUBLIC_SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    )
+
+    const image = getBestImage(item.album.images)
+
+    const { error } = await supabase.from('now_playing').insert({
+      image: image?.url,
+      name: item.name,
+      artists: map(item.artists, (artist) => artist.name),
+      payload: currentlyPlaying,
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
   }
 
   return new Response(null, {
