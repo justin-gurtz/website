@@ -2,9 +2,6 @@ import filter from 'lodash/filter'
 import Strava from '@/components/strava'
 import {
   GITHUB_ACCESS_TOKEN,
-  SPOTIFY_CLIENT_ID,
-  SPOTIFY_CLIENT_SECRET,
-  SPOTIFY_REFRESH_TOKEN,
   STRAVA_CLIENT_ID,
   STRAVA_CLIENT_SECRET,
   STRAVA_REFERSH_TOKEN,
@@ -18,7 +15,6 @@ import { createClient } from '@supabase/supabase-js'
 import { request } from 'graphql-request'
 import { GitHubData } from '@/types/models'
 import GitHub from '@/components/github'
-import { backOff } from 'exponential-backoff'
 
 export const revalidate = 60
 
@@ -28,65 +24,39 @@ const getLocation = async () => {
     SUPABASE_SERVICE_ROLE_KEY
   )
 
-  const location = await backOff(async () => {
-    const { data, error } = await supabase
-      .from('movements')
-      .select('moved_at,city,region,country,time_zone_id')
-      .eq('vercel_env', 'production')
-      .order('moved_at', { ascending: false })
-      .limit(1)
-      .single()
+  const { data, error } = await supabase
+    .from('movements')
+    .select('moved_at,city,region,country,time_zone_id')
+    .eq('vercel_env', 'production')
+    .order('moved_at', { ascending: false })
+    .limit(1)
+    .single()
 
-    if (error) {
-      throw new Error(error.message)
-    }
+  if (error) {
+    throw new Error(error.message)
+  }
 
-    return data
-  })
-
-  return location
+  return data
 }
 
-const getSpotify = async () => {
-  const tokenRes = await backOff(() =>
-    fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: SPOTIFY_REFRESH_TOKEN,
-      }),
-    })
+const getNowPlaying = async () => {
+  const supabase = await createClient<Database>(
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
   )
 
-  const { access_token: accessToken } = await tokenRes.json()
+  const { data, error } = await supabase
+    .from('now_playing')
+    .select('created_at,image,name,artists')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
 
-  if (!accessToken) {
-    throw new Error('No Spotify access token')
+  if (error) {
+    throw new Error(error.message)
   }
 
-  const musicRes = await backOff(() =>
-    fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-  )
-
-  if (!musicRes.ok) {
-    throw new Error('Spotify music request failed')
-  }
-
-  try {
-    const music = await musicRes.json()
-
-    return music
-  } catch (_) {
-    return null
-  }
+  return data
 }
 
 const getGitHub = async () => {
@@ -110,27 +80,28 @@ const getGitHub = async () => {
     }
   `
 
-  const data = await backOff(() =>
-    request<GitHubData>('https://api.github.com/graphql', query, undefined, {
+  const data = await request<GitHubData>(
+    'https://api.github.com/graphql',
+    query,
+    undefined,
+    {
       Authorization: `Bearer ${GITHUB_ACCESS_TOKEN}`,
-    })
+    }
   )
 
   return data
 }
 
 const getStrava = async () => {
-  const tokenRes = await backOff(() =>
-    fetch('https://www.strava.com/oauth/token', {
-      method: 'POST',
-      body: new URLSearchParams({
-        client_id: STRAVA_CLIENT_ID,
-        client_secret: STRAVA_CLIENT_SECRET,
-        refresh_token: STRAVA_REFERSH_TOKEN,
-        grant_type: 'refresh_token',
-      }),
-    })
-  )
+  const tokenRes = await fetch('https://www.strava.com/oauth/token', {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: STRAVA_CLIENT_ID,
+      client_secret: STRAVA_CLIENT_SECRET,
+      refresh_token: STRAVA_REFERSH_TOKEN,
+      grant_type: 'refresh_token',
+    }),
+  })
 
   const { access_token: accessToken } = await tokenRes.json()
 
@@ -158,7 +129,7 @@ const getStrava = async () => {
 
 const Page = async () => {
   const location = await getLocation()
-  const music = await getSpotify()
+  const nowPlaying = await getNowPlaying()
   const activities = await getStrava()
   const contributions = await getGitHub()
 
@@ -166,9 +137,11 @@ const Page = async () => {
     <div className="flex flex-col gap-20 justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto">
       <Header location={location} />
       <div className="flex flex-col gap-3">
-        <div className="self-end">
-          <Spotify music={music} />
-        </div>
+        {nowPlaying && (
+          <div className="self-end">
+            <Spotify nowPlaying={nowPlaying} />
+          </div>
+        )}
         <GitHub contributions={contributions} />
         <Strava activities={activities} />
       </div>

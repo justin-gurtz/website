@@ -1,27 +1,7 @@
 import { Database } from '@/types/database'
 
 export type Movement = Database['public']['Tables']['movements']['Row']
-
-export type SpotifyMusic = {
-  is_playing: boolean
-  item: {
-    id: string
-    name: string
-    artists: {
-      id: string
-      name: string
-    }[]
-    album: {
-      id: string
-      name: string
-      images: {
-        height: number
-        url: string
-        width: number
-      }[]
-    }
-  }
-}
+export type NowPlaying = Database['public']['Tables']['now_playing']['Row']
 
 export type StravaActivity = {
   id: number

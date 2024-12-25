@@ -1,46 +1,17 @@
-import { SpotifyMusic } from '@/types/models'
+import { NowPlaying } from '@/types/models'
 import Link from '@/components/link'
-import { IconPlayerPause } from '@tabler/icons-react'
-import map from 'lodash/map'
-import reduce from 'lodash/reduce'
-import { cn } from '@/utils'
+import { IconMusic, IconPlayerPause } from '@tabler/icons-react'
+import { cn } from '@/utils/tailwind'
 import Soundbars from '@/components/soundbars'
+import { isAfter, subMinutes } from 'date-fns'
 
-const getBestImage = (
-  images: SpotifyMusic['item']['album']['images'] | undefined
-) => {
-  if (!images) return undefined
+const joinArtists = (artists: NowPlaying['artists']) => {
+  if (!artists?.length) return undefined
 
-  const largestImage = reduce(
-    images,
-    (largest, image) => {
-      return image.width > largest.width ? image : largest
-    },
-    images[0]
-  )
+  if (artists.length === 1) return artists[0]
+  if (artists.length === 2) return artists.join(' & ')
 
-  return reduce(
-    images,
-    (smallest, image) => {
-      // Ideally 2x container size
-      if (image.width >= 320 && image.height >= 320) {
-        return image.width < smallest.width ? image : smallest
-      }
-      return smallest
-    },
-    largestImage
-  )
-}
-
-const joinArtists = (artists: SpotifyMusic['item']['artists'] | undefined) => {
-  if (!artists) return undefined
-
-  const names = map(artists, (artist) => artist.name)
-
-  if (names.length === 1) return names[0]
-  if (names.length === 2) return names.join(' & ')
-
-  return `${names.slice(0, -1).join(', ')}, & ${names.slice(-1)}`
+  return `${artists.slice(0, -1).join(', ')}, & ${artists.slice(-1)}`
 }
 
 const SpotifyLogo = ({ className }: { className?: string }) => (
@@ -57,50 +28,51 @@ const SpotifyLogo = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const Spotify = ({ music }: { music: SpotifyMusic | null }) => {
-  const item = music?.is_playing ? music.item : undefined
-
-  const artists = joinArtists(item?.artists)
-  const image = getBestImage(item?.album?.images)
+const Spotify = ({
+  nowPlaying,
+}: {
+  nowPlaying: Pick<NowPlaying, 'created_at' | 'image' | 'name' | 'artists'>
+}) => {
+  const isPlaying = isAfter(nowPlaying.created_at, subMinutes(new Date(), 2))
+  const artists = joinArtists(nowPlaying.artists)
 
   return (
     <Link href="https://open.spotify.com/user/gurtz">
-      <div className="relative bg-slate-200 dark:bg-neutral-700 size-[180px] rounded-xl overflow-hidden">
-        {image ? (
+      <div className="relative bg-white dark:bg-neutral-800 size-[180px] rounded-xl overflow-hidden">
+        {nowPlaying.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={image.url}
+            src={nowPlaying.image}
             alt="Artwork"
             className="absolute top-0 left-0 w-full h-full object-cover"
           />
         ) : (
-          <IconPlayerPause
-            size={36}
+          <IconMusic
+            size={48}
+            stroke={1}
             className="stroke-neutral-900 dark:stroke-white opacity-15 absolute top-0 right-0 bottom-0 left-0 m-auto"
           />
         )}
         <div
           className={cn(
             'absolute top-0 left-0 w-full h-full',
-            item
+            nowPlaying.image
               ? 'bg-[linear-gradient(15deg,rgba(0,0,0,0.9),rgba(0,0,0,0.3))]'
               : 'bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]'
           )}
         />
-        <div className="absolute top-0 left-0 w-full h-full p-2.5 flex flex-col justify-between">
+        <div className="absolute top-0 left-0 w-full h-full p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <SpotifyLogo className="size-6" />
-            {item && <Soundbars className="mr-1" />}
+            {isPlaying ? (
+              <Soundbars className="mr-1" />
+            ) : (
+              <IconPlayerPause size={20} stroke={0} className="fill-white" />
+            )}
           </div>
           <div className="flex flex-col gap-0.5 text-white">
             <p className="font-semibold text-sm leading-tight line-clamp-2 text-pretty">
-              {item?.name || (
-                <>
-                  Nothing
-                  <br />
-                  playing
-                </>
-              )}
+              {nowPlaying.name}
             </p>
             {artists && <p className="text-xs line-clamp-1">{artists}</p>}
           </div>

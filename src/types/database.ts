@@ -1,4 +1,11 @@
-// eslint-disable-next-line import/no-unused-modules
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
 export type Database = {
   public: {
     Tables: {
@@ -44,6 +51,33 @@ export type Database = {
           region?: string | null
           time_zone_id?: string | null
           vercel_env?: string
+        }
+        Relationships: []
+      }
+      now_playing: {
+        Row: {
+          artists: string[] | null
+          created_at: string
+          id: number
+          image: string | null
+          name: string
+          payload: Json
+        }
+        Insert: {
+          artists?: string[] | null
+          created_at?: string
+          id?: number
+          image?: string | null
+          name: string
+          payload: Json
+        }
+        Update: {
+          artists?: string[] | null
+          created_at?: string
+          id?: number
+          image?: string | null
+          name?: string
+          payload?: Json
         }
         Relationships: []
       }

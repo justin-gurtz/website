@@ -1,6 +1,6 @@
 import Link from '@/components/link'
 import { GitContributionLevel, GitHubData } from '@/types/models'
-import { cn } from '@/utils'
+import { cn } from '@/utils/tailwind'
 import times from 'lodash/times'
 import forEach from 'lodash/forEach'
 import map from 'lodash/map'
