@@ -9,7 +9,6 @@ import Link from '@/components/link'
 import { StravaActivity } from '@/types/models'
 import { cn } from '@/utils'
 import { Icon, IconRun } from '@tabler/icons-react'
-import Image from 'next/image'
 import map from 'lodash/map'
 import filter from 'lodash/filter'
 import padStart from 'lodash/padStart'
@@ -25,9 +24,6 @@ import { addSeconds, subYears } from 'date-fns'
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
 const href = 'https://www.strava.com/athletes/gurtz'
-
-const logoHeight = 16
-const logoWidth = (logoHeight / 91) * 432
 
 const nycPoint = turf.point([-73.97, 40.725])
 
@@ -95,6 +91,19 @@ const getComponents = (seconds: number) => {
 
   return { days, hours, minutes }
 }
+
+const StravaLogo = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 432 91"
+    className={className}
+  >
+    <path
+      fill="#FC4C02"
+      d="M74.5 49.5c1.6 2.8 2.5 6.3 2.5 10.4v0.2c0 4.2-0.8 8-2.5 11.4 -1.7 3.4-4.1 6.2-7.1 8.6 -3.1 2.3-6.8 4.1-11.2 5.4 -4.4 1.3-9.3 1.9-14.7 1.9 -8.2 0-15.9-1.1-23-3.4 -7.1-2.3-13.2-5.7-18.3-10.2l14.4-17.1c4.4 3.4 9 5.8 13.8 7.2 4.8 1.5 9.6 2.2 14.4 2.2 2.5 0 4.2-0.3 5.3-0.9 1.1-0.6 1.6-1.5 1.6-2.5v-0.2c0-1.2-0.8-2.1-2.4-2.9 -1.6-0.8-4.5-1.6-8.8-2.4 -4.5-0.9-8.8-2-12.9-3.2 -4.1-1.2-7.7-2.8-10.8-4.7 -3.1-1.9-5.6-4.3-7.4-7.2C5.4 39 4.5 35.4 4.5 31.2V31c0-3.8 0.7-7.4 2.2-10.7 1.5-3.3 3.7-6.2 6.6-8.6 2.9-2.5 6.5-4.4 10.7-5.8 4.2-1.4 9.1-2.1 14.7-2.1 7.8 0 14.7 0.9 20.5 2.8 5.9 1.8 11.1 4.6 15.8 8.3L61.9 33c-3.8-2.8-7.9-4.8-12.1-6.1 -4.3-1.3-8.3-1.9-12-1.9 -2 0-3.5 0.3-4.4 0.9 -1 0.6-1.4 1.4-1.4 2.4v0.2c0 1.1 0.7 2 2.2 2.8 1.5 0.8 4.3 1.6 8.5 2.4 5.1 0.9 9.8 2 14 3.3 4.2 1.3 7.8 3 10.9 5C70.5 44.2 72.9 46.6 74.5 49.5zM75.5 28.1h23.7v57.8h26.9V28.1h23.7V5.3H75.5V28.1zM387.9 0.3l-43.3 85.6h25.8l17.5-34.6 17.6 34.6h25.8L387.9 0.3zM267.3 0.3l43.4 85.6h-25.8l-17.5-34.6 -17.5 34.6h-17.5 -8.3 -22.4l-15.2-23h-0.2 -5.5v23h-26.9V5.3H193c7.2 0 13.1 0.8 17.8 2.5 4.6 1.6 8.4 3.9 11.2 6.7 2.5 2.4 4.3 5.2 5.5 8.3 1.2 3.1 1.8 6.7 1.8 10.8v0.2c0 5.9-1.4 10.9-4.3 14.9 -2.8 4.1-6.7 7.3-11.6 9.7l14 20.4L267.3 0.3zM202.5 35.6c0-2.6-0.9-4.5-2.8-5.8 -1.8-1.3-4.3-1.9-7.5-1.9h-11.7v15.8h11.6c3.2 0 5.8-0.7 7.6-2.1 1.8-1.4 2.8-3.3 2.8-5.8V35.6zM345.2 5.3L327.6 40 310 5.3h-25.8l43.4 85.6 43.3-85.6H345.2z"
+    />
+  </svg>
+)
 
 const Stat = ({
   label,
@@ -322,7 +331,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   return (
     <Link href={href}>
       <div className="relative w-full pb-[125%] rounded-xl overflow-hidden">
-        <div className="absolute w-full h-full bg-neutral-800">
+        <div className="absolute w-full h-full bg-[#1f1f1f]">
           <div
             ref={mapContainer}
             className={cn(
@@ -332,12 +341,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
           />
         </div>
         <div className="absolute top-0 right-0 left-0 p-3 sm:p-5 bg-gradient-to-b from-black/50 to-black/0 flex items-start justify-between">
-          <Image
-            src="/strava.svg"
-            alt="Strava"
-            width={logoWidth}
-            height={logoHeight}
-          />
+          <StravaLogo className="h-4" />
           <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
         </div>
         <div className="absolute right-0 bottom-0 left-0 p-3 sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 sm:gap-5">

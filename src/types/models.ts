@@ -37,3 +37,28 @@ export type StravaActivity = {
     summary_polyline: string
   }
 }
+
+export type GitContributionLevel =
+  | 'NONE'
+  | 'FIRST_QUARTILE'
+  | 'SECOND_QUARTILE'
+  | 'THIRD_QUARTILE'
+  | 'FOURTH_QUARTILE'
+
+export type GitHubData = {
+  viewer: {
+    contributionsCollection: {
+      contributionCalendar: {
+        totalContributions: number
+        weeks: {
+          contributionDays: {
+            weekday: number
+            date: string
+            contributionCount: number
+            contributionLevel: GitContributionLevel
+          }[]
+        }[]
+      }
+    }
+  }
+}
