@@ -15,6 +15,7 @@ import { createClient } from '@supabase/supabase-js'
 import { request } from 'graphql-request'
 import { GitHubData } from '@/types/models'
 import GitHub from '@/components/github'
+import Refresh from '@/components/refresh'
 
 export const revalidate = 60
 
@@ -134,18 +135,21 @@ const Page = async () => {
   const contributions = await getGitHub()
 
   return (
-    <div className="flex flex-col gap-20 justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto">
-      <Header location={location} />
-      <div className="flex flex-col gap-3">
-        {nowPlaying && (
-          <div className="self-end">
-            <Spotify nowPlaying={nowPlaying} />
-          </div>
-        )}
-        <GitHub contributions={contributions} />
-        <Strava activities={activities} />
+    <>
+      <div className="flex flex-col gap-20 justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto">
+        <Header location={location} />
+        <div className="flex flex-col gap-3">
+          {nowPlaying && (
+            <div className="self-end">
+              <Spotify nowPlaying={nowPlaying} />
+            </div>
+          )}
+          <GitHub contributions={contributions} />
+          <Strava activities={activities} />
+        </div>
       </div>
-    </div>
+      <Refresh every={15} />
+    </>
   )
 }
 

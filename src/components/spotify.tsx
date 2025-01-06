@@ -4,6 +4,7 @@ import { IconMusic, IconPlayerPause } from '@tabler/icons-react'
 import { cn } from '@/utils/tailwind'
 import Soundbars from '@/components/soundbars'
 import { isAfter, subMinutes } from 'date-fns'
+import Carousel from '@/components/carousel'
 
 const joinArtists = (artists: NowPlaying['artists']) => {
   if (!artists?.length) return undefined
@@ -38,18 +39,13 @@ const Spotify = ({
 
   return (
     <Link href="https://open.spotify.com/user/gurtz">
-      <div className="relative bg-white dark:bg-neutral-800 size-[180px] rounded-xl overflow-hidden">
+      <div className="relative bg-neutral-300 dark:bg-neutral-600 size-[180px] rounded-xl overflow-hidden">
         {nowPlaying.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={nowPlaying.image}
-            alt="Artwork"
-            className="absolute top-0 left-0 w-full h-full object-cover"
-          />
+          <Carousel image={nowPlaying.image} />
         ) : (
           <IconMusic
             size={48}
-            stroke={1}
+            stroke={1.25}
             className="stroke-neutral-900 dark:stroke-white opacity-15 absolute top-0 right-0 bottom-0 left-0 m-auto"
           />
         )}
@@ -57,7 +53,7 @@ const Spotify = ({
           className={cn(
             'absolute top-0 left-0 w-full h-full',
             nowPlaying.image
-              ? 'bg-[linear-gradient(15deg,rgba(0,0,0,0.9),rgba(0,0,0,0.3))]'
+              ? 'bg-[linear-gradient(15deg,rgba(0,0,0,0.85),rgba(0,0,0,0.25))]'
               : 'bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]'
           )}
         />

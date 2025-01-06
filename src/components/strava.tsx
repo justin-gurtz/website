@@ -20,6 +20,7 @@ import keys from 'lodash/keys'
 import startsWith from 'lodash/startsWith'
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
 import { addSeconds, subYears } from 'date-fns'
+import isEqual from 'lodash/isEqual'
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
@@ -137,6 +138,7 @@ const Rule = () => (
 )
 
 const Strava = ({ activities }: { activities: StravaActivity[] }) => {
+  const previousRuns = useRef<StravaActivity[]>([])
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapbox = useRef<mapboxgl.Map | null>(null)
 
@@ -218,6 +220,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     if (runs.length === 0) return
     if (!mapbox.current) return
     if (!mapIsReady) return
+    if (isEqual(runs, previousRuns.current)) return
 
     const currentMap = mapbox.current
 
@@ -285,7 +288,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
         },
       })
 
-      const runColor = getColorForRun(index, runs.length)
+      const runColor = getColorForRun(index, runsToShow.length)
 
       currentMap.addLayer({
         id: layerId,
@@ -308,6 +311,8 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     })
 
     setHasAddedRunsToMap(true)
+
+    previousRuns.current = runs
   }, [mapIsReady, runs, hasAddedRunsToMap])
 
   useEffect(() => {
