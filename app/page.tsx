@@ -16,6 +16,8 @@ import { request } from 'graphql-request'
 import { GitHubData } from '@/types/models'
 import GitHub from '@/components/github'
 import Refresh from '@/components/refresh'
+import Duolingo from '@/components/duolingo'
+import Duo from 'duo-wrapper'
 
 export const revalidate = 60
 
@@ -93,6 +95,15 @@ const getGitHub = async () => {
   return data
 }
 
+const getDuolingo = async () => {
+  const duo = new Duo('JustinGurtz')
+
+  const streak = await duo.getStreak()
+  const courses = await duo.getCourses()
+
+  return { streak, courses }
+}
+
 const getStrava = async () => {
   const tokenRes = await fetch('https://www.strava.com/oauth/token', {
     method: 'POST',
@@ -133,6 +144,7 @@ const Page = async () => {
   const nowPlaying = await getNowPlaying()
   const activities = await getStrava()
   const contributions = await getGitHub()
+  const learning = await getDuolingo()
 
   return (
     <>
@@ -145,6 +157,7 @@ const Page = async () => {
             </div>
           )}
           <GitHub contributions={contributions} />
+          <Duolingo learning={learning} />
           <Strava activities={activities} />
         </div>
       </div>

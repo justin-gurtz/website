@@ -81,9 +81,9 @@ const GitHub = ({ contributions }: { contributions: GitHubData }) => {
   let monthCursor = parseISO(weeks[0][0].date).getMonth()
 
   return (
-    <Link href="https://github.com/justin-gurtz">
-      <div className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-3.5 border border-neutral-300 dark:border-neutral-700 h-[180px] flex flex-col justify-between">
-        <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-4 -mt-0.5 sm:mt-0.5">
+    <Link href="https://github.com/justin-gurtz" className="@container">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl px-4 py-3.5 border border-neutral-300 dark:border-neutral-700 h-[180px] flex flex-col justify-between">
+        <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-4 -mt-0.5 @sm:mt-0.5">
           <table className="table-fixed w-full border-separate border-spacing-[3px]">
             <thead>
               <tr>
@@ -119,9 +119,9 @@ const GitHub = ({ contributions }: { contributions: GitHubData }) => {
             </tbody>
           </table>
         </div>
-        <div className="flex flex-row-reverse sm:flex-row items-end sm:items-center justify-between gap-x-1.5">
-          <GitHubLogo className="size-5 sm:size-4 fill-neutral-800 dark:fill-white -translate-y-[1px]" />
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-x-5 flex-1">
+        <div className="flex flex-row-reverse @sm:flex-row items-end @sm:items-center justify-between gap-x-1.5">
+          <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-[1px]" />
+          <div className="flex flex-col @sm:flex-row @sm:items-center @sm:justify-between gap-x-5 flex-1">
             <p className="text-xs font-medium">Code contributions</p>
             <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
               <p>Less</p>

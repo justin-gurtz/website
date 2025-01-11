@@ -38,7 +38,7 @@ const Header = ({
   return (
     <div className="flex gap-3 items-center">
       <Image
-        src="/headshot.jpg"
+        src="/images/headshot.jpg"
         alt="Headshot"
         width={50}
         height={50}

@@ -18,6 +18,15 @@ export type StravaActivity = {
   }
 }
 
+export type DuolingoLearning = {
+  streak: number
+  courses: {
+    learningLanguage: string
+    title: string
+    xp: number
+  }[]
+}
+
 export type GitContributionLevel =
   | 'NONE'
   | 'FIRST_QUARTILE'
