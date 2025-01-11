@@ -173,7 +173,7 @@ const Duolingo = ({ learning }: { learning: DuolingoLearning }) => {
                 />
                 <div>
                   <p className="text-sm font-bold">{course.title}</p>
-                  <p className="-mt-0.5 text-xs font-medium text-neutral-400 dark:text-neutral-600">
+                  <p className="-mt-0.5 text-xs font-medium text-neutral-400 dark:text-neutral-500">
                     {course.xp} XP
                   </p>
                 </div>

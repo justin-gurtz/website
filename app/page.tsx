@@ -148,7 +148,7 @@ const Page = async () => {
 
   return (
     <>
-      <div className="flex flex-col gap-20 justify-center min-h-svh px-5 py-10 sm:px-10 sm:py-20 max-w-screen-sm m-auto">
+      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 md:p-16 lg:p-20 max-w-5xl mx-auto">
         <Header location={location} />
         <div className="flex flex-col gap-3">
           {nowPlaying && (
@@ -156,9 +156,13 @@ const Page = async () => {
               <Spotify nowPlaying={nowPlaying} />
             </div>
           )}
-          <GitHub contributions={contributions} />
-          <Duolingo learning={learning} />
-          <Strava activities={activities} />
+          <div className="flex flex-col gap-3 md:flex-row">
+            <div className="w-full flex flex-col gap-3">
+              <GitHub contributions={contributions} />
+              <Duolingo learning={learning} />
+            </div>
+            <Strava activities={activities} />
+          </div>
         </div>
       </div>
       <Refresh every={15} />
