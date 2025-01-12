@@ -6,11 +6,10 @@ import { NEXT_PUBLIC_SUPABASE_URL } from '@/env/public'
 import { Database } from '@/types/database'
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { request } from 'graphql-request'
-import { GitHubData, StravaActivity } from '@/types/models'
+import { DuolingoLearning, GitHubData, StravaActivity } from '@/types/models'
 import GitHub from '@/components/github'
 import Refresh from '@/components/refresh'
 import Duolingo from '@/components/duolingo'
-import Duo from 'duo-wrapper'
 import map from 'lodash/map'
 import { subYears } from 'date-fns'
 import Footer from '@/components/footer'
@@ -81,13 +80,19 @@ const getGitHub = async () => {
   return data
 }
 
-const getDuolingo = async () => {
-  const duo = new Duo('JustinGurtz')
+const getDuolingo = async (supabase: SupabaseClient<Database>) => {
+  const { data, error } = await supabase
+    .from('duolingo')
+    .select('streak,courses')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
 
-  const streak = await duo.getStreak()
-  const courses = await duo.getCourses()
+  if (error) {
+    throw new Error(error.message)
+  }
 
-  return { streak, courses }
+  return data as DuolingoLearning
 }
 
 const getStrava = async (supabase: SupabaseClient<Database>) => {
@@ -118,7 +123,7 @@ const Page = async () => {
   const nowPlaying = await getNowPlaying(supabase)
   const activities = await getStrava(supabase)
   const contributions = await getGitHub()
-  const learning = await getDuolingo()
+  const learning = await getDuolingo(supabase)
 
   return (
     <>

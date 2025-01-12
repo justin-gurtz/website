@@ -10,20 +10,23 @@ import { createClient } from '@supabase/supabase-js'
 import { NEXT_PUBLIC_SUPABASE_URL } from '@/env/public'
 import map from 'lodash/map'
 import { StravaActivity } from '@/types/models'
+import { backOff } from 'exponential-backoff'
 
 // eslint-disable-next-line import/prefer-default-export
 export async function POST() {
   await validatePresharedKey()
 
-  const tokenRes = await fetch('https://www.strava.com/oauth/token', {
-    method: 'POST',
-    body: new URLSearchParams({
-      client_id: STRAVA_CLIENT_ID,
-      client_secret: STRAVA_CLIENT_SECRET,
-      refresh_token: STRAVA_REFERSH_TOKEN,
-      grant_type: 'refresh_token',
-    }),
-  })
+  const tokenRes = await backOff(() =>
+    fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      body: new URLSearchParams({
+        client_id: STRAVA_CLIENT_ID,
+        client_secret: STRAVA_CLIENT_SECRET,
+        refresh_token: STRAVA_REFERSH_TOKEN,
+        grant_type: 'refresh_token',
+      }),
+    })
+  )
 
   const { access_token: accessToken } = await tokenRes.json()
 
@@ -31,13 +34,12 @@ export async function POST() {
     throw new Error('No Strava access token')
   }
 
-  const activitiesRes = await fetch(
-    'https://www.strava.com/api/v3/athlete/activities',
-    {
+  const activitiesRes = await backOff(() =>
+    fetch('https://www.strava.com/api/v3/athlete/activities', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    })
   )
 
   const activities = await activitiesRes.json()

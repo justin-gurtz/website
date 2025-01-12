@@ -9,6 +9,27 @@ type Json =
 export type Database = {
   public: {
     Tables: {
+      duolingo: {
+        Row: {
+          courses: Json
+          created_at: string
+          id: number
+          streak: number
+        }
+        Insert: {
+          courses: Json
+          created_at?: string
+          id?: number
+          streak: number
+        }
+        Update: {
+          courses?: Json
+          created_at?: string
+          id?: number
+          streak?: number
+        }
+        Relationships: []
+      }
       movements: {
         Row: {
           city: string | null
