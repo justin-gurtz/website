@@ -13,6 +13,7 @@ import Duolingo from '@/components/duolingo'
 import Duo from 'duo-wrapper'
 import map from 'lodash/map'
 import { subYears } from 'date-fns'
+import Footer from '@/components/footer'
 
 export const revalidate = 60
 
@@ -121,7 +122,7 @@ const Page = async () => {
 
   return (
     <>
-      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 md:p-16 lg:p-20 max-w-2xl lg:max-w-5xl mx-auto">
+      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 md:p-16 md:pb-10 max-w-2xl lg:max-w-5xl mx-auto">
         <Header location={location} />
         <div className="flex flex-col gap-3">
           {nowPlaying && (
@@ -139,6 +140,7 @@ const Page = async () => {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
       <Refresh every={15} />
     </>
