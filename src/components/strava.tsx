@@ -13,13 +13,11 @@ import map from 'lodash/map'
 import filter from 'lodash/filter'
 import padStart from 'lodash/padStart'
 import reduce from 'lodash/reduce'
-import sortBy from 'lodash/sortBy'
 import forEach from 'lodash/forEach'
 import includes from 'lodash/includes'
 import keys from 'lodash/keys'
 import startsWith from 'lodash/startsWith'
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
-import { addSeconds, subYears } from 'date-fns'
 import isEqual from 'lodash/isEqual'
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
@@ -147,19 +145,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   const [mapClassName, setMapClassName] = useState('opacity-0')
 
   const runs = useMemo(() => {
-    const oneYearAgo = subYears(new Date(), 1)
-    const filtered = filter(
-      activities,
-      ({ type, visibility, start_date: d, elapsed_time: seconds }) => {
-        return (
-          type === 'Run' &&
-          visibility === 'everyone' &&
-          addSeconds(new Date(d), seconds) > oneYearAgo
-        )
-      }
-    )
-
-    return sortBy(filtered, ({ start_date: d }) => new Date(d).getTime())
+    return filter(activities, ({ visibility }) => visibility === 'everyone')
   }, [activities])
 
   const { distance, pace, time, totalRuns } = useMemo(() => {
