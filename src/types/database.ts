@@ -81,6 +81,30 @@ export type Database = {
         }
         Relationships: []
       }
+      strava: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          start_date: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          payload: Json
+          start_date: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          payload?: Json
+          start_date?: string
+          type?: string
+        }
+        Relationships: []
+      }
       visits: {
         Row: {
           arrived_at: string
