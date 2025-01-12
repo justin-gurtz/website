@@ -122,7 +122,7 @@ const Page = async () => {
 
   return (
     <>
-      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 md:p-16 md:pb-10 max-w-2xl lg:max-w-5xl mx-auto">
+      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 max-w-md lg:max-w-4xl mx-auto box-content">
         <Header location={location} />
         <div className="flex flex-col gap-3">
           {nowPlaying && (
