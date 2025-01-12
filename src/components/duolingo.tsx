@@ -181,7 +181,7 @@ const Duolingo = ({ learning }: { learning: DuolingoLearning }) => {
             ))}
           </div>
           <div className="flex flex-col items-end">
-            <DuolingoLogo className="h-4 mt-0.5 fill-neutral-400" />
+            <DuolingoLogo className="h-4 -mt-[1px] fill-neutral-400" />
             <div className="flex gap-1 items-center">
               <StreakFlame />
               <p className="font-bold text-lg text-[#FF9600]">

@@ -127,25 +127,29 @@ const Page = async () => {
 
   return (
     <>
-      <div className="flex flex-col gap-20 justify-center min-h-svh p-5 sm:p-10 max-w-md lg:max-w-4xl mx-auto box-content">
-        <Header location={location} />
-        <div className="flex flex-col gap-3">
-          {nowPlaying && (
+      <div className="min-h-svh flex items-center justify-center p-5 sm:p-10">
+        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-4xl">
+          <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
+            <Header location={location} />
             <div className="self-end">
               <Spotify nowPlaying={nowPlaying} />
             </div>
-          )}
-          <div className="flex flex-col gap-3 lg:flex-row">
-            <div className="w-full flex flex-col gap-3">
-              <GitHub contributions={contributions} />
-              <Duolingo learning={learning} />
-            </div>
+          </div>
+          <div className="flex flex-col gap-3 lg:flex-row-reverse">
             <div className="w-full">
               <Strava activities={activities} />
             </div>
+            <div className="w-full flex flex-col gap-20 lg:gap-3">
+              <div className="flex flex-col gap-3">
+                <GitHub contributions={contributions} />
+                <Duolingo learning={learning} />
+              </div>
+              <div className="flex-1 flex items-end">
+                <Footer />
+              </div>
+            </div>
           </div>
         </div>
-        <Footer />
       </div>
       <Refresh every={15} />
     </>
