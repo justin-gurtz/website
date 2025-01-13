@@ -42,8 +42,8 @@ const Header = ({
         alt="Headshot"
         width={50}
         height={50}
-        objectFit="cover"
         className="rounded-lg bg-black/5 dark:bg-white/5"
+        priority
       />
       <div className="flex flex-col gap-0.5">
         <h1 className="text-md font-bold leading-tight">Justin Gurtz</h1>
