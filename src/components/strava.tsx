@@ -321,7 +321,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
 
   return (
     <Link href={href}>
-      <div className="relative w-full pb-[125%] rounded-xl overflow-hidden">
+      <div className="@container relative w-full pb-[125%] rounded-xl overflow-hidden">
         <div className="absolute w-full h-full bg-[#1f1f1f]">
           <div
             ref={mapContainer}
@@ -331,11 +331,11 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
             )}
           />
         </div>
-        <div className="absolute top-0 right-0 left-0 p-3 sm:p-5 bg-gradient-to-b from-black/50 to-black/0 flex items-start justify-between">
+        <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-gradient-to-b from-black/50 to-black/0 flex items-start justify-between">
           <StravaLogo className="h-4" />
           <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
         </div>
-        <div className="absolute right-0 bottom-0 left-0 p-3 sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 sm:gap-5">
+        <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
           <Stat label="Distance" value={distance} />
           <Rule />
           <Stat label="Pace" value={pace} />
