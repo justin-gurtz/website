@@ -1,5 +1,5 @@
 import Link from '@/components/link'
-import { GitContributionLevel, GitHubData } from '@/types/models'
+import { GitContributionLevel, GitHubContributions } from '@/types/models'
 import { cn } from '@/utils/tailwind'
 import times from 'lodash/times'
 import forEach from 'lodash/forEach'
@@ -58,25 +58,21 @@ const Day = ({
   )
 }
 
-type ContributionDay =
-  GitHubData['viewer']['contributionsCollection']['contributionCalendar']['weeks'][0]['contributionDays'][0]
+type ContributionDay = GitHubContributions[0]['contributionDays'][0]
 
-const GitHub = ({ contributions }: { contributions: GitHubData }) => {
+const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
   const weeks = useMemo(() => {
     const daysByWeekday = times(7, () => [] as ContributionDay[])
 
-    forEach(
-      contributions.viewer.contributionsCollection.contributionCalendar.weeks,
-      (week) => {
-        // eslint-disable-next-line lodash/prefer-map
-        forEach(week.contributionDays, (day) => {
-          daysByWeekday[day.weekday].push(day)
-        })
-      }
-    )
+    forEach(contributions, (week) => {
+      // eslint-disable-next-line lodash/prefer-map
+      forEach(week.contributionDays, (day) => {
+        daysByWeekday[day.weekday].push(day)
+      })
+    })
 
     return daysByWeekday
-  }, [contributions.viewer.contributionsCollection.contributionCalendar.weeks])
+  }, [contributions])
 
   let monthCursor = parseISO(weeks[0][0].date).getMonth()
 

@@ -30,6 +30,24 @@ export type Database = {
         }
         Relationships: []
       }
+      github: {
+        Row: {
+          contributions: Json
+          created_at: string
+          id: number
+        }
+        Insert: {
+          contributions: Json
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          contributions?: Json
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       movements: {
         Row: {
           city: string | null
