@@ -11,31 +11,84 @@ import { createClient } from '@supabase/supabase-js'
 import { backOff } from 'exponential-backoff'
 import map from 'lodash/map'
 import reduce from 'lodash/reduce'
+import { z } from 'zod'
+
+const ImageSchema = z.object({
+  width: z.number(),
+  height: z.number(),
+  url: z.string(),
+})
+
+const TrackSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  artists: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+    })
+  ),
+  album: z.object({
+    id: z.string(),
+    name: z.string(),
+    images: z.array(ImageSchema).optional(),
+  }),
+})
+
+const EpisodeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  images: z.array(ImageSchema).optional(),
+  show: z.object({
+    id: z.string(),
+    name: z.string(),
+    images: z.array(ImageSchema).optional(),
+  }),
+})
+
+type Image = z.infer<typeof ImageSchema>
+type TrackItem = z.infer<typeof TrackSchema>
+type EpisodeItem = z.infer<typeof EpisodeSchema>
+
+const isTrack = (input: unknown): input is TrackItem => {
+  return TrackSchema.safeParse(input).success
+}
+
+const isEpisode = (input: unknown): input is EpisodeItem => {
+  return EpisodeSchema.safeParse(input).success
+}
 
 type SpotifyCurrentlyPlaying = {
   is_playing: boolean
-  item: {
-    id: string
-    name: string
-    artists: {
-      id: string
-      name: string
-    }[]
-    album: {
-      id: string
-      name: string
-      images: {
-        height: number
-        url: string
-        width: number
-      }[]
-    }
-  }
+  currently_playing_type: 'track' | 'episode'
+  item: TrackItem | EpisodeItem
 }
 
-const getBestImage = (
-  images: SpotifyCurrentlyPlaying['item']['album']['images'] | undefined
-) => {
+const sanitize = (
+  currentlyPlaying: SpotifyCurrentlyPlaying
+): { mediaType: string; images?: Image[]; by: string[] } => {
+  const { currently_playing_type: type, item } = currentlyPlaying
+
+  if (type === 'track' && isTrack(item)) {
+    return {
+      mediaType: 'song',
+      images: item.album.images,
+      by: map(item.artists, (artist) => artist.name),
+    }
+  }
+
+  if (type === 'episode' && isEpisode(item)) {
+    return {
+      mediaType: 'podcast',
+      images: item.images || item.show.images,
+      by: [item.show.name],
+    }
+  }
+
+  throw new Error('Unknown or malformed currently playing type')
+}
+
+const getBestImage = (images: Image[] | undefined) => {
   if (!images) return undefined
 
   const largestImage = reduce(
@@ -84,11 +137,14 @@ export async function POST() {
   }
 
   const currentlyPlayingRes = await backOff(() =>
-    fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    fetch(
+      'https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
   )
 
   if (!currentlyPlayingRes.ok) {
@@ -100,7 +156,7 @@ export async function POST() {
   try {
     currentlyPlaying = await currentlyPlayingRes.json()
   } catch (_) {
-    // No music playing
+    // Nothing playing
   }
 
   const { is_playing: isPlaying, item } = currentlyPlaying || {}
@@ -111,12 +167,16 @@ export async function POST() {
       SUPABASE_SERVICE_ROLE_KEY
     )
 
-    const image = getBestImage(item.album.images)
+    const sanitized = sanitize(currentlyPlaying)
+    const image = getBestImage(sanitized.images)
 
     const { error } = await supabase.from('now_playing').insert({
+      source: 'spotify',
+      media_type: sanitized.mediaType,
       image: image?.url,
       name: item.name,
-      artists: map(item.artists, (artist) => artist.name),
+      artists: sanitized.by,
+      by: sanitized.by,
       payload: currentlyPlaying,
     })
 
