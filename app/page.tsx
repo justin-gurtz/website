@@ -38,7 +38,7 @@ const getLocation = async (supabase: SupabaseClient<Database>) => {
 const getNowPlaying = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from('now_playing')
-    .select('created_at,image,name,artists')
+    .select('created_at,image,name,by')
     .order('created_at', { ascending: false })
     .limit(1)
     .single()

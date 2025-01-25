@@ -95,28 +95,34 @@ export type Database = {
       }
       now_playing: {
         Row: {
-          artists: string[] | null
+          by: string[] | null
           created_at: string
           id: number
           image: string | null
+          media_type: string
           name: string
           payload: Json
+          source: string
         }
         Insert: {
-          artists?: string[] | null
+          by?: string[] | null
           created_at?: string
           id?: number
           image?: string | null
+          media_type?: string
           name: string
           payload: Json
+          source?: string
         }
         Update: {
-          artists?: string[] | null
+          by?: string[] | null
           created_at?: string
           id?: number
           image?: string | null
+          media_type?: string
           name?: string
           payload?: Json
+          source?: string
         }
         Relationships: []
       }

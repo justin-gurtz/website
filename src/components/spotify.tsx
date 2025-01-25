@@ -6,13 +6,13 @@ import Soundbars from '@/components/soundbars'
 import { isAfter, subMinutes } from 'date-fns'
 import Carousel from '@/components/carousel'
 
-const joinArtists = (artists: NowPlaying['artists']) => {
-  if (!artists?.length) return undefined
+const getByLine = (by: NowPlaying['by']) => {
+  if (!by?.length) return undefined
 
-  if (artists.length === 1) return artists[0]
-  if (artists.length === 2) return artists.join(' & ')
+  if (by.length === 1) return by[0]
+  if (by.length === 2) return by.join(' & ')
 
-  return `${artists.slice(0, -1).join(', ')}, & ${artists.slice(-1)}`
+  return `${by.slice(0, -1).join(', ')}, & ${by.slice(-1)}`
 }
 
 const SpotifyLogo = ({ className }: { className?: string }) => (
@@ -32,10 +32,10 @@ const SpotifyLogo = ({ className }: { className?: string }) => (
 const Spotify = ({
   nowPlaying,
 }: {
-  nowPlaying: Pick<NowPlaying, 'created_at' | 'image' | 'name' | 'artists'>
+  nowPlaying: Pick<NowPlaying, 'created_at' | 'image' | 'name' | 'by'>
 }) => {
   const isPlaying = isAfter(nowPlaying.created_at, subMinutes(new Date(), 2))
-  const artists = joinArtists(nowPlaying.artists)
+  const byLine = getByLine(nowPlaying.by)
 
   return (
     <Link href="https://open.spotify.com/user/gurtz">
@@ -70,7 +70,7 @@ const Spotify = ({
             <p className="font-semibold text-sm leading-tight line-clamp-2 text-pretty">
               {nowPlaying.name}
             </p>
-            {artists && <p className="text-xs line-clamp-1">{artists}</p>}
+            {byLine && <p className="text-xs line-clamp-1">{byLine}</p>}
           </div>
         </div>
       </div>

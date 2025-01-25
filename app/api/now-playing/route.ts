@@ -175,7 +175,6 @@ export async function POST() {
       media_type: sanitized.mediaType,
       image: image?.url,
       name: item.name,
-      artists: sanitized.by,
       by: sanitized.by,
       payload: currentlyPlaying,
     })
