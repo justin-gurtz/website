@@ -23,8 +23,8 @@ type Location = Pick<
 
 enum Mode {
   CurrentLocation,
-  LocalTime,
   LastSeen,
+  LocalTime,
 }
 
 const modes = filter(values(Mode), isNumber)
@@ -64,9 +64,10 @@ const getLocalTime = (location: Location) => {
     const date = toZonedTime(now, timeZoneId)
 
     if (isValid(date)) {
-      return date.toLocaleTimeString([], {
+      return date.toLocaleTimeString(undefined, {
         hour: 'numeric',
         minute: 'numeric',
+        timeZoneName: 'short',
       })
     }
   }
