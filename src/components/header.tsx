@@ -5,7 +5,10 @@ import LocationInfo from '@/components/location-info'
 const Header = ({
   location,
 }: {
-  location: Pick<Movement, 'moved_at' | 'city' | 'region' | 'country'>
+  location: Pick<
+    Movement,
+    'moved_at' | 'city' | 'region' | 'country' | 'time_zone_id'
+  >
 }) => {
   return (
     <div className="flex gap-4 items-center">
