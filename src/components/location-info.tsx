@@ -29,7 +29,7 @@ enum Mode {
 
 const modes = filter(values(Mode), isNumber)
 
-const getLocationDescription = (location: Location) => {
+const getCurrentlyIn = (location: Location) => {
   const { city, region, country } = location
 
   if (city || region || country) {
@@ -74,7 +74,7 @@ const getLocalTime = (location: Location) => {
   return 'unknown'
 }
 
-const getTimestamp = (location: Location) => {
+const getLastSeen = (location: Location) => {
   const d = new Date(location.moved_at)
   const seconds = differenceInSeconds(new Date(), d)
 
@@ -87,36 +87,27 @@ const getTimestamp = (location: Location) => {
 const LocationInfo = ({ location }: { location: Location }) => {
   const [renderedFirstItem, setRenderedFirstItem] = useState(false)
   const [mode, setMode] = useState(modes[0])
-  const [localTime, setLocalTime] = useState(() => getLocalTime(location))
-  const [timestamp, setTimestamp] = useState(() => getTimestamp(location))
-
-  const locationDescription = useMemo(
-    () => getLocationDescription(location),
-    [location]
-  )
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setLocalTime(() => getLocalTime(location))
-      setTimestamp(() => getTimestamp(location))
       setMode((prev) => (prev + 1) % modes.length)
     }, 3500)
 
     return () => clearInterval(interval)
-  }, [location])
+  }, [])
 
   const children = useMemo(() => {
     switch (mode) {
       case Mode.CurrentLocation:
-        return `Currently in: ${locationDescription}`
+        return `Currently in: ${getCurrentlyIn(location)}`
       case Mode.LocalTime:
-        return `Local time: ${localTime}`
+        return `Local time: ${getLocalTime(location)}`
       case Mode.LastSeen:
-        return `Last seen: ${timestamp}`
+        return `Last seen: ${getLastSeen(location)}`
       default:
         throw new Error(`Invalid elevator mode: ${mode}`)
     }
-  }, [mode, locationDescription, localTime, timestamp])
+  }, [mode, location])
 
   return (
     <AnimatePresence mode="wait">
