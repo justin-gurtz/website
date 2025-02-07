@@ -19,6 +19,8 @@ import keys from 'lodash/keys'
 import startsWith from 'lodash/startsWith'
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
 import isEqual from 'lodash/isEqual'
+import join from 'lodash/join'
+import slice from 'lodash/slice'
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
@@ -159,19 +161,18 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       maximumFractionDigits: 1,
     })
 
-    const paceComponents = getComponents(avgPace)
-    const timeComponents = getComponents(totalMovingTime)
+    const p = getComponents(avgPace)
+    const t = getComponents(totalMovingTime)
 
-    const paceString = `${paceComponents.hours}:${padded(paceComponents.minutes)} /mi`
-
-    const timeString = timeComponents.days
-      ? `${timeComponents.days}d ${timeComponents.hours}h`
-      : `${timeComponents.hours}h ${timeComponents.minutes}m`
+    const leadingTStrings = [`${t.days}d`, `${t.hours}h`]
+    const nonZeroTStrings = filter(leadingTStrings, (c) => !startsWith(c, '0'))
+    const finalTStrings = [...nonZeroTStrings, `${t.minutes}m`]
+    const slicedTStrings = slice(finalTStrings, 0, 2)
 
     return {
       distance: `${milesString} mi`,
-      pace: paceString,
-      time: timeString,
+      pace: `${p.hours}:${padded(p.minutes)} /mi`,
+      time: join(slicedTStrings, ' '),
       totalRuns: runs.length.toString(),
     }
   }, [runs])
