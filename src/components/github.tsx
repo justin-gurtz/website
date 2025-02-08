@@ -51,7 +51,7 @@ const Day = ({
     // eslint-disable-next-line jsx-a11y/control-has-associated-label
     <td
       className={cn(
-        'text-[6px] rounded-sm size-2.5 outline outline-1 outline-[rgba(0,0,0,0.05)] dark:outline-[rgba(0,0,0,0.1)] -outline-offset-1',
+        'text-[6px] rounded-xs size-2.5 outline outline-1 outline-[rgba(0,0,0,0.05)] dark:outline-[rgba(0,0,0,0.1)] -outline-offset-1',
         bg
       )}
     />

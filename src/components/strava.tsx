@@ -305,7 +305,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   useEffect(() => {
     if (!mapbox.current) return
     if (!hasAddedRunsToMap) return
-    if (includes(mapClassName, 'opacity-1')) return
+    if (includes(mapClassName, 'opacity-100')) return
 
     const bounds = mapbox.current.getBounds()
 
@@ -317,7 +317,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       })
     }
 
-    setMapClassName('opacity-1 transition-all duration-1000')
+    setMapClassName('opacity-100 transition-all duration-1000')
   }, [hasAddedRunsToMap, mapClassName])
 
   return (
@@ -327,16 +327,16 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
           <div
             ref={mapContainer}
             className={cn(
-              'absolute w-full h-full [&_.mapboxgl-ctrl]:!hidden',
+              'absolute w-full h-full [&_.mapboxgl-ctrl]:hidden!',
               mapClassName
             )}
           />
         </div>
-        <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-gradient-to-b from-black/50 to-black/0 flex items-start justify-between">
+        <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
           <StravaLogo className="h-4" />
           <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
         </div>
-        <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-gradient-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
+        <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
           <Stat label="Distance" value={distance} />
           <Rule />
           <Stat label="Pace" value={pace} />
