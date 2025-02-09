@@ -155,6 +155,7 @@ export async function POST() {
 
   try {
     currentlyPlaying = await currentlyPlayingRes.json()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
     // Nothing playing
   }
