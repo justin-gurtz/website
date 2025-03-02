@@ -23,7 +23,6 @@ const getLocation = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from('movements')
     .select('moved_at,city,region,country,time_zone_id')
-    .eq('vercel_env', 'production')
     .order('moved_at', { ascending: false })
     .limit(1)
     .single()

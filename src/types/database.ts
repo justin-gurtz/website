@@ -61,7 +61,6 @@ export type Database = {
           radius: number
           region: string | null
           time_zone_id: string | null
-          vercel_env: string
         }
         Insert: {
           city?: string | null
@@ -75,7 +74,6 @@ export type Database = {
           radius: number
           region?: string | null
           time_zone_id?: string | null
-          vercel_env: string
         }
         Update: {
           city?: string | null
@@ -89,7 +87,6 @@ export type Database = {
           radius?: number
           region?: string | null
           time_zone_id?: string | null
-          vercel_env?: string
         }
         Relationships: []
       }
@@ -164,7 +161,6 @@ export type Database = {
           radius: number
           region: string | null
           time_zone_id: string | null
-          vercel_env: string
         }
         Insert: {
           arrived_at: string
@@ -179,7 +175,6 @@ export type Database = {
           radius: number
           region?: string | null
           time_zone_id?: string | null
-          vercel_env: string
         }
         Update: {
           arrived_at?: string
@@ -194,7 +189,6 @@ export type Database = {
           radius?: number
           region?: string | null
           time_zone_id?: string | null
-          vercel_env?: string
         }
         Relationships: []
       }
