@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 // eslint-disable-next-line no-restricted-imports
-import readme from '../../README.md'
+import readme from '../README.md'
 
 const ConsoleEasterEgg = () => {
   useEffect(() => {

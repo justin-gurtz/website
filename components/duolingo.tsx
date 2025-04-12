@@ -13,16 +13,22 @@ import slice from 'lodash/slice'
 const dinRoundPro = localFont({
   src: [
     {
-      path: '../../public/fonts/din-round-pro/500.otf',
+      path: '../public/fonts/din-round-pro/500.otf',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/din-round-pro/700.otf',
+      path: '../public/fonts/din-round-pro/700.otf',
       weight: '700',
       style: 'normal',
     },
+    {
+      path: '../public/fonts/din-round-pro/900.otf',
+      weight: '900',
+      style: 'normal',
+    },
   ],
+  variable: '--font-din-round-pro',
 })
 
 const DuolingoLogo = ({ className }: { className?: string }) => (

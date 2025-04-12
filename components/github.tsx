@@ -96,7 +96,6 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
                     )
                   }
 
-                  // eslint-disable-next-line jsx-a11y/control-has-associated-label
                   return <Month key={day.date} />
                 })}
               </tr>
