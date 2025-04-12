@@ -47,15 +47,6 @@ module.exports = [
       'react/require-default-props': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
 
-      'import/no-unused-modules': [
-        'error',
-        {
-          missingExports: true,
-          unusedExports: true,
-          src: ['src/**'],
-        },
-      ],
-
       'no-shadow': 'off',
       '@typescript-eslint/no-shadow': 'error',
 
