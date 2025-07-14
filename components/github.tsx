@@ -1,10 +1,8 @@
 import Link from '@/components/link'
 import { GitContributionLevel, GitHubContributions } from '@/types/models'
 import { cn } from '@/utils/tailwind'
-import times from 'lodash/times'
-import forEach from 'lodash/forEach'
-import map from 'lodash/map'
-import { useMemo } from 'react'
+import { times, forEach, map } from '@/utils/lodash-replacements'
+import { useMemo, memo } from 'react'
 import { format, parseISO } from 'date-fns'
 
 const GitHubLogo = ({ className }: { className?: string }) => (
@@ -60,7 +58,7 @@ const Day = ({
 
 type ContributionDay = GitHubContributions[0]['contributionDays'][0]
 
-const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
+const GitHub = memo(({ contributions }: { contributions: GitHubContributions }) => {
   const weeks = useMemo(() => {
     const daysByWeekday = times(7, () => [] as ContributionDay[])
 
@@ -138,6 +136,6 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
       </div>
     </Link>
   )
-}
+})
 
 export default GitHub

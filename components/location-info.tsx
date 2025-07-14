@@ -1,20 +1,15 @@
 'use client'
 
-import isNumber from 'lodash/isNumber'
-import filter from 'lodash/filter'
-import values from 'lodash/values'
+import { isNumber, filter, values, includes, compact, join } from '@/utils/lodash-replacements'
 import { useEffect, useMemo, useState } from 'react'
 import { Movement } from '@/types/models'
-import includes from 'lodash/includes'
-import compact from 'lodash/compact'
-import join from 'lodash/join'
 import {
   differenceInSeconds,
   formatDistanceToNowStrict,
   isValid,
 } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
-import { toZonedTime } from 'date-fns-tz'
+import { format } from 'date-fns'
 
 type Location = Pick<
   Movement,
@@ -61,12 +56,12 @@ const getLocalTime = (location: Location) => {
 
   if (timeZoneId) {
     const now = new Date()
-    const date = toZonedTime(now, timeZoneId)
 
-    if (isValid(date)) {
-      return date.toLocaleTimeString(undefined, {
+    if (isValid(now)) {
+      return now.toLocaleTimeString(undefined, {
         hour: 'numeric',
         minute: 'numeric',
+        timeZone: timeZoneId,
         timeZoneName: 'short',
       })
     }

@@ -1,16 +1,23 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 
 const Refresh = ({ every }: { every: number }) => {
   const { refresh } = useRouter()
 
+  const refreshHandler = useCallback(() => {
+    // Only refresh if page is visible to avoid unnecessary requests
+    if (document.visibilityState === 'visible') {
+      refresh()
+    }
+  }, [refresh])
+
   useEffect(() => {
-    const interval = setInterval(refresh, every * 1000)
+    const interval = setInterval(refreshHandler, every * 1000)
 
     return () => clearInterval(interval)
-  }, [every, refresh])
+  }, [every, refreshHandler])
 
   return null
 }

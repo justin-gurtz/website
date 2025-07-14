@@ -1,14 +1,10 @@
 import { DuolingoLearning } from '@/types/models'
 import Link from '@/components/link'
-import map from 'lodash/map'
+import { map, compact, isString, forEach, slice } from '@/utils/lodash-replacements'
 import localFont from 'next/font/local'
 import { cn } from '@/utils/tailwind'
 import { useMemo } from 'react'
-import compact from 'lodash/compact'
-import isString from 'lodash/isString'
-import forEach from 'lodash/forEach'
 import Image from 'next/image'
-import slice from 'lodash/slice'
 
 const dinRoundPro = localFont({
   src: [
