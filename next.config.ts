@@ -1,27 +1,56 @@
 import { withSentryConfig } from '@sentry/nextjs'
+import withBundleAnalyzer from '@next/bundle-analyzer'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  webpack: (config) => {
+  // Performance optimizations
+  poweredByHeader: false,
+  compress: true,
+  
+  // Image optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+  },
+  
+  webpack: (config, { isServer }) => {
+    // Raw loader for markdown files
     config.module.rules.push({
       test: /\.md$/,
       use: 'raw-loader',
     })
+    
+    // Optimize bundle size
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      }
+    }
+    
     return config
   },
-  experimental: {
-    turbo: {
-      rules: {
-        '*.md': {
-          loaders: ['raw-loader'],
-          as: '*.js',
-        },
+  
+  // Updated turbo config (experimental.turbo is deprecated)
+  turbopack: {
+    rules: {
+      '*.md': {
+        loaders: ['raw-loader'],
+        as: '*.js',
       },
     },
   },
 }
 
-export default withSentryConfig(nextConfig, {
+// Conditionally wrap with bundle analyzer
+const configWithAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(nextConfig)
+
+export default withSentryConfig(configWithAnalyzer, {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 

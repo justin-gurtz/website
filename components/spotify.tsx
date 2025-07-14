@@ -1,6 +1,6 @@
 import { NowPlaying } from '@/types/models'
 import Link from '@/components/link'
-import { IconMusic, IconPlayerPause } from '@tabler/icons-react'
+import { IconMusic, IconPlayerPause } from '@/components/icons'
 import { cn } from '@/utils/tailwind'
 import Soundbars from '@/components/soundbars'
 import { isAfter, subMinutes } from 'date-fns'

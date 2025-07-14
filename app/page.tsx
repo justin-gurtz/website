@@ -1,4 +1,4 @@
-import Strava from '@/components/strava'
+import LazyStrava from '@/components/lazy-strava'
 import { SUPABASE_SERVICE_ROLE_KEY } from '@/env/secret'
 import Spotify from '@/components/spotify'
 import Header from '@/components/header'
@@ -12,8 +12,8 @@ import {
 } from '@/types/models'
 import GitHub from '@/components/github'
 import Refresh from '@/components/refresh'
-import Duolingo from '@/components/duolingo'
-import map from 'lodash/map'
+import LazyDuolingo from '@/components/lazy-duolingo'
+import { map } from '@/utils/lodash-replacements'
 import { subYears } from 'date-fns'
 import Footer from '@/components/footer'
 
@@ -121,12 +121,12 @@ const Page = async () => {
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
             <div className="w-full">
-              <Strava activities={activities} />
+              <LazyStrava activities={activities} />
             </div>
             <div className="w-full flex flex-col gap-20 lg:gap-3">
               <div className="flex flex-col gap-3">
                 <GitHub contributions={contributions} />
-                <Duolingo learning={learning} />
+                <LazyDuolingo learning={learning} />
               </div>
               <div className="flex-1 flex items-end">
                 <Footer />
