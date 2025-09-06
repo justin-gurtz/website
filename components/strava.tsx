@@ -221,7 +221,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       const runPoint = turf.point([startLng, startLat])
       const radius = turf.distance(nycPoint, runPoint, { units: 'miles' })
 
-      return radius <= 10
+      return radius <= 15
     })
 
     const runsToShow = newYorkRuns.length === 0 ? runs : newYorkRuns
