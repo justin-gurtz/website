@@ -9,13 +9,11 @@ const nextConfig: NextConfig = {
     })
     return config
   },
-  experimental: {
-    turbo: {
-      rules: {
-        '*.md': {
-          loaders: ['raw-loader'],
-          as: '*.js',
-        },
+  turbopack: {
+    rules: {
+      '*.md': {
+        loaders: ['raw-loader'],
+        as: '*.js',
       },
     },
   },
