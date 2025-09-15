@@ -21,11 +21,13 @@ import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from '@/env/public'
 import isEqual from 'lodash/isEqual'
 import join from 'lodash/join'
 import slice from 'lodash/slice'
+import last from 'lodash/last'
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN
 
 const href = 'https://www.strava.com/athletes/gurtz'
 
+const maxZoom = 10.5
 const nycPoint = turf.point([-73.97, 40.725])
 
 const colorScale = map(
@@ -187,7 +189,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       attributionControl: false,
       logoPosition: 'bottom-left',
       center: nycPoint.geometry.coordinates as [number, number],
-      zoom: 10.5,
+      zoom: maxZoom,
       interactive: false,
       dragPan: false,
       dragRotate: false,
@@ -213,18 +215,24 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
 
     const bounds = new mapboxgl.LngLatBounds()
 
-    const newYorkRuns = filter(runs, (run) => {
-      if (!run.start_latlng || run.start_latlng.length !== 2) return false
+    let runsToShow = runs
+    const lastRun = last(runsToShow)
 
-      const [startLat, startLng] = run.start_latlng
+    if (lastRun) {
+      const [lastRunStartLat, lastRunStartLng] = lastRun.start_latlng
+      const lastRunPoint = turf.point([lastRunStartLng, lastRunStartLat])
 
-      const runPoint = turf.point([startLng, startLat])
-      const radius = turf.distance(nycPoint, runPoint, { units: 'miles' })
+      runsToShow = filter(runsToShow, (run) => {
+        if (!run.start_latlng || run.start_latlng.length !== 2) return false
 
-      return radius <= 15
-    })
+        const [startLat, startLng] = run.start_latlng
 
-    const runsToShow = newYorkRuns.length === 0 ? runs : newYorkRuns
+        const runPoint = turf.point([startLng, startLat])
+        const radius = turf.distance(lastRunPoint, runPoint, { units: 'miles' })
+
+        return radius <= 15
+      })
+    }
 
     const style = currentMap.getStyle()
 
@@ -252,7 +260,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       })
     }
 
-    forEach(runsToShow, (run, index) => {
+    forEach(runsToShow, (run, index, array) => {
       const sourceId = `run-source-${run.id}`
       const layerId = `run-layer-${run.id}`
 
@@ -275,7 +283,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
         },
       })
 
-      const runColor = getColorForRun(index, runsToShow.length)
+      const runColor = getColorForRun(index, array.length)
 
       currentMap.addLayer({
         id: layerId,
@@ -292,10 +300,13 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       })
     })
 
-    mapbox.current.fitBounds(bounds, {
-      padding: { top: 100, right: 50, bottom: 100, left: 50 },
-      animate: hasAddedRunsToMap,
-    })
+    if (!bounds.isEmpty()) {
+      mapbox.current.fitBounds(bounds, {
+        padding: { top: 100, right: 50, bottom: 100, left: 50 },
+        animate: hasAddedRunsToMap,
+        maxZoom,
+      })
+    }
 
     setHasAddedRunsToMap(true)
 
