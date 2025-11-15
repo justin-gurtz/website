@@ -40,3 +40,6 @@ next-env.d.ts
 # visual studio code
 .vscode/*
 
+# Supabase
+/supabase/.branches
+/supabase/.temp
