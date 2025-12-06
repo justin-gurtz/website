@@ -1,25 +1,25 @@
-'use client'
+"use client";
 
-import isNumber from 'lodash/isNumber'
-import filter from 'lodash/filter'
-import values from 'lodash/values'
-import { useEffect, useMemo, useState } from 'react'
-import { Movement } from '@/types/models'
-import includes from 'lodash/includes'
-import compact from 'lodash/compact'
-import join from 'lodash/join'
 import {
   differenceInSeconds,
   formatDistanceToNowStrict,
   isValid,
-} from 'date-fns'
-import { AnimatePresence, motion } from 'motion/react'
-import { toZonedTime } from 'date-fns-tz'
+} from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import compact from "lodash/compact";
+import filter from "lodash/filter";
+import includes from "lodash/includes";
+import isNumber from "lodash/isNumber";
+import join from "lodash/join";
+import values from "lodash/values";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useMemo, useState } from "react";
+import type { Movement } from "@/types/models";
 
 type Location = Pick<
   Movement,
-  'moved_at' | 'city' | 'region' | 'country' | 'time_zone_id'
->
+  "moved_at" | "city" | "region" | "country" | "time_zone_id"
+>;
 
 enum Mode {
   CurrentLocation,
@@ -27,88 +27,88 @@ enum Mode {
   LocalTime,
 }
 
-const modes = filter(values(Mode), isNumber)
+const modes = filter(values(Mode), isNumber);
 
 const getCurrentlyIn = (location: Location) => {
-  const { city, region, country } = location
+  const { city, region, country } = location;
 
   if (city || region || country) {
-    let array: Array<string | null | undefined> = []
+    let array: Array<string | null | undefined> = [];
 
     if (city) {
-      const prefersRegion = includes(['US', 'CA', 'AU'], country)
-      const suffix = prefersRegion ? region || country : country || region
+      const prefersRegion = includes(["US", "CA", "AU"], country);
+      const suffix = prefersRegion ? region || country : country || region;
 
-      array = [city, suffix]
+      array = [city, suffix];
     } else if (region) {
-      array = [region, country]
+      array = [region, country];
     } else {
-      array = [country]
+      array = [country];
     }
 
-    const compacted = compact(array)
+    const compacted = compact(array);
 
     if (compacted.length) {
-      return join(compacted, ', ')
+      return join(compacted, ", ");
     }
   }
 
-  return 'unknown'
-}
+  return "unknown";
+};
 
 const getLocalTime = (location: Location) => {
-  const { time_zone_id: timeZoneId } = location
+  const { time_zone_id: timeZoneId } = location;
 
   if (timeZoneId) {
-    const now = new Date()
-    const date = toZonedTime(now, timeZoneId)
+    const now = new Date();
+    const date = toZonedTime(now, timeZoneId);
 
     if (isValid(date)) {
       return date.toLocaleTimeString(undefined, {
-        hour: 'numeric',
-        minute: 'numeric',
-        timeZoneName: 'short',
-      })
+        hour: "numeric",
+        minute: "numeric",
+        timeZoneName: "short",
+      });
     }
   }
 
-  return 'unknown'
-}
+  return "unknown";
+};
 
 const getLastSeen = (location: Location) => {
-  const d = new Date(location.moved_at)
-  const seconds = differenceInSeconds(new Date(), d)
+  const d = new Date(location.moved_at);
+  const seconds = differenceInSeconds(new Date(), d);
 
-  if (seconds < 60) return 'Just now'
+  if (seconds < 60) return "Just now";
 
-  const distance = formatDistanceToNowStrict(d)
-  return `${distance} ago`
-}
+  const distance = formatDistanceToNowStrict(d);
+  return `${distance} ago`;
+};
 
 const LocationInfo = ({ location }: { location: Location }) => {
-  const [renderedFirstItem, setRenderedFirstItem] = useState(false)
-  const [mode, setMode] = useState(modes[0])
+  const [renderedFirstItem, setRenderedFirstItem] = useState(false);
+  const [mode, setMode] = useState(modes[0]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setMode((prev) => (prev + 1) % modes.length)
-    }, 3500)
+      setMode((prev) => (prev + 1) % modes.length);
+    }, 3500);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   const children = useMemo(() => {
     switch (mode) {
       case Mode.CurrentLocation:
-        return `Currently in: ${getCurrentlyIn(location)}`
+        return `Currently in: ${getCurrentlyIn(location)}`;
       case Mode.LocalTime:
-        return `Local time: ${getLocalTime(location)}`
+        return `Local time: ${getLocalTime(location)}`;
       case Mode.LastSeen:
-        return `Last seen: ${getLastSeen(location)}`
+        return `Last seen: ${getLastSeen(location)}`;
       default:
-        throw new Error(`Invalid elevator mode: ${mode}`)
+        throw new Error(`Invalid elevator mode: ${mode}`);
     }
-  }, [mode, location])
+  }, [mode, location]);
 
   return (
     <AnimatePresence mode="wait">
@@ -123,7 +123,7 @@ const LocationInfo = ({ location }: { location: Location }) => {
         {children}
       </motion.p>
     </AnimatePresence>
-  )
-}
+  );
+};
 
-export default LocationInfo
+export default LocationInfo;

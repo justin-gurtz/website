@@ -1,1 +1,1 @@
-declare module 'duo-wrapper'
+declare module "duo-wrapper";

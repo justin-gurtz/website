@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
+import { useEffect } from "react";
 // eslint-disable-next-line no-restricted-imports
-import readme from '../README.md'
+import readme from "../README.md";
 
 const ConsoleEasterEgg = () => {
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log(readme)
-  }, [])
+    console.log(readme);
+  }, []);
 
-  return null
-}
+  return null;
+};
 
-export default ConsoleEasterEgg
+export default ConsoleEasterEgg;

@@ -1,113 +1,113 @@
-import Strava from '@/components/strava'
-import { SUPABASE_SERVICE_ROLE_KEY } from '@/env/secret'
-import Spotify from '@/components/spotify'
-import Header from '@/components/header'
-import { NEXT_PUBLIC_SUPABASE_URL } from '@/env/public'
-import { Database } from '@/types/database'
-import { SupabaseClient, createClient } from '@supabase/supabase-js'
-import {
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { subYears } from "date-fns";
+import map from "lodash/map";
+import Duolingo from "@/components/duolingo";
+import Footer from "@/components/footer";
+import GitHub from "@/components/github";
+import Header from "@/components/header";
+import Refresh from "@/components/refresh";
+import Spotify from "@/components/spotify";
+import Strava from "@/components/strava";
+import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
+import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
+import type { Database } from "@/types/database";
+import type {
   DuolingoLearning,
   GitHubContributions,
   StravaActivity,
-} from '@/types/models'
-import GitHub from '@/components/github'
-import Refresh from '@/components/refresh'
-import Duolingo from '@/components/duolingo'
-import map from 'lodash/map'
-import { subYears } from 'date-fns'
-import Footer from '@/components/footer'
+} from "@/types/models";
 
-export const revalidate = 60
+export const revalidate = 60;
 
 const getLocation = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
-    .from('movements')
-    .select('moved_at,city,region,country,time_zone_id')
-    .order('moved_at', { ascending: false })
+    .from("movements")
+    .select("moved_at,city,region,country,time_zone_id")
+    .order("moved_at", { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return data
-}
+  return data;
+};
 
 const getNowPlaying = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
-    .from('now_playing')
-    .select('created_at,image,name,by')
-    .order('created_at', { ascending: false })
+    .from("now_playing")
+    .select("created_at,image,name,by")
+    .order("created_at", { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return data
-}
+  return data;
+};
 
 const getGitHub = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
-    .from('github')
-    .select('contributions')
-    .order('created_at', { ascending: false })
+    .from("github")
+    .select("contributions")
+    .order("created_at", { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return data.contributions as GitHubContributions
-}
+  return data.contributions as GitHubContributions;
+};
 
 const getDuolingo = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
-    .from('duolingo')
-    .select('streak,courses')
-    .order('created_at', { ascending: false })
+    .from("duolingo")
+    .select("streak,courses")
+    .order("created_at", { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return data as DuolingoLearning
-}
+  return data as DuolingoLearning;
+};
 
 const getStrava = async (supabase: SupabaseClient<Database>) => {
-  const oneYearAgo = subYears(new Date(), 1)
+  const oneYearAgo = subYears(new Date(), 1);
 
   // eslint-disable-next-line lodash/prefer-lodash-method
   const { data, error } = await supabase
-    .from('strava')
-    .select('payload')
-    .filter('type', 'eq', 'Run')
-    .filter('start_date', 'gte', oneYearAgo.toISOString())
-    .order('start_date', { ascending: true })
+    .from("strava")
+    .select("payload")
+    .filter("type", "eq", "Run")
+    .filter("start_date", "gte", oneYearAgo.toISOString())
+    .order("start_date", { ascending: true });
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 
-  return map(data, ({ payload }) => payload) as StravaActivity[]
-}
+  return map(data, ({ payload }) => payload) as StravaActivity[];
+};
 
 const Page = async () => {
   const supabase = await createClient<Database>(
     NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY
-  )
+    SUPABASE_SERVICE_ROLE_KEY,
+  );
 
-  const location = await getLocation(supabase)
-  const nowPlaying = await getNowPlaying(supabase)
-  const activities = await getStrava(supabase)
-  const contributions = await getGitHub(supabase)
-  const learning = await getDuolingo(supabase)
+  const location = await getLocation(supabase);
+  const nowPlaying = await getNowPlaying(supabase);
+  const activities = await getStrava(supabase);
+  const contributions = await getGitHub(supabase);
+  const learning = await getDuolingo(supabase);
 
   return (
     <>
@@ -137,7 +137,7 @@ const Page = async () => {
       </div>
       <Refresh every={15} />
     </>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

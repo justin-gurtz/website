@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { cn } from '@/utils/tailwind'
+import { cn } from "@/utils/tailwind";
 
-const minHeight = '3px'
-const sharedClassName = 'w-[1.5px] h-[3px] bg-white'
+const minHeight = "3px";
+const sharedClassName = "w-[1.5px] h-[3px] bg-white";
 
 const Soundbars = ({ className }: { className?: string }) => (
   <>
@@ -64,14 +64,14 @@ const Soundbars = ({ className }: { className?: string }) => (
         animation: soundbar-5 425ms infinite ease-in-out alternate 0.1s;
       }
     `}</style>
-    <div className={cn('flex items-center h-3.5 space-x-[1.5px]', className)}>
-      <div className={cn(sharedClassName, 'animate-soundbar-1')} />
-      <div className={cn(sharedClassName, 'animate-soundbar-2')} />
-      <div className={cn(sharedClassName, 'animate-soundbar-3')} />
-      <div className={cn(sharedClassName, 'animate-soundbar-4')} />
-      <div className={cn(sharedClassName, 'animate-soundbar-5')} />
+    <div className={cn("flex items-center h-3.5 space-x-[1.5px]", className)}>
+      <div className={cn(sharedClassName, "animate-soundbar-1")} />
+      <div className={cn(sharedClassName, "animate-soundbar-2")} />
+      <div className={cn(sharedClassName, "animate-soundbar-3")} />
+      <div className={cn(sharedClassName, "animate-soundbar-4")} />
+      <div className={cn(sharedClassName, "animate-soundbar-5")} />
     </div>
   </>
-)
+);
 
-export default Soundbars
+export default Soundbars;

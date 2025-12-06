@@ -1,14 +1,14 @@
-import { Movement } from '@/types/models'
-import Image from 'next/image'
-import LocationInfo from '@/components/location-info'
+import Image from "next/image";
+import LocationInfo from "@/components/location-info";
+import type { Movement } from "@/types/models";
 
 const Header = ({
   location,
 }: {
   location: Pick<
     Movement,
-    'moved_at' | 'city' | 'region' | 'country' | 'time_zone_id'
-  >
+    "moved_at" | "city" | "region" | "country" | "time_zone_id"
+  >;
 }) => {
   return (
     <div className="flex gap-4 items-center">
@@ -25,7 +25,7 @@ const Header = ({
         <LocationInfo location={location} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

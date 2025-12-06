@@ -1,9 +1,0 @@
-.next
-node_modules
-build
-dist
-coverage
-.vercel
-public
-package.json
-pnpm-lock.yaml 

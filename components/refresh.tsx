@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Refresh = ({ every }: { every: number }) => {
-  const { refresh } = useRouter()
+  const { refresh } = useRouter();
 
   useEffect(() => {
-    const interval = setInterval(refresh, every * 1000)
+    const interval = setInterval(refresh, every * 1000);
 
-    return () => clearInterval(interval)
-  }, [every, refresh])
+    return () => clearInterval(interval);
+  }, [every, refresh]);
 
-  return null
-}
+  return null;
+};
 
-export default Refresh
+export default Refresh;
