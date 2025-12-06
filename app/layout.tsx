@@ -10,6 +10,8 @@ const bodyClassName = `${GeistSans.variable} ${GeistMono.variable} antialiased f
 
 export const metadata: Metadata = {
   title: "Justin Gurtz",
+  description:
+    "Working at the intersection of design, product, and engineering",
 };
 
 const RootLayout = ({
