@@ -1,10 +1,11 @@
-import { IconMusic, IconPlayerPause } from "@tabler/icons-react";
+import { IconMusic } from "@tabler/icons-react";
 import { isAfter, subMinutes } from "date-fns";
 import Carousel from "@/components/carousel";
 import Link from "@/components/link";
 import Soundbars from "@/components/soundbars";
 import type { NowPlaying } from "@/types/models";
 import { cn } from "@/utils/tailwind";
+import Timestamp from "./timestamp";
 
 const getByLine = (by: NowPlaying["by"]) => {
   if (!by?.length) return undefined;
@@ -65,7 +66,10 @@ const Spotify = ({
             {isPlaying ? (
               <Soundbars className="mr-1" />
             ) : (
-              <IconPlayerPause size={20} stroke={0} className="fill-white" />
+              <Timestamp
+                date={nowPlaying.created_at}
+                className="text-white/80 text-xs"
+              />
             )}
           </div>
           <div className="flex flex-col gap-0.5 text-white">
