@@ -17,7 +17,10 @@ export async function POST() {
   const streak = await backOff(() => duo.getStreak());
   const courses = await backOff(() => duo.getCourses());
 
-  const newData = { streak, courses } as DuolingoLearning;
+  const newData = { streak, courses } as Pick<
+    DuolingoLearning,
+    "streak" | "courses"
+  >;
 
   const supabase = await createClient<Database>(
     NEXT_PUBLIC_SUPABASE_URL,

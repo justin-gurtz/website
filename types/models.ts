@@ -19,6 +19,7 @@ export type StravaActivity = {
 };
 
 export type DuolingoLearning = {
+  created_at: string;
   streak: number;
   courses: {
     learningLanguage: string;

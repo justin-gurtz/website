@@ -67,7 +67,7 @@ const getGitHub = async (supabase: SupabaseClient<Database>) => {
 const getDuolingo = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from("duolingo")
-    .select("streak,courses")
+    .select("created_at,streak,courses")
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
@@ -126,7 +126,7 @@ const Page = async () => {
             <div className="w-full flex flex-col gap-20 lg:gap-3">
               <div className="flex flex-col gap-3">
                 <GitHub contributions={contributions} />
-                <Duolingo learning={learning} />
+                <Duolingo learning={learning} location={location} />
               </div>
               <div className="flex-1 flex items-end">
                 <Footer />
