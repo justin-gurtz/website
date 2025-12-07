@@ -45,7 +45,7 @@ const Day = ({
       case "FIRST_QUARTILE":
         return "bg-green-300 dark:bg-green-800";
       default:
-        return "bg-black/5 dark:bg-white/5";
+        return "bg-black/5 dark:bg-white/10";
     }
   }, [contributionLevel]);
 
@@ -53,7 +53,7 @@ const Day = ({
     // eslint-disable-next-line jsx-a11y/control-has-associated-label
     <td
       className={cn(
-        "text-[6px] rounded-xs size-2.5 outline outline-1 outline-[rgba(0,0,0,0.05)] dark:outline-[rgba(0,0,0,0.1)] -outline-offset-1",
+        "text-[6px] rounded-xs size-2.5 outline outline-[rgba(0,0,0,0.05)] dark:outline-none -outline-offset-1",
         bg,
       )}
     />
@@ -79,62 +79,64 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
   let monthCursor = parseISO(weeks[0][0].date).getMonth();
 
   return (
-    <Link href="https://github.com/justin-gurtz" className="@container">
-      <div className="bg-white dark:bg-neutral-900 rounded-xl px-4 py-3.5 border border-neutral-300 dark:border-neutral-700 h-[180px] flex flex-col justify-between">
-        <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-4 -mt-0.5 @sm:mt-0.5">
-          <table className="table-fixed w-full border-separate border-spacing-[3px]">
-            <thead>
-              <tr>
-                {map(weeks[0], (day, i) => {
-                  const month = parseISO(day.date).getMonth();
+    <Link
+      href="https://github.com/justin-gurtz"
+      className="@container bg-white dark:bg-neutral-800 px-4 py-3.5 h-[180px] flex flex-col justify-between"
+      contentBrightness="light"
+    >
+      <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-4 -mt-0.5 @sm:mt-0.5">
+        <table className="table-fixed w-full border-separate border-spacing-[3px]">
+          <thead>
+            <tr>
+              {map(weeks[0], (day, i) => {
+                const month = parseISO(day.date).getMonth();
 
-                  if (month !== monthCursor && weeks[0][i + 1]) {
-                    monthCursor = month;
+                if (month !== monthCursor && weeks[0][i + 1]) {
+                  monthCursor = month;
 
-                    return (
-                      <Month key={day.date}>
-                        {format(parseISO(day.date), "MMM")}
-                      </Month>
-                    );
-                  }
+                  return (
+                    <Month key={day.date}>
+                      {format(parseISO(day.date), "MMM")}
+                    </Month>
+                  );
+                }
 
-                  return <Month key={day.date} />;
-                })}
+                return <Month key={day.date} />;
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {map(weeks, (week, i) => (
+              <tr key={i}>
+                {map(week, (day) => (
+                  <Day
+                    key={day.date}
+                    contributionLevel={day.contributionLevel}
+                  />
+                ))}
               </tr>
-            </thead>
-            <tbody>
-              {map(weeks, (week, i) => (
-                <tr key={i}>
-                  {map(week, (day) => (
-                    <Day
-                      key={day.date}
-                      contributionLevel={day.contributionLevel}
-                    />
-                  ))}
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex flex-row-reverse @sm:flex-row items-end @sm:items-center justify-between gap-x-1.5">
+        <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-[1px]" />
+        <div className="flex flex-col @sm:flex-row @sm:items-center @sm:justify-between gap-x-5 flex-1">
+          <p className="text-xs font-medium">Code contributions</p>
+          <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
+            <p>Less</p>
+            <table className="border-separate border-spacing-[3px]">
+              <tbody>
+                <tr>
+                  <Day contributionLevel="NONE" />
+                  <Day contributionLevel="FIRST_QUARTILE" />
+                  <Day contributionLevel="SECOND_QUARTILE" />
+                  <Day contributionLevel="THIRD_QUARTILE" />
+                  <Day contributionLevel="FOURTH_QUARTILE" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex flex-row-reverse @sm:flex-row items-end @sm:items-center justify-between gap-x-1.5">
-          <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-[1px]" />
-          <div className="flex flex-col @sm:flex-row @sm:items-center @sm:justify-between gap-x-5 flex-1">
-            <p className="text-xs font-medium">Code contributions</p>
-            <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
-              <p>Less</p>
-              <table className="border-separate border-spacing-[3px]">
-                <tbody>
-                  <tr>
-                    <Day contributionLevel="NONE" />
-                    <Day contributionLevel="FIRST_QUARTILE" />
-                    <Day contributionLevel="SECOND_QUARTILE" />
-                    <Day contributionLevel="THIRD_QUARTILE" />
-                    <Day contributionLevel="FOURTH_QUARTILE" />
-                  </tr>
-                </tbody>
-              </table>
-              <p>More</p>
-            </div>
+              </tbody>
+            </table>
+            <p>More</p>
           </div>
         </div>
       </div>

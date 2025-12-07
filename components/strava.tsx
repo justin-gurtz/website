@@ -340,28 +340,26 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   }, [hasAddedRunsToMap, mapClassName]);
 
   return (
-    <Link href={href}>
-      <div className="@container relative w-full pb-[125%] rounded-xl overflow-hidden">
-        <div className="absolute w-full h-full bg-[#1f1f1f]">
-          <div
-            ref={mapContainer}
-            className={cn(
-              "absolute w-full h-full [&_.mapboxgl-ctrl]:hidden!",
-              mapClassName,
-            )}
-          />
-        </div>
-        <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
-          <StravaLogo className="h-4" />
-          <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
-        </div>
-        <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
-          <Stat label="Distance" value={distance} />
-          <Rule />
-          <Stat label="Pace" value={pace} />
-          <Rule />
-          <Stat label="Time" value={time} />
-        </div>
+    <Link href={href} className="@container pb-[125%]" contentBrightness="dark">
+      <div className="absolute w-full h-full bg-[#1f1f1f]">
+        <div
+          ref={mapContainer}
+          className={cn(
+            "absolute w-full h-full [&_.mapboxgl-ctrl]:hidden!",
+            mapClassName,
+          )}
+        />
+      </div>
+      <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
+        <StravaLogo className="h-4" />
+        <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
+      </div>
+      <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
+        <Stat label="Distance" value={distance} />
+        <Rule />
+        <Stat label="Pace" value={pace} />
+        <Rule />
+        <Stat label="Time" value={time} />
       </div>
     </Link>
   );

@@ -194,62 +194,59 @@ const Duolingo = ({
   return (
     <Link
       href="https://www.duolingo.com/profile/JustinGurtz"
-      className="@container"
+      className={cn(
+        "@container relative bg-white dark:bg-neutral-800 p-5 @sm:p-8 h-[180px]",
+        dinRoundPro.className,
+      )}
+      contentBrightness="light"
     >
-      <div
-        className={cn(
-          "relative bg-white dark:bg-neutral-900 rounded-xl p-5 @sm:p-8 border border-neutral-300 dark:border-neutral-700 h-[180px]",
-          dinRoundPro.className,
-        )}
-      >
-        <div className="flex justify-between size-full">
-          <div
-            className={cn(
-              "flex flex-col gap-1 dark:gap-2 -mt-1 dark:-mt-0.5",
-              courses.length === 3 && "@sm:justify-between",
-            )}
-          >
-            {map(courses, (course) => (
-              <div
-                key={course.learningLanguage}
-                className="flex gap-1.5 dark:gap-2 items-center -ml-1 dark:-ml-0.5"
-              >
-                <DuolingoFlag
-                  offset={course.flagOffset}
-                  className="h-9 dark:h-8"
-                />
-                <div>
-                  <p className="text-sm font-bold">{course.title}</p>
-                  <p className="-mt-0.5 text-xs font-medium text-neutral-400 dark:text-neutral-500">
-                    {course.xp} XP
-                  </p>
-                </div>
+      <div className="flex justify-between size-full">
+        <div
+          className={cn(
+            "flex flex-col gap-1 dark:gap-2 -mt-1 dark:-mt-0.5",
+            courses.length === 3 && "@sm:justify-between",
+          )}
+        >
+          {map(courses, (course) => (
+            <div
+              key={course.learningLanguage}
+              className="flex gap-1.5 dark:gap-2 items-center -ml-1 dark:-ml-0.5"
+            >
+              <DuolingoFlag
+                offset={course.flagOffset}
+                className="h-9 dark:h-8"
+              />
+              <div>
+                <p className="text-sm font-bold">{course.title}</p>
+                <p className="-mt-0.5 text-xs font-medium text-neutral-400 dark:text-neutral-500">
+                  {course.xp} XP
+                </p>
               </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-end">
-            <DuolingoLogo className="h-4 -mt-[1px] fill-neutral-400" />
-            <div className="flex gap-1 items-center">
-              <StreakFlame lit={hasPracticedToday} />
-              <p
-                className={cn(
-                  "font-bold text-lg",
-                  hasPracticedToday ? "text-[#FF9600]" : "text-[#53676F]",
-                )}
-              >
-                {learning.streak}
-              </p>
             </div>
+          ))}
+        </div>
+        <div className="flex flex-col items-end">
+          <DuolingoLogo className="h-4 -mt-[1px] fill-neutral-400" />
+          <div className="flex gap-1 items-center">
+            <StreakFlame lit={hasPracticedToday} />
+            <p
+              className={cn(
+                "font-bold text-lg",
+                hasPracticedToday ? "text-[#FF9600]" : "text-[#53676F]",
+              )}
+            >
+              {learning.streak}
+            </p>
           </div>
         </div>
-        <Image
-          src="/images/duo-owl.webp"
-          alt="Duolingo Owl"
-          width={100}
-          height={100}
-          className="absolute bottom-0 right-[10%] @xs:right-[15%] @sm:right-[20%]"
-        />
       </div>
+      <Image
+        src="/images/duo-owl.webp"
+        alt="Duolingo Owl"
+        width={100}
+        height={100}
+        className="absolute bottom-0 right-[10%] @xs:right-[15%] @sm:right-[20%]"
+      />
     </Link>
   );
 };

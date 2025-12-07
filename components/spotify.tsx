@@ -41,43 +41,45 @@ const Spotify = ({
   const byLine = getByLine(nowPlaying.by);
 
   return (
-    <Link href="https://open.spotify.com/user/gurtz">
-      <div className="relative bg-neutral-300 dark:bg-neutral-600 size-[180px] rounded-xl overflow-hidden">
-        {nowPlaying.image ? (
-          <Carousel image={nowPlaying.image} />
-        ) : (
-          <IconMusic
-            size={48}
-            stroke={1.25}
-            className="stroke-neutral-900 dark:stroke-white opacity-15 absolute top-0 right-0 bottom-0 left-0 m-auto"
-          />
-        )}
-        <div
-          className={cn(
-            "absolute top-0 left-0 w-full h-full",
-            nowPlaying.image
-              ? "bg-[linear-gradient(15deg,rgba(0,0,0,0.85),rgba(0,0,0,0.25))]"
-              : "bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]",
-          )}
+    <Link
+      href="https://open.spotify.com/user/gurtz"
+      className="bg-neutral-300 dark:bg-neutral-600 size-[180px]"
+      contentBrightness="dark"
+    >
+      {nowPlaying.image ? (
+        <Carousel image={nowPlaying.image} />
+      ) : (
+        <IconMusic
+          size={48}
+          stroke={1.25}
+          className="stroke-neutral-900 dark:stroke-white opacity-15 absolute top-0 right-0 bottom-0 left-0 m-auto"
         />
-        <div className="absolute top-0 left-0 w-full h-full p-3 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <SpotifyLogo className="size-6" />
-            {isPlaying ? (
-              <Soundbars className="mr-1" />
-            ) : (
-              <Timestamp
-                date={nowPlaying.created_at}
-                className="text-white/80 text-xs"
-              />
-            )}
-          </div>
-          <div className="flex flex-col gap-0.5 text-white">
-            <p className="font-semibold text-sm leading-tight line-clamp-2 text-pretty">
-              {nowPlaying.name}
-            </p>
-            {byLine && <p className="text-xs line-clamp-1">{byLine}</p>}
-          </div>
+      )}
+      <div
+        className={cn(
+          "absolute top-0 left-0 w-full h-full",
+          nowPlaying.image
+            ? "bg-[linear-gradient(15deg,rgba(0,0,0,0.85),rgba(0,0,0,0.25))]"
+            : "bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]",
+        )}
+      />
+      <div className="absolute top-0 left-0 w-full h-full p-3 flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <SpotifyLogo className="size-6" />
+          {isPlaying ? (
+            <Soundbars className="mr-1" />
+          ) : (
+            <Timestamp
+              date={nowPlaying.created_at}
+              className="text-white/80 text-xs"
+            />
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5 text-white">
+          <p className="font-semibold text-sm leading-tight line-clamp-2 text-pretty">
+            {nowPlaying.name}
+          </p>
+          {byLine && <p className="text-xs line-clamp-1">{byLine}</p>}
         </div>
       </div>
     </Link>
