@@ -43,3 +43,8 @@ export type GitHubContributions = {
     contributionLevel: GitContributionLevel;
   }[];
 }[];
+
+export type GarminActivity = {
+  vO2MaxValue: number;
+  startTimeLocal: string;
+};

@@ -1,15 +1,25 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { subYears } from "date-fns";
+import { differenceInYears, subYears } from "date-fns";
+import { GarminConnect } from "garmin-connect";
+import { first } from "lodash";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
+import Garmin from "@/components/garmin";
 import GitHub from "@/components/github";
 import Header from "@/components/header";
 import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
 import Strava from "@/components/strava";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
-import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
+import {
+  BIRTH_DATE,
+  GARMIN_OAUTH_TOKEN_1,
+  GARMIN_OAUTH_TOKEN_2,
+  GARMIN_PASSWORD,
+  GARMIN_USERNAME,
+  SUPABASE_SERVICE_ROLE_KEY,
+} from "@/env/secret";
 import type { Database } from "@/types/database";
 import type {
   DuolingoLearning,
@@ -18,6 +28,8 @@ import type {
 } from "@/types/models";
 
 export const revalidate = 60;
+
+const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
 
 const getLocation = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
@@ -97,6 +109,22 @@ const getStrava = async (supabase: SupabaseClient<Database>) => {
   return map(data, ({ payload }) => payload) as StravaActivity[];
 };
 
+const getGarmin = async () => {
+  const GCClient = new GarminConnect({
+    username: GARMIN_USERNAME,
+    password: GARMIN_PASSWORD,
+  });
+
+  GCClient.loadToken(
+    JSON.parse(GARMIN_OAUTH_TOKEN_1),
+    JSON.parse(GARMIN_OAUTH_TOKEN_2),
+  );
+
+  const activities = await GCClient.getActivities();
+
+  return first(activities) || null;
+};
+
 const Page = async () => {
   const supabase = await createClient<Database>(
     NEXT_PUBLIC_SUPABASE_URL,
@@ -105,9 +133,11 @@ const Page = async () => {
 
   const location = await getLocation(supabase);
   const nowPlaying = await getNowPlaying(supabase);
-  const activities = await getStrava(supabase);
-  const contributions = await getGitHub(supabase);
-  const learning = await getDuolingo(supabase);
+
+  const strava = await getStrava(supabase);
+  const github = await getGitHub(supabase);
+  const duolingo = await getDuolingo(supabase);
+  const garmin = await getGarmin();
 
   return (
     <>
@@ -115,18 +145,19 @@ const Page = async () => {
         <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-4xl">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
             <Header location={location} />
-            <div className="self-end">
+            <div className="self-end flex flex-wrap gap-3 justify-end">
               <Spotify nowPlaying={nowPlaying} />
+              {garmin && <Garmin activity={garmin} age={age} />}
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
             <div className="w-full">
-              <Strava activities={activities} />
+              <Strava activities={strava} />
             </div>
             <div className="w-full flex flex-col gap-20 lg:gap-3">
               <div className="flex flex-col gap-3">
-                <GitHub contributions={contributions} />
-                <Duolingo learning={learning} location={location} />
+                <GitHub contributions={github} />
+                <Duolingo learning={duolingo} location={location} />
               </div>
               <div className="flex-1 flex items-end">
                 <Footer />
