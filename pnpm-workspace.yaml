@@ -1,4 +1,9 @@
 packages:
-  - "."
+  - .
 
-minimumReleaseAge: 4320 # 3 days in minutes (3 * 24 * 60 = 4320)
+ignoredBuiltDependencies:
+  - '@vercel/speed-insights'
+  - sharp
+
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude: ['next', 'react', 'react-dom', '@next/env']
