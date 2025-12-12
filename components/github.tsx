@@ -50,7 +50,6 @@ const Day = ({
   }, [contributionLevel]);
 
   return (
-    // eslint-disable-next-line jsx-a11y/control-has-associated-label
     <td
       className={cn(
         "text-[6px] rounded-xs size-2.5 outline outline-[rgba(0,0,0,0.05)] dark:outline-none -outline-offset-1",
@@ -67,7 +66,6 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
     const daysByWeekday = times(7, () => [] as ContributionDay[]);
 
     forEach(contributions, (week) => {
-      // eslint-disable-next-line lodash/prefer-map
       forEach(week.contributionDays, (day) => {
         daysByWeekday[day.weekday].push(day);
       });

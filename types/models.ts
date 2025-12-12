@@ -2,6 +2,7 @@ import type { Database } from "@/types/database";
 
 export type Movement = Database["public"]["Tables"]["movements"]["Row"];
 export type NowPlaying = Database["public"]["Tables"]["now_playing"]["Row"];
+export type GarminData = Database["public"]["Tables"]["garmin"]["Row"];
 
 export type StravaActivity = {
   id: number;
@@ -43,8 +44,3 @@ export type GitHubContributions = {
     contributionLevel: GitContributionLevel;
   }[];
 }[];
-
-export type GarminActivity = {
-  vO2MaxValue: number;
-  startTimeLocal: string;
-};

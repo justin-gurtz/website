@@ -8,7 +8,6 @@ import type { Database } from "@/types/database";
 import type { DuolingoLearning } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 
-// eslint-disable-next-line import/prefer-default-export
 export async function POST() {
   await validatePresharedKey();
 

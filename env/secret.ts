@@ -2,8 +2,6 @@ import { z } from "zod";
 
 const schema = z.object({
   BIRTH_DATE: z.string().min(1),
-  GARMIN_OAUTH_TOKEN_1: z.string().min(1),
-  GARMIN_OAUTH_TOKEN_2: z.string().min(1),
   GARMIN_PASSWORD: z.string().min(1),
   GARMIN_USERNAME: z.string().min(1),
   GITHUB_ACCESS_TOKEN: z.string().min(1),
@@ -18,8 +16,6 @@ const schema = z.object({
 
 export const {
   BIRTH_DATE,
-  GARMIN_OAUTH_TOKEN_1,
-  GARMIN_OAUTH_TOKEN_2,
   GARMIN_PASSWORD,
   GARMIN_USERNAME,
   GITHUB_ACCESS_TOKEN,

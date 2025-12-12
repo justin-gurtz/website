@@ -37,7 +37,6 @@ const query = `
     }
   `;
 
-// eslint-disable-next-line import/prefer-default-export
 export async function POST() {
   await validatePresharedKey();
 

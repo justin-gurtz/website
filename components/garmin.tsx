@@ -1,11 +1,11 @@
 "use client";
 
-import { format, parse } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { upperFirst } from "lodash";
 import { Roboto } from "next/font/google";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import useEasedNumber from "@/hooks/use-eased-number";
-import type { GarminActivity } from "@/types/models";
+import type { GarminData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import Link from "./link";
 
@@ -319,15 +319,14 @@ const Content = ({
   startTimeLocal,
   percentage,
   category,
-}: Pick<GarminActivity, "vO2MaxValue" | "startTimeLocal"> & {
+}: {
+  vO2MaxValue: number;
+  startTimeLocal: string;
   percentage: number | null;
   category?: Vo2MaxCategory;
 }) => {
   const date = useMemo(() => {
-    return format(
-      parse(startTimeLocal, "yyyy-MM-dd HH:mm:ss", new Date()),
-      "MMM d",
-    );
+    return format(parseISO(startTimeLocal), "MMM d");
   }, [startTimeLocal]);
 
   return (
@@ -372,10 +371,10 @@ const Content = ({
 };
 
 const AnimatedContent = ({
-  activity,
+  data,
   percentage: finalPercentage,
 }: {
-  activity: GarminActivity;
+  data: Pick<GarminData, "vo2_max_value" | "start_time_local">;
   percentage: number;
 }) => {
   const percentage = useEasedNumber(finalPercentage, { duration: 3000 });
@@ -387,12 +386,12 @@ const AnimatedContent = ({
 
   const vO2MaxValue = useMemo(() => {
     if (finalPercentage === 0) return 0;
-    return activity.vO2MaxValue * (percentage / finalPercentage);
-  }, [activity.vO2MaxValue, percentage, finalPercentage]);
+    return data.vo2_max_value * (percentage / finalPercentage);
+  }, [data.vo2_max_value, percentage, finalPercentage]);
 
   return (
     <Content
-      startTimeLocal={activity.startTimeLocal}
+      startTimeLocal={data.start_time_local}
       vO2MaxValue={vO2MaxValue}
       category={category}
       percentage={percentage}
@@ -401,29 +400,33 @@ const AnimatedContent = ({
 };
 
 const Garmin = ({
-  activity,
+  data,
   age,
 }: {
-  activity: GarminActivity;
+  data: Pick<GarminData, "vo2_max_value" | "start_time_local">;
   age: number;
 }) => {
   const percentage = useMemo(() => {
-    const finalCategory = getVo2MaxCategory(activity.vO2MaxValue, age, "male");
+    const finalCategory = getVo2MaxCategory(data.vo2_max_value, age, "male");
     if (!finalCategory) return null;
 
-    const dividend = activity.vO2MaxValue - finalCategory.min;
+    const dividend = data.vo2_max_value - finalCategory.min;
     const divisor = finalCategory.max - finalCategory.min;
 
     const quotient = (dividend / divisor) * 0.2;
     const adjustment = (finalCategory.index - 1) * 0.2;
 
     return quotient + adjustment;
-  }, [activity.vO2MaxValue, age]);
+  }, [data.vo2_max_value, age]);
 
   return percentage === null ? (
-    <Content {...activity} percentage={percentage} />
+    <Content
+      vO2MaxValue={data.vo2_max_value}
+      startTimeLocal={data.start_time_local}
+      percentage={percentage}
+    />
   ) : (
-    <AnimatedContent activity={activity} percentage={percentage} />
+    <AnimatedContent data={data} percentage={percentage} />
   );
 };
 
