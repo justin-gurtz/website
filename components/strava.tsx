@@ -12,7 +12,6 @@ import includes from "lodash/includes";
 import isEqual from "lodash/isEqual";
 import join from "lodash/join";
 import keys from "lodash/keys";
-import last from "lodash/last";
 import map from "lodash/map";
 import padStart from "lodash/padStart";
 import reduce from "lodash/reduce";
@@ -221,27 +220,6 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
 
     const bounds = new mapboxgl.LngLatBounds();
 
-    let runsToShow = runs;
-    const lastRun = last(runsToShow);
-
-    if (lastRun) {
-      const [lastRunStartLat, lastRunStartLng] = lastRun.start_latlng;
-      const lastRunPoint = turf.point([lastRunStartLng, lastRunStartLat]);
-
-      runsToShow = filter(runsToShow, (run) => {
-        if (!run.start_latlng || run.start_latlng.length !== 2) return false;
-
-        const [startLat, startLng] = run.start_latlng;
-
-        const runPoint = turf.point([startLng, startLat]);
-        const radius = turf.distance(lastRunPoint, runPoint, {
-          units: "miles",
-        });
-
-        return radius <= 15;
-      });
-    }
-
     const style = currentMap.getStyle();
 
     if (style) {
@@ -268,7 +246,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       });
     }
 
-    forEach(runsToShow, (run, index, array) => {
+    forEach(runs, (run, index, array) => {
       const sourceId = `run-source-${run.id}`;
       const layerId = `run-layer-${run.id}`;
 
