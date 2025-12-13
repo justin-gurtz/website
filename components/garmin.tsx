@@ -194,7 +194,7 @@ const outerRadius = 47;
 const normalWidth = 2.75;
 const activeWidth = 5;
 const gap = 2.5;
-const totalArc = 225;
+const totalArc = 235;
 const segmentArc = (totalArc - gap * 4) / 5;
 
 const getArcPath = (startAngle: number, endAngle: number, r: number) => {
@@ -218,7 +218,7 @@ const Notch = ({ percentage }: { percentage: number }) => {
 
   // Notch dimensions
   const notchWidth = 3;
-  const notchLength = 8;
+  const notchLength = 9;
   const notchOuterRadius = outerRadius + 1;
 
   // Calculate notch rectangle points (pointing toward center)
@@ -279,6 +279,41 @@ const Notch = ({ percentage }: { percentage: number }) => {
   );
 };
 
+const ColorBar = ({
+  bar,
+  index,
+  percentage,
+}: {
+  bar: { name: Vo2MaxCategory; color: string };
+  index: number;
+  percentage?: number;
+}) => {
+  const segStartAngle = -(totalArc / 2) + index * (segmentArc + gap);
+  const segEndAngle = segStartAngle + segmentArc;
+  const isActive =
+    percentage !== undefined &&
+    percentage >= index * 0.2 &&
+    percentage < (index + 1) * 0.2;
+  const targetWidth = isActive ? activeWidth : normalWidth;
+  const strokeWidth = useEasedNumber(targetWidth, {
+    duration: 300,
+    initialValue: targetWidth,
+  });
+  // Offset radius inward so outer edge aligns at outerRadius
+  // As strokeWidth animates, pathRadius adjusts to keep outer edge fixed
+  const pathRadius = outerRadius - strokeWidth / 2;
+
+  return (
+    <path
+      d={getArcPath(segStartAngle, segEndAngle, pathRadius)}
+      fill="none"
+      stroke={bar.color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="butt"
+    />
+  );
+};
+
 const ColorBars = ({ percentage }: { percentage?: number }) => {
   return (
     <svg
@@ -287,28 +322,9 @@ const ColorBars = ({ percentage }: { percentage?: number }) => {
       aria-label="VO2 Max. Category"
       role="img"
     >
-      {colorBars.map((bar, i) => {
-        const segStartAngle = -(totalArc / 2) + i * (segmentArc + gap);
-        const segEndAngle = segStartAngle + segmentArc;
-        const isActive =
-          percentage !== undefined &&
-          percentage >= i * 0.2 &&
-          percentage < (i + 1) * 0.2;
-        const strokeWidth = isActive ? activeWidth : normalWidth;
-        // Offset radius inward so outer edge aligns at outerRadius
-        const pathRadius = outerRadius - strokeWidth / 2;
-
-        return (
-          <path
-            key={bar.name}
-            d={getArcPath(segStartAngle, segEndAngle, pathRadius)}
-            fill="none"
-            stroke={bar.color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="butt"
-          />
-        );
-      })}
+      {colorBars.map((bar, i) => (
+        <ColorBar key={bar.name} bar={bar} index={i} percentage={percentage} />
+      ))}
       {percentage !== undefined && <Notch percentage={percentage} />}
     </svg>
   );
@@ -400,23 +416,40 @@ const AnimatedContent = ({
 };
 
 const Garmin = ({
-  data,
+  data: d,
   age,
 }: {
   data: Pick<GarminData, "vo2_max_value" | "start_time_local">;
   age: number;
 }) => {
+  const data = useMemo(() => {
+    // The float is rounded by the Garmin API, let's add a little more to
+    // account for that, to visually match the chart on my watch
+    const vo2MaxValue = d.vo2_max_value + 0.5;
+    return { ...d, vo2_max_value: vo2MaxValue };
+  }, [d]);
+
   const percentage = useMemo(() => {
     const finalCategory = getVo2MaxCategory(data.vo2_max_value, age, "male");
     if (!finalCategory) return null;
 
-    const dividend = data.vo2_max_value - finalCategory.min;
-    const divisor = finalCategory.max - finalCategory.min;
+    const { index, min, max } = finalCategory;
 
-    const quotient = (dividend / divisor) * 0.2;
-    const adjustment = (finalCategory.index - 1) * 0.2;
+    const completed = data.vo2_max_value - min;
+    const total = max - min;
 
-    return quotient + adjustment;
+    let preliminary = completed / total;
+
+    if (index === 5) {
+      preliminary = 1 - (1 - preliminary) ** 20;
+    } else if (index === 1) {
+      preliminary = preliminary ** 20;
+    }
+
+    const current = preliminary * 0.2;
+    const previous = (index - 1) * 0.2;
+
+    return previous + current;
   }, [data.vo2_max_value, age]);
 
   return percentage === null ? (
