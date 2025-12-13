@@ -24,4 +24,17 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
+
+  .rounded-squircle {
+    border-radius: 0.75rem;
+  }
+
+  /* biome-ignore lint/correctness/noUnknownProperty: corner-shape: squircle is experimental */
+  @supports (corner-shape: squircle) {
+    .rounded-squircle {
+      /* biome-ignore lint/correctness/noUnknownProperty: corner-shape: squircle is experimental */
+      corner-shape: squircle;
+      border-radius: 1.25rem;
+    }
+  }
 }
