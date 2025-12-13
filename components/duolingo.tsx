@@ -11,6 +11,7 @@ import { useId, useMemo } from "react";
 import Link from "@/components/link";
 import type { DuolingoLearning, Movement } from "@/types/models";
 import { cn } from "@/utils/tailwind";
+import DuolingoOwl from "./duolingo-owl";
 
 const dinRoundPro = localFont({
   src: [
@@ -229,7 +230,7 @@ const Duolingo = ({
             ))}
           </div>
           <div className="flex flex-col items-end">
-            <DuolingoLogo className="h-4 -mt-[1px] fill-[#58CC02]" />
+            <DuolingoLogo className="h-4 -mt-px fill-[#58CC02]" />
             <div className="flex gap-1 items-center">
               <StreakFlame lit={hasPracticedToday} />
               <p
@@ -245,13 +246,7 @@ const Duolingo = ({
             </div>
           </div>
         </div>
-        <Image
-          src="/images/duo-owl.webp"
-          alt="Duolingo Owl"
-          width={100}
-          height={100}
-          className="absolute bottom-0 right-[10%] @xs:right-[15%] @sm:right-[20%]"
-        />
+        <DuolingoOwl />
       </div>
     </Link>
   );
