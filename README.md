@@ -7,4 +7,4 @@
 ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
 
 Justin Gurtz  
-https://www.gurtz.me/
+https://justingurtz.com/
