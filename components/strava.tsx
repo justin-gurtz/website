@@ -137,7 +137,7 @@ const Stat = ({
 
 const Rule = () => (
   <div className="py-0.5 -mt-0.5">
-    <div className="w-[1px] h-full bg-white/25" />
+    <div className="w-px h-full bg-white/25" />
   </div>
 );
 
@@ -275,9 +275,11 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       const decoded = polyline.decode(run.map.summary_polyline);
       const coordinates = map(decoded, ([lat, lng]) => [lng, lat]);
 
-      forEach(coordinates, (coord) => {
-        bounds.extend(coord as [number, number]);
-      });
+      if (index === array.length - 1) {
+        forEach(coordinates, (coord) => {
+          bounds.extend(coord as [number, number]);
+        });
+      }
 
       currentMap.addSource(sourceId, {
         type: "geojson",
@@ -303,7 +305,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
         },
         paint: {
           "line-color": runColor,
-          "line-width": 2,
+          "line-width": 1.75,
         },
       });
     });
