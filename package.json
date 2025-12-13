@@ -36,6 +36,7 @@
     "raw-loader": "^4.0.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-fast-marquee": "^1.6.5",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.5"
   },

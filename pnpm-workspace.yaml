@@ -2,8 +2,15 @@ packages:
   - .
 
 ignoredBuiltDependencies:
+  - '@sentry/cli'
+  - '@tailwindcss/oxide'
   - '@vercel/speed-insights'
   - sharp
 
 minimumReleaseAge: 4320
-minimumReleaseAgeExclude: ['next', 'react', 'react-dom', '@next/env']
+
+minimumReleaseAgeExclude:
+  - next
+  - react
+  - react-dom
+  - '@next/env'

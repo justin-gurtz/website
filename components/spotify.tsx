@@ -2,6 +2,7 @@ import { IconMusic } from "@tabler/icons-react";
 import { isAfter, subMinutes } from "date-fns";
 import Carousel from "@/components/carousel";
 import Link from "@/components/link";
+import ScrollingText from "@/components/scrolling-text";
 import Soundbars from "@/components/soundbars";
 import type { NowPlaying } from "@/types/models";
 import { cn } from "@/utils/tailwind";
@@ -63,7 +64,7 @@ const Spotify = ({
             : "bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]",
         )}
       />
-      <div className="absolute top-0 left-0 w-full h-full p-3 flex flex-col justify-between">
+      <div className="absolute top-0 left-0 w-full h-full p-3.5 flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <SpotifyLogo className="size-6" />
           {isPlaying ? (
@@ -71,15 +72,19 @@ const Spotify = ({
           ) : (
             <Timestamp
               date={nowPlaying.created_at}
-              className="text-white/80 text-xs"
+              className="text-white text-xs"
             />
           )}
         </div>
         <div className="flex flex-col gap-0.5 text-white">
-          <p className="font-semibold text-sm leading-tight line-clamp-2 text-pretty">
+          <ScrollingText parentPadding={14} className="font-semibold text-sm">
             {nowPlaying.name}
-          </p>
-          {byLine && <p className="text-xs line-clamp-1">{byLine}</p>}
+          </ScrollingText>
+          {byLine && (
+            <ScrollingText parentPadding={14} className="text-xs mt-0.5">
+              {byLine}
+            </ScrollingText>
+          )}
         </div>
       </div>
     </Link>
