@@ -103,7 +103,7 @@ const getGarmin = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from("garmin")
     .select("vo2_max_value,start_time_local")
-    .order("created_at", { ascending: false })
+    .order("start_time_local", { ascending: false })
     .limit(1)
     .single();
 
