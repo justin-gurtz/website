@@ -49,10 +49,10 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
   return (
     <Link
       href="https://github.com/justin-gurtz"
-      className="@container bg-white dark:bg-neutral-800 px-4 py-3.5 h-[180px] flex flex-col justify-between"
+      className="@container bg-white dark:bg-neutral-800 px-5 py-4 h-[11.25rem] flex flex-col justify-between"
       contentBrightness="light"
     >
-      <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-4 -mt-0.5 @sm:mt-0.5">
+      <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-5 -mt-0.5 @sm:mt-0.5">
         <table className="table-fixed w-full border-separate border-spacing-[3px]">
           <thead>
             <tr>
