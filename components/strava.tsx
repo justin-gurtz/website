@@ -320,12 +320,16 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   }, [hasAddedRunsToMap, mapClassName]);
 
   return (
-    <Link href={href} className="@container pb-[125%]" contentBrightness="dark">
-      <div className="absolute w-full h-full bg-[#1f1f1f]">
+    <Link
+      href={href}
+      className="@container absolute size-full"
+      contentBrightness="dark"
+    >
+      <div className="absolute size-full bg-[#1f1f1f]">
         <div
           ref={mapContainer}
           className={cn(
-            "absolute w-full h-full [&_.mapboxgl-ctrl]:hidden!",
+            "absolute size-full [&_.mapboxgl-ctrl]:hidden!",
             mapClassName,
           )}
         />

@@ -6,7 +6,6 @@ import isString from "lodash/isString";
 import map from "lodash/map";
 import slice from "lodash/slice";
 import localFont from "next/font/local";
-import Image from "next/image";
 import { useId, useMemo } from "react";
 import Link from "@/components/link";
 import type { DuolingoLearning, Movement } from "@/types/models";
@@ -203,12 +202,12 @@ const Duolingo = ({
       )}
       contentBrightness="light"
     >
-      <div className="p-5 @sm:p-7 h-[180px]">
+      <div className="p-5 @xs:p-7 h-[180px]">
         <div className="flex justify-between size-full">
           <div
             className={cn(
               "flex flex-col gap-1 dark:gap-2 -mt-1 dark:-mt-0.5",
-              courses.length === 3 && "@sm:justify-between",
+              courses.length === 3 && "@xs:justify-between",
             )}
           >
             {map(courses, (course) => (

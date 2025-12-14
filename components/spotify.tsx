@@ -44,7 +44,7 @@ const Spotify = ({
   return (
     <Link
       href="https://open.spotify.com/user/gurtz"
-      className="bg-neutral-300 dark:bg-neutral-600 size-[180px]"
+      className="bg-neutral-300 dark:bg-neutral-600 size-[11.25rem]"
       contentBrightness="dark"
     >
       {nowPlaying.image ? (

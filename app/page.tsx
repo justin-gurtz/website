@@ -131,22 +131,28 @@ const Page = async () => {
   return (
     <>
       <div className="min-h-svh flex items-center justify-center p-5 sm:p-10">
-        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-4xl">
+        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-[59.25rem]">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
             <Header location={location} />
             <div className="self-end flex flex-wrap gap-3 justify-end">
               <Spotify nowPlaying={nowPlaying} />
-              {garmin && <Garmin data={garmin} age={age} />}
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
-            <div className="w-full">
-              <Strava activities={strava} />
+            <div className="w-full lg:max-w-[23.25rem]">
+              <div className="relative pb-[125%] lg:pb-[152%]">
+                <Strava activities={strava} />
+              </div>
             </div>
             <div className="w-full flex flex-col gap-20 lg:gap-3">
               <div className="flex flex-col gap-3">
                 <GitHub contributions={github} />
-                <Duolingo learning={duolingo} location={location} />
+                <div className="flex gap-3 flex-col-reverse lg:flex-row">
+                  <Garmin data={garmin} age={age} />
+                  <div className="flex-1">
+                    <Duolingo learning={duolingo} location={location} />
+                  </div>
+                </div>
               </div>
               <div className="flex-1 flex items-end">
                 <Footer />

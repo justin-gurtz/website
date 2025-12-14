@@ -348,7 +348,7 @@ const Content = ({
   return (
     <Link
       href="https://connect.garmin.com/modern/profile/466ed577-f620-4703-b584-4a0370fd1b03"
-      className="bg-black size-[180px]"
+      className="bg-black size-[11.25rem]"
       contentBrightness="dark"
     >
       <div className="absolute inset-2 m-1.5 rounded-full bg-gray-900 border border-gray-800">
