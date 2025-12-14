@@ -3,9 +3,9 @@ import forEach from "lodash/forEach";
 import map from "lodash/map";
 import times from "lodash/times";
 import { useMemo } from "react";
+import Day from "@/components/github-day";
 import Link from "@/components/link";
-import type { GitContributionLevel, GitHubContributions } from "@/types/models";
-import { cn } from "@/utils/tailwind";
+import type { GitHubContributions } from "@/types/models";
 
 const GitHubLogo = ({ className }: { className?: string }) => (
   <svg
@@ -28,36 +28,6 @@ const Month = ({ children }: { children?: string }) => (
     {children}
   </td>
 );
-
-const Day = ({
-  contributionLevel,
-}: {
-  contributionLevel: GitContributionLevel;
-}) => {
-  const bg = useMemo(() => {
-    switch (contributionLevel) {
-      case "FOURTH_QUARTILE":
-        return "bg-green-700 dark:bg-green-400";
-      case "THIRD_QUARTILE":
-        return "bg-green-600 dark:bg-green-600";
-      case "SECOND_QUARTILE":
-        return "bg-green-500 dark:bg-green-700";
-      case "FIRST_QUARTILE":
-        return "bg-green-300 dark:bg-green-800";
-      default:
-        return "bg-black/5 dark:bg-white/10";
-    }
-  }, [contributionLevel]);
-
-  return (
-    <td
-      className={cn(
-        "text-[6px] rounded-xs size-2.5 outline outline-[rgba(0,0,0,0.05)] dark:outline-none -outline-offset-1",
-        bg,
-      )}
-    />
-  );
-};
 
 type ContributionDay = GitHubContributions[0]["contributionDays"][0];
 
@@ -110,6 +80,7 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
                   <Day
                     key={day.date}
                     contributionLevel={day.contributionLevel}
+                    animated
                   />
                 ))}
               </tr>
@@ -118,7 +89,7 @@ const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
         </table>
       </div>
       <div className="flex flex-row-reverse @sm:flex-row items-end @sm:items-center justify-between gap-x-1.5">
-        <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-[1px]" />
+        <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-px" />
         <div className="flex flex-col @sm:flex-row @sm:items-center @sm:justify-between gap-x-5 flex-1">
           <p className="text-xs font-medium">Code contributions</p>
           <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
