@@ -152,6 +152,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      nytimes: {
+        Row: {
+          created_at: string;
+          id: number;
+          title: string;
+          url: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          title: string;
+          url: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          title?: string;
+          url?: string;
+        };
+        Relationships: [];
+      };
       strava: {
         Row: {
           created_at: string;
