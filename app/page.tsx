@@ -6,6 +6,7 @@ import Footer from "@/components/footer";
 import Garmin from "@/components/garmin";
 import GitHub from "@/components/github";
 import Header from "@/components/header";
+import NYTimes from "@/components/nytimes";
 import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
 import Strava from "@/components/strava";
@@ -114,6 +115,21 @@ const getGarmin = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
+const getNYTimes = async (supabase: SupabaseClient<Database>) => {
+  const { data, error } = await supabase
+    .from("nytimes")
+    .select("created_at,title,url")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 const Page = async () => {
   const supabase = await createClient<Database>(
     NEXT_PUBLIC_SUPABASE_URL,
@@ -127,6 +143,7 @@ const Page = async () => {
   const github = await getGitHub(supabase);
   const duolingo = await getDuolingo(supabase);
   const garmin = await getGarmin(supabase);
+  const nytimes = await getNYTimes(supabase);
 
   return (
     <>
@@ -136,6 +153,7 @@ const Page = async () => {
             <Header location={location} />
             <div className="self-end flex flex-wrap gap-3 justify-end">
               <Spotify nowPlaying={nowPlaying} />
+              <NYTimes data={nytimes} />
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
