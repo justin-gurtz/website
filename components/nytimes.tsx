@@ -47,7 +47,7 @@ const NYTimes = ({
         <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
       </div>
       <p className={cn("line-clamp-5 leading-tight", cheltenham.className)}>
-        {data.title} {data.title} {data.title}
+        {data.title}
       </p>
     </Link>
   );
