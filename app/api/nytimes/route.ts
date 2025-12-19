@@ -19,6 +19,7 @@ export async function POST(request: Request) {
   const { error } = await supabase.from("nytimes").insert({
     title: data.title as string,
     url: data.url as string,
+    image: data.image as string,
   });
 
   if (error) {

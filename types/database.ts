@@ -156,18 +156,21 @@ export type Database = {
         Row: {
           created_at: string;
           id: number;
+          image: string | null;
           title: string;
           url: string;
         };
         Insert: {
           created_at?: string;
           id?: number;
+          image?: string | null;
           title: string;
           url: string;
         };
         Update: {
           created_at?: string;
           id?: number;
+          image?: string | null;
           title?: string;
           url?: string;
         };
