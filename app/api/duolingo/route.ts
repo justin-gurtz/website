@@ -8,7 +8,7 @@ import type { Database } from "@/types/database";
 import type { DuolingoLearning } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 
-export async function POST() {
+export const POST = async () => {
   await validatePresharedKey();
 
   const duo = new Duo("JustinGurtz");
@@ -50,4 +50,4 @@ export async function POST() {
   return new Response(null, {
     status: 204,
   });
-}
+};

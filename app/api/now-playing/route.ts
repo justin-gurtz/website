@@ -112,7 +112,7 @@ const getBestImage = (images: Image[] | undefined) => {
   );
 };
 
-export async function POST() {
+export const POST = async () => {
   await validatePresharedKey();
 
   const tokenRes = await backOff(() =>
@@ -186,4 +186,4 @@ export async function POST() {
   return new Response(null, {
     status: 204,
   });
-}
+};

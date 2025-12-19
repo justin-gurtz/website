@@ -5,7 +5,7 @@ import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { Database } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
 
-export async function POST(request: Request) {
+export const POST = async (request: Request) => {
   await validatePresharedKey();
 
   const formData = await request.formData();
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
-}
+};
 
-export async function OPTIONS() {
+export const OPTIONS = async () => {
   return new NextResponse(null, {
     status: 204,
     headers: {
@@ -45,4 +45,4 @@ export async function OPTIONS() {
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
-}
+};

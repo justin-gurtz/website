@@ -12,7 +12,7 @@ import type { Database } from "@/types/database";
 import type { StravaActivity } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 
-export async function POST() {
+export const POST = async () => {
   await validatePresharedKey();
 
   const tokenRes = await backOff(() =>
@@ -68,4 +68,4 @@ export async function POST() {
   return new Response(null, {
     status: 204,
   });
-}
+};

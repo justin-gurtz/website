@@ -37,7 +37,7 @@ const query = `
     }
   `;
 
-export async function POST() {
+export const POST = async () => {
   await validatePresharedKey();
 
   const res = await backOff(() =>
@@ -80,4 +80,4 @@ export async function POST() {
   return new Response(null, {
     status: 204,
   });
-}
+};
