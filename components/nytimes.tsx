@@ -1,12 +1,17 @@
-import { Domine } from "next/font/google";
+import localFont from "next/font/local";
 import type { NYTimesData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import Link from "./link";
 
-const domine = Domine({
-  weight: ["700"],
-  subsets: ["latin"],
-  variable: "--font-domine",
+const cheltenham = localFont({
+  src: [
+    {
+      path: "../public/fonts/cheltenham/700.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-cheltenham",
 });
 
 const NYTimesLogo = ({ className }: { className?: string }) => (
@@ -41,7 +46,7 @@ const NYTimes = ({
         </p>
         <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
       </div>
-      <p className={cn("line-clamp-5 leading-tight", domine.className)}>
+      <p className={cn("line-clamp-5 leading-tight", cheltenham.className)}>
         {data.title}
       </p>
     </Link>
