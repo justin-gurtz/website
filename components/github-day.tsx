@@ -13,8 +13,7 @@ const Day = ({
 }) => {
   const [isAnimated, setIsAnimated] = useState(!animated);
 
-  const defaultBg = "bg-black/5 dark:bg-white/10";
-  const { finalBg, delay } = useMemo(() => {
+  const animationConfig = useMemo(() => {
     switch (contributionLevel) {
       case "FOURTH_QUARTILE":
         return { finalBg: "bg-green-700 dark:bg-green-400", delay: 0 };
@@ -25,30 +24,30 @@ const Day = ({
       case "FIRST_QUARTILE":
         return { finalBg: "bg-green-300 dark:bg-green-800", delay: 750 };
       default:
-        return { finalBg: defaultBg, delay: 0 };
+        return null;
     }
   }, [contributionLevel]);
 
   useEffect(() => {
-    if (!animated) return;
+    if (!animated || !animationConfig) return;
 
-    const finalDelay = (delay + 250) * Math.random();
+    const finalDelay = (animationConfig.delay + 250) * Math.random();
 
     const timer = setTimeout(() => {
       setIsAnimated(true);
     }, finalDelay);
 
     return () => clearTimeout(timer);
-  }, [delay, animated]);
+  }, [animationConfig, animated]);
 
   return (
     <td className="relative size-2.5 rounded-xs overflow-hidden">
-      <div className={cn("absolute inset-0 rounded-xs", defaultBg)} />
-      {finalBg !== defaultBg && (
+      <div className="absolute inset-0 rounded-xs bg-black/5 dark:bg-white/5" />
+      {animationConfig && (
         <div
           className={cn(
             "absolute inset-0 rounded-xs transition-opacity duration-1500",
-            finalBg,
+            animationConfig.finalBg,
             isAnimated ? "opacity-100" : "opacity-0",
           )}
         />
