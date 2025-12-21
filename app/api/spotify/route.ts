@@ -169,8 +169,7 @@ export const POST = async () => {
     const sanitized = sanitize(currentlyPlaying);
     const image = getBestImage(sanitized.images);
 
-    const { error } = await supabase.from("now_playing").insert({
-      source: "spotify",
+    const { error } = await supabase.from("spotify").insert({
       media_type: sanitized.mediaType,
       image: image?.url,
       name: item.name,

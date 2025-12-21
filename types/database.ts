@@ -143,39 +143,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      now_playing: {
-        Row: {
-          by: string[];
-          created_at: string;
-          id: number;
-          image: string | null;
-          media_type: string;
-          name: string;
-          payload: Json;
-          source: string;
-        };
-        Insert: {
-          by: string[];
-          created_at?: string;
-          id?: number;
-          image?: string | null;
-          media_type?: string;
-          name: string;
-          payload: Json;
-          source?: string;
-        };
-        Update: {
-          by?: string[];
-          created_at?: string;
-          id?: number;
-          image?: string | null;
-          media_type?: string;
-          name?: string;
-          payload?: Json;
-          source?: string;
-        };
-        Relationships: [];
-      };
       nytimes: {
         Row: {
           created_at: string;
@@ -197,6 +164,36 @@ export type Database = {
           image?: string | null;
           title?: string;
           url?: string;
+        };
+        Relationships: [];
+      };
+      spotify: {
+        Row: {
+          by: string[];
+          created_at: string;
+          id: number;
+          image: string | null;
+          media_type: string;
+          name: string;
+          payload: Json;
+        };
+        Insert: {
+          by: string[];
+          created_at?: string;
+          id?: number;
+          image?: string | null;
+          media_type?: string;
+          name: string;
+          payload: Json;
+        };
+        Update: {
+          by?: string[];
+          created_at?: string;
+          id?: number;
+          image?: string | null;
+          media_type?: string;
+          name?: string;
+          payload?: Json;
         };
         Relationships: [];
       };

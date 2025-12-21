@@ -4,11 +4,11 @@ import Carousel from "@/components/carousel";
 import Link from "@/components/link";
 import ScrollingText from "@/components/scrolling-text";
 import Soundbars from "@/components/soundbars";
-import type { NowPlaying } from "@/types/models";
+import type { SpotifyData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import Timestamp from "./timestamp";
 
-const getByLine = (by: NowPlaying["by"]) => {
+const getByLine = (by: SpotifyData["by"]) => {
   if (!by?.length) return undefined;
 
   if (by.length === 1) return by[0];
@@ -34,12 +34,12 @@ const SpotifyLogo = ({ className }: { className?: string }) => (
 );
 
 const Spotify = ({
-  nowPlaying,
+  data,
 }: {
-  nowPlaying: Pick<NowPlaying, "created_at" | "image" | "name" | "by">;
+  data: Pick<SpotifyData, "created_at" | "image" | "name" | "by">;
 }) => {
-  const isPlaying = isAfter(nowPlaying.created_at, subMinutes(new Date(), 2));
-  const byLine = getByLine(nowPlaying.by);
+  const isPlaying = isAfter(data.created_at, subMinutes(new Date(), 2));
+  const byLine = getByLine(data.by);
 
   return (
     <Link
@@ -47,8 +47,8 @@ const Spotify = ({
       className="bg-neutral-300 dark:bg-neutral-600 size-[11.25rem]"
       contentBrightness="dark"
     >
-      {nowPlaying.image ? (
-        <Carousel image={nowPlaying.image} />
+      {data.image ? (
+        <Carousel image={data.image} />
       ) : (
         <IconMusic
           size={48}
@@ -59,7 +59,7 @@ const Spotify = ({
       <div
         className={cn(
           "absolute top-0 left-0 w-full h-full",
-          nowPlaying.image
+          data.image
             ? "bg-[linear-gradient(15deg,rgba(0,0,0,0.85),rgba(0,0,0,0.25))]"
             : "bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]",
         )}
@@ -70,15 +70,12 @@ const Spotify = ({
           {isPlaying ? (
             <Soundbars className="mr-1" />
           ) : (
-            <Timestamp
-              date={nowPlaying.created_at}
-              className="text-white text-xs"
-            />
+            <Timestamp date={data.created_at} className="text-white text-xs" />
           )}
         </div>
         <div className="flex flex-col gap-0.5 text-white">
           <ScrollingText parentPadding={14} className="font-semibold text-sm">
-            {nowPlaying.name}
+            {data.name}
           </ScrollingText>
           {byLine && (
             <ScrollingText parentPadding={14} className="text-xs mt-0.5">

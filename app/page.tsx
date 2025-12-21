@@ -38,9 +38,9 @@ const getLocation = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getNowPlaying = async (supabase: SupabaseClient<Database>) => {
+const getSpotify = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
-    .from("now_playing")
+    .from("spotify")
     .select("created_at,image,name,by")
     .order("created_at", { ascending: false })
     .limit(1)
@@ -137,8 +137,7 @@ const Page = async () => {
   );
 
   const location = await getLocation(supabase);
-  const nowPlaying = await getNowPlaying(supabase);
-
+  const spotify = await getSpotify(supabase);
   const strava = await getStrava(supabase);
   const github = await getGitHub(supabase);
   const duolingo = await getDuolingo(supabase);
@@ -152,7 +151,7 @@ const Page = async () => {
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
             <Header location={location} />
             <div className="self-end flex flex-wrap gap-3 justify-end">
-              <Spotify nowPlaying={nowPlaying} />
+              <Spotify data={spotify} />
               <NYTimes data={nytimes} />
             </div>
           </div>
