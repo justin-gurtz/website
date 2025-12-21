@@ -13,7 +13,7 @@ import type { StravaActivity } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 
 export const POST = async () => {
-  await validatePresharedKey();
+  await validatePresharedKey("cron");
 
   const tokenRes = await backOff(() =>
     fetch("https://www.strava.com/oauth/token", {

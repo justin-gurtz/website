@@ -38,7 +38,7 @@ const query = `
   `;
 
 export const POST = async () => {
-  await validatePresharedKey();
+  await validatePresharedKey("cron");
 
   const res = await backOff(() =>
     request<GitHubData>("https://api.github.com/graphql", query, undefined, {

@@ -6,7 +6,7 @@ import type { Database } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
 
 export const POST = async (request: Request) => {
-  await validatePresharedKey();
+  await validatePresharedKey("nytimes");
 
   const formData = await request.formData();
   const data = Object.fromEntries(formData);

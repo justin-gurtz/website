@@ -113,7 +113,7 @@ const getBestImage = (images: Image[] | undefined) => {
 };
 
 export const POST = async () => {
-  await validatePresharedKey();
+  await validatePresharedKey("cron");
 
   const tokenRes = await backOff(() =>
     fetch("https://accounts.spotify.com/api/token", {

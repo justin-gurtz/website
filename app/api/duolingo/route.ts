@@ -9,7 +9,7 @@ import type { DuolingoLearning } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 
 export const POST = async () => {
-  await validatePresharedKey();
+  await validatePresharedKey("cron");
 
   const duo = new Duo("JustinGurtz");
 

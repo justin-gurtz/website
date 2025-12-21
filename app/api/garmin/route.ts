@@ -119,7 +119,7 @@ const getStoredTokens = async (supabase: SupabaseClient<Database>) => {
 };
 
 export const POST = async () => {
-  await validatePresharedKey();
+  await validatePresharedKey("cron");
 
   const supabase = createClient<Database>(
     NEXT_PUBLIC_SUPABASE_URL,
