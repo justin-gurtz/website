@@ -1,9 +1,13 @@
 "use client";
 
-import { differenceInSeconds, formatDistanceToNowStrict } from "date-fns";
+import {
+  differenceInSeconds,
+  format,
+  formatDistanceToNowStrict,
+} from "date-fns";
 import { useEffect, useState } from "react";
 
-const getTimestamp = (date: string | Date) => {
+const getTimestamp = (date: string | Date, ago: boolean) => {
   const d = new Date(date);
   const seconds = differenceInSeconds(new Date(), d);
 
@@ -15,28 +19,38 @@ const getTimestamp = (date: string | Date) => {
     const parts = distance.split(" ");
 
     value = parts[0];
-    unit = parts[1].slice(0, 1);
+    const fullUnit = parts[1];
+
+    // If 1 month or greater, show the date instead
+    if (fullUnit.startsWith("month") || fullUnit.startsWith("year")) {
+      return format(d, "MMM d");
+    }
+
+    unit = fullUnit.slice(0, 1);
   }
 
-  return `${value}${unit} ago`;
+  const suffix = ago ? " ago" : "";
+  return `${value}${unit}${suffix}`;
 };
 
 const Timestamp = ({
-  date,
+  ago = false,
   className,
+  date,
 }: {
-  date: string | Date;
+  ago?: boolean;
   className?: string;
+  date: string | Date;
 }) => {
-  const [timestamp, setTimestamp] = useState(getTimestamp(date));
+  const [timestamp, setTimestamp] = useState(getTimestamp(date, ago));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimestamp(getTimestamp(date));
+      setTimestamp(getTimestamp(date, ago));
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [date]);
+  }, [date, ago]);
 
   return <p className={className}>{timestamp}</p>;
 };
