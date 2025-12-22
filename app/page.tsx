@@ -146,7 +146,8 @@ const getInstagram = async (supabase: SupabaseClient<Database>) => {
   const { data: posts, error: postsError } = await supabase
     .from("instagram")
     .select("id,images,caption,posted_at")
-    .order("posted_at", { ascending: false })
+    .not("images", "eq", "{}")
+    .order("posted_at", { ascending: false, nullsFirst: false })
     .limit(10);
 
   if (postsError) {
