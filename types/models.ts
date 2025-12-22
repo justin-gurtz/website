@@ -4,6 +4,9 @@ export type Movement = Database["public"]["Tables"]["movements"]["Row"];
 export type SpotifyData = Database["public"]["Tables"]["spotify"]["Row"];
 export type GarminData = Database["public"]["Tables"]["garmin"]["Row"];
 export type NYTimesData = Database["public"]["Tables"]["nytimes"]["Row"];
+export type InstagramPost = Database["public"]["Tables"]["instagram"]["Row"];
+export type InstagramFollows =
+  Database["public"]["Tables"]["instagram_follows"]["Row"];
 
 export type StravaActivity = {
   id: number;

@@ -101,6 +101,63 @@ export type Database = {
         };
         Relationships: [];
       };
+      instagram: {
+        Row: {
+          caption: string | null;
+          comment_count: number | null;
+          created_at: string;
+          id: string;
+          images: string[];
+          like_count: number | null;
+          media_type: string | null;
+          posted_at: string | null;
+          url: string | null;
+        };
+        Insert: {
+          caption?: string | null;
+          comment_count?: number | null;
+          created_at?: string;
+          id: string;
+          images: string[];
+          like_count?: number | null;
+          media_type?: string | null;
+          posted_at?: string | null;
+          url?: string | null;
+        };
+        Update: {
+          caption?: string | null;
+          comment_count?: number | null;
+          created_at?: string;
+          id?: string;
+          images?: string[];
+          like_count?: number | null;
+          media_type?: string | null;
+          posted_at?: string | null;
+          url?: string | null;
+        };
+        Relationships: [];
+      };
+      instagram_follows: {
+        Row: {
+          created_at: string;
+          follower_count: number;
+          following_count: number;
+          id: number;
+        };
+        Insert: {
+          created_at?: string;
+          follower_count: number;
+          following_count: number;
+          id?: number;
+        };
+        Update: {
+          created_at?: string;
+          follower_count?: number;
+          following_count?: number;
+          id?: number;
+        };
+        Relationships: [];
+      };
       movements: {
         Row: {
           city: string | null;

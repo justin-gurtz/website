@@ -1,0 +1,144 @@
+import { createClient } from "@supabase/supabase-js";
+import {
+  Client,
+  GetMediaChildrenRequest,
+  GetMediaInfoRequest,
+  type MediaData,
+  PageOption,
+  PublicMediaField,
+} from "instagram-graph-api";
+import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
+import {
+  INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+  INSTAGRAM_PAGE_ID,
+  SUPABASE_SERVICE_ROLE_KEY,
+} from "@/env/secret";
+import type { Database } from "@/types/database";
+import { validatePresharedKey } from "@/utils/server";
+
+export const POST = async () => {
+  await validatePresharedKey("cron");
+
+  const client = new Client(
+    INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+    INSTAGRAM_PAGE_ID,
+  );
+
+  const pageInfoRequest = client.newGetPageInfoRequest();
+  const pageMediaRequest = client.newGetPageMediaRequest(
+    PublicMediaField.ID,
+    PublicMediaField.CAPTION,
+    PublicMediaField.MEDIA_URL,
+    PublicMediaField.MEDIA_TYPE,
+    PublicMediaField.TIMESTAMP,
+  );
+
+  const pageInfo = await pageInfoRequest.execute();
+
+  // Recursively fetch all pages of media
+  const allMedia: MediaData[] = [];
+
+  const fetchAllMedia = async (
+    request: ReturnType<typeof client.newGetPageMediaRequest>,
+  ) => {
+    const response = await request.execute();
+    allMedia.push(...response.getData());
+
+    try {
+      const nextPage = response.getPaging()?.getAfter();
+      if (nextPage) {
+        await fetchAllMedia(
+          request.withPaging({ option: PageOption.AFTER, value: nextPage }),
+        );
+      }
+    } catch {
+      // No more pages available
+    }
+  };
+
+  await fetchAllMedia(pageMediaRequest);
+
+  // Fetch images for each post (including carousel children)
+  const posts = await Promise.all(
+    allMedia.map(async (post) => {
+      let images: string[] = [];
+
+      if (post.media_type === "CAROUSEL_ALBUM") {
+        try {
+          const childrenRequest = new GetMediaChildrenRequest(
+            INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+            post.id,
+          );
+          const childrenResponse = await childrenRequest.execute();
+          const children = childrenResponse.getData();
+
+          const childMediaUrls = await Promise.all(
+            children.map(async (child) => {
+              const mediaRequest = new GetMediaInfoRequest(
+                INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+                child.id,
+                PublicMediaField.MEDIA_URL,
+              );
+              const mediaResponse = await mediaRequest.execute();
+              return mediaResponse.getMediaUrl();
+            }),
+          );
+          images = childMediaUrls.filter((url): url is string => !!url);
+        } catch {
+          // Fallback below will handle this
+        }
+
+        // Fallback to cover image if children fetch failed
+        if (images.length === 0 && post.media_url) {
+          images = [post.media_url];
+        }
+      } else if (post.media_url) {
+        images = [post.media_url];
+      }
+
+      return { ...post, images };
+    }),
+  );
+
+  const supabase = createClient<Database>(
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+  );
+
+  const followerCount = pageInfo.getFollowers();
+  const followingCount = pageInfo.getFollows();
+
+  const { error: followsError } = await supabase
+    .from("instagram_follows")
+    .upsert({
+      follower_count: followerCount ?? 0,
+      following_count: followingCount ?? 0,
+    });
+
+  if (followsError) {
+    throw new Error(followsError.message);
+  }
+
+  const postsData = posts.map((post) => ({
+    id: post.id,
+    posted_at: post.timestamp,
+    media_type: post.media_type,
+    caption: post.caption,
+    images: post.images,
+    like_count: post.like_count,
+    comment_count: post.comments_count,
+    url: post.permalink,
+  }));
+
+  const { error: postsError } = await supabase
+    .from("instagram")
+    .upsert(postsData);
+
+  if (postsError) {
+    throw new Error(postsError.message);
+  }
+
+  return new Response(null, {
+    status: 204,
+  });
+};

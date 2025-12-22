@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { InstagramFollows, InstagramPost } from "@/types/models";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
@@ -19,16 +20,8 @@ const InstagramLogo = ({ className }: { className?: string }) => {
   );
 };
 
-type InstagramPost = {
-  id: string;
-  images: string[];
-  caption?: string;
-  timestamp?: string;
-};
-
-type InstagramData = {
-  followers: number;
-  posts: InstagramPost[];
+type InstagramData = Pick<InstagramFollows, "follower_count"> & {
+  posts: Pick<InstagramPost, "id" | "images" | "caption" | "posted_at">[];
 };
 
 const Instagram = ({ data }: { data: InstagramData }) => {
@@ -37,11 +30,11 @@ const Instagram = ({ data }: { data: InstagramData }) => {
   }, [data.posts]);
 
   const formattedFollowers = useMemo(() => {
-    const f = data.followers;
+    const f = data.follower_count;
     if (f >= 1_000_000) return `${(f / 1_000_000).toFixed(1)}M`;
     if (f >= 1_000) return `${(f / 1_000).toFixed(1)}k`;
     return f.toString();
-  }, [data.followers]);
+  }, [data.follower_count]);
 
   return (
     <Link
@@ -52,14 +45,14 @@ const Instagram = ({ data }: { data: InstagramData }) => {
       {/** biome-ignore lint/performance/noImgElement: dynamic image */}
       <img
         src={post.images[0]}
-        alt={post.caption}
+        alt={post.caption || "Instagram post"}
         className="size-full object-cover"
       />
       <div className="absolute inset-0 flex flex-col justify-between">
         <div className="text-xs text-white px-3.5 pt-4.5 pb-2.5 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0 flex items-center gap-1.5">
           <p className="font-semibold">gurtz</p>
-          {post.timestamp && (
-            <Timestamp className="opacity-75" date={post.timestamp} />
+          {post.posted_at && (
+            <Timestamp className="opacity-75" date={post.posted_at} />
           )}
         </div>
         <div className="p-3 bg-gradient-to-t from-black/40 dark:from-black/60 to-black/0 flex items-center gap-1.5">

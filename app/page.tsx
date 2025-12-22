@@ -1,13 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { differenceInYears, subYears } from "date-fns";
-import {
-  Client,
-  GetMediaChildrenRequest,
-  GetMediaInfoRequest,
-  type MediaData,
-  PageOption,
-  PublicMediaField,
-} from "instagram-graph-api";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
@@ -20,12 +12,7 @@ import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
 import Strava from "@/components/strava";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
-import {
-  BIRTH_DATE,
-  INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
-  INSTAGRAM_PAGE_ID,
-  SUPABASE_SERVICE_ROLE_KEY,
-} from "@/env/secret";
+import { BIRTH_DATE, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { Database } from "@/types/database";
 import type {
   DuolingoLearning,
@@ -144,92 +131,29 @@ const getNYTimes = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getInstagram = async () => {
-  const client = new Client(
-    INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
-    INSTAGRAM_PAGE_ID,
-  );
+const getInstagram = async (supabase: SupabaseClient<Database>) => {
+  const { data: follows, error: followsError } = await supabase
+    .from("instagram_follows")
+    .select("follower_count")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
 
-  const pageInfoRequest = client.newGetPageInfoRequest();
-  const pageMediaRequest = client.newGetPageMediaRequest(
-    PublicMediaField.ID,
-    PublicMediaField.CAPTION,
-    PublicMediaField.MEDIA_URL,
-    PublicMediaField.MEDIA_TYPE,
-    PublicMediaField.TIMESTAMP,
-  );
+  if (followsError) {
+    throw new Error(followsError.message);
+  }
 
-  const pageInfo = await pageInfoRequest.execute();
+  const { data: posts, error: postsError } = await supabase
+    .from("instagram")
+    .select("id,images,caption,posted_at")
+    .order("posted_at", { ascending: false })
+    .limit(10);
 
-  // Recursively fetch all pages of media
-  const allMedia: MediaData[] = [];
+  if (postsError) {
+    throw new Error(postsError.message);
+  }
 
-  const fetchAllMedia = async (
-    request: ReturnType<typeof client.newGetPageMediaRequest>,
-  ) => {
-    const response = await request.execute();
-    allMedia.push(...response.getData());
-
-    try {
-      const nextPage = response.getPaging()?.getAfter();
-      if (nextPage) {
-        await fetchAllMedia(
-          request.withPaging({ option: PageOption.AFTER, value: nextPage }),
-        );
-      }
-    } catch {
-      // No more pages available
-    }
-  };
-
-  await fetchAllMedia(pageMediaRequest);
-
-  // Fetch images for each post (including carousel children)
-  const posts = await Promise.all(
-    allMedia.map(async (post) => {
-      let images: string[] = [];
-
-      if (post.media_type === "CAROUSEL_ALBUM") {
-        try {
-          const childrenRequest = new GetMediaChildrenRequest(
-            INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
-            post.id,
-          );
-          const childrenResponse = await childrenRequest.execute();
-          const children = childrenResponse.getData();
-
-          const childMediaUrls = await Promise.all(
-            children.map(async (child) => {
-              const mediaRequest = new GetMediaInfoRequest(
-                INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
-                child.id,
-                PublicMediaField.MEDIA_URL,
-              );
-              const mediaResponse = await mediaRequest.execute();
-              return mediaResponse.getMediaUrl();
-            }),
-          );
-          images = childMediaUrls.filter((url): url is string => !!url);
-        } catch {
-          // Fallback below will handle this
-        }
-
-        // Fallback to cover image if children fetch failed
-        if (images.length === 0 && post.media_url) {
-          images = [post.media_url];
-        }
-      } else if (post.media_url) {
-        images = [post.media_url];
-      }
-
-      return { ...post, images };
-    }),
-  );
-
-  return {
-    followers: pageInfo.getFollowers() ?? 0,
-    posts,
-  };
+  return { ...follows, posts };
 };
 
 const Page = async () => {
@@ -255,7 +179,7 @@ const Page = async () => {
     getDuolingo(supabase),
     getGarmin(supabase),
     getNYTimes(supabase),
-    getInstagram(),
+    getInstagram(supabase),
   ]);
 
   return (
