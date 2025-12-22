@@ -31,6 +31,9 @@ export const POST = async () => {
     PublicMediaField.MEDIA_URL,
     PublicMediaField.MEDIA_TYPE,
     PublicMediaField.TIMESTAMP,
+    PublicMediaField.LIKE_COUNT,
+    PublicMediaField.COMMENTS_COUNT,
+    PublicMediaField.PERMALINK,
   );
 
   const pageInfo = await pageInfoRequest.execute();
