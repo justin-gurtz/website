@@ -70,7 +70,11 @@ const Spotify = ({
           {isPlaying ? (
             <Soundbars className="mr-1" />
           ) : (
-            <Timestamp date={data.created_at} className="text-white text-xs" />
+            <Timestamp
+              ago
+              className="text-white text-xs"
+              date={data.created_at}
+            />
           )}
         </div>
         <div className="flex flex-col gap-0.5 text-white">

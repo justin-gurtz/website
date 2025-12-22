@@ -37,7 +37,7 @@ const NYTimes = ({
   return (
     <Link
       href={data.url}
-      className="size-[11.25rem] bg-white dark:bg-neutral-800 px-3.5 pb-2.5 pt-4 flex flex-col justify-between"
+      className="w-full lg:w-[11.25rem] h-[11.25rem] bg-white dark:bg-neutral-800 px-3.5 pb-3 pt-4 flex flex-col justify-between"
       contentBrightness="light"
     >
       <div className="flex items-center gap-2 justify-between">
@@ -46,7 +46,12 @@ const NYTimes = ({
         </p>
         <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
       </div>
-      <p className={cn("line-clamp-5 leading-tight", cheltenham.className)}>
+      <p
+        className={cn(
+          "line-clamp-5 leading-tight text-lg lg:text-base",
+          cheltenham.className,
+        )}
+      >
         {data.title}
       </p>
     </Link>
