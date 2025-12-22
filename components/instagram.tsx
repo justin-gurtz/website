@@ -1,5 +1,15 @@
-import { useMemo } from "react";
+"use client";
+
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { InstagramFollows, InstagramPost } from "@/types/models";
+import { cn } from "@/utils/tailwind";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
@@ -20,14 +30,120 @@ const InstagramLogo = ({ className }: { className?: string }) => {
   );
 };
 
-type InstagramData = Pick<InstagramFollows, "follower_count"> & {
-  posts: Pick<InstagramPost, "id" | "images" | "caption" | "posted_at">[];
+type Post = Pick<InstagramPost, "id" | "images" | "caption" | "posted_at">;
+type Segment = {
+  id: string;
+  image: string;
+  caption: string | null;
+  posted_at: string | null;
 };
 
-const Instagram = ({ data }: { data: InstagramData }) => {
+const getSegments = (posts: Post[]) => {
+  const segments: Segment[] = [];
+
+  outer: for (const post of posts) {
+    const halfCount = Math.floor(post.images.length / 2);
+    const imagesToInclude = Math.max(1, halfCount);
+    const images = post.images.slice(0, imagesToInclude);
+
+    for (const image of images) {
+      if (segments.length >= 5) {
+        break outer;
+      }
+
+      segments.push({
+        id: `${post.id}-${segments.length + 1}`,
+        image: image,
+        caption: post.caption,
+        posted_at: post.posted_at,
+      });
+    }
+  }
+
+  return segments;
+};
+
+const StoryBar = ({
+  segments,
+  index,
+  setIndex,
+}: {
+  segments: Segment[];
+  index: number;
+  setIndex: Dispatch<SetStateAction<number>>;
+}) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Delay to ensure styled-jsx keyframes are injected
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((index) => (index + 1) % segments.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [segments, setIndex]);
+
+  return (
+    <div className="w-full h-0.5 flex items-center gap-0.5">
+      {segments.map((segment, i) => {
+        const isPast = i < index;
+        const isCurrent = i === index;
+
+        return (
+          <div
+            key={segment.id}
+            className="relative flex-1 h-full bg-white/25 rounded-full overflow-hidden"
+          >
+            {isPast && (
+              <div className="absolute inset-0 bg-white rounded-full" />
+            )}
+            {isCurrent && (
+              <div
+                key={`${index}-${mounted}`}
+                className="absolute inset-0 bg-white rounded-full"
+                style={{
+                  transform: "translateX(calc(-100% - 0.125rem))",
+                  animation: mounted
+                    ? "story-progress 5s linear forwards"
+                    : "none",
+                }}
+              />
+            )}
+          </div>
+        );
+      })}
+      <style jsx>{`
+        @keyframes story-progress {
+          from {
+            transform: translateX(calc(-100% - 0.125rem));
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const Instagram = ({
+  data,
+}: {
+  data: Pick<InstagramFollows, "follower_count"> & {
+    posts: Post[];
+  };
+}) => {
+  const segments = useRef(getSegments(data.posts));
+
+  const [index, setIndex] = useState(0);
+
   const post = useMemo(() => {
-    return data.posts[0];
-  }, [data.posts]);
+    return segments.current[index];
+  }, [index]);
 
   const formattedFollowers = useMemo(() => {
     const f = data.follower_count;
@@ -44,20 +160,31 @@ const Instagram = ({ data }: { data: InstagramData }) => {
     >
       {/** biome-ignore lint/performance/noImgElement: dynamic image */}
       <img
-        src={post.images[0]}
+        src={post.image}
         alt={post.caption || "Instagram post"}
         className="size-full object-cover"
       />
       <div className="absolute inset-0 flex flex-col justify-between">
-        <div className="text-xs text-white px-3.5 pt-4.5 pb-2.5 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0 flex items-center gap-1.5">
-          <p className="font-semibold">gurtz</p>
-          {post.posted_at && (
-            <Timestamp className="opacity-75" date={post.posted_at} />
+        <div className="px-3.5 pt-3 pb-2.5 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0 flex flex-col gap-1.5">
+          {segments.current.length > 1 && (
+            <StoryBar
+              segments={segments.current}
+              index={index}
+              setIndex={setIndex}
+            />
           )}
+          <div className="flex items-center gap-1.5 text-xs text-white">
+            <p className="font-semibold">@gurtz</p>
+            {post.posted_at && (
+              <Timestamp className="opacity-75" date={post.posted_at} />
+            )}
+          </div>
         </div>
         <div className="p-3 bg-gradient-to-t from-black/40 dark:from-black/60 to-black/0 flex items-center gap-1.5">
           <InstagramLogo className="size-5 fill-white" />
-          <p className="opacity-75 text-xs">{formattedFollowers} followers</p>
+          <p className="opacity-75 text-xs text-white">
+            {formattedFollowers} followers
+          </p>
         </div>
       </div>
     </Link>

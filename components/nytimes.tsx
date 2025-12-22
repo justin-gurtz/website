@@ -48,7 +48,7 @@ const NYTimes = ({
       </div>
       <p
         className={cn(
-          "line-clamp-5 leading-tight text-lg lg:text-base",
+          "line-clamp-5 text-lg lg:text-base leading-tight",
           cheltenham.className,
         )}
       >

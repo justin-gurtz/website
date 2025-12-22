@@ -45,6 +45,8 @@ const Timestamp = ({
   const [timestamp, setTimestamp] = useState(getTimestamp(date, ago));
 
   useEffect(() => {
+    setTimestamp(getTimestamp(date, ago));
+
     const interval = setInterval(() => {
       setTimestamp(getTimestamp(date, ago));
     }, 60000);
