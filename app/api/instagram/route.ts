@@ -105,18 +105,34 @@ export const POST = async () => {
     SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const followerCount = pageInfo.getFollowers();
-  const followingCount = pageInfo.getFollows();
+  const followerCount = pageInfo.getFollowers() ?? 0;
+  const followingCount = pageInfo.getFollows() ?? 0;
 
-  const { error: followsError } = await supabase
+  const { data: followsData, error: followsError } = await supabase
     .from("instagram_follows")
-    .upsert({
-      follower_count: followerCount ?? 0,
-      following_count: followingCount ?? 0,
-    });
+    .select("follower_count, following_count")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (followsError) {
     throw new Error(followsError.message);
+  }
+
+  if (
+    followsData?.follower_count !== followerCount ||
+    followsData?.following_count !== followingCount
+  ) {
+    const { error: insertError } = await supabase
+      .from("instagram_follows")
+      .upsert({
+        follower_count: followerCount,
+        following_count: followingCount,
+      });
+
+    if (insertError) {
+      throw new Error(insertError.message);
+    }
   }
 
   const postsData = posts.map((post) => ({
