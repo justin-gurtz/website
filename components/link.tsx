@@ -8,11 +8,13 @@ const Link = ({
   className,
   children,
   contentBrightness,
+  style,
 }: {
   href: string;
   className?: string;
   children: React.ReactNode;
   contentBrightness: "light" | "dark";
+  style?: React.CSSProperties;
 }) => {
   const target = useMemo(() => {
     if (startsWith(href, "http")) {
@@ -33,6 +35,7 @@ const Link = ({
         "block relative overflow-hidden rounded-squircle z-0 hover:z-10 hover:scale-102 active:scale-98 active:shadow-none! transition-[box-shadow,scale,z-index] duration-200",
         className,
       )}
+      style={style}
     >
       {children}
     </NextLink>

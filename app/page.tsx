@@ -143,18 +143,35 @@ const getInstagram = async (supabase: SupabaseClient<Database>) => {
     throw new Error(followsError.message);
   }
 
-  const { data: posts, error: postsError } = await supabase
+  const oneYearAgo = subYears(new Date(), 1);
+
+  const { data: pastYearPosts, error: pastYearError } = await supabase
+    .from("instagram")
+    .select("id,images,caption,posted_at")
+    .not("images", "eq", "{}")
+    .gte("posted_at", oneYearAgo.toISOString())
+    .order("posted_at", { ascending: false, nullsFirst: false });
+
+  if (pastYearError) {
+    throw new Error(pastYearError.message);
+  }
+
+  if (pastYearPosts.length) {
+    return { ...follows, posts: pastYearPosts };
+  }
+
+  const { data: fallbackPosts, error: fallbackError } = await supabase
     .from("instagram")
     .select("id,images,caption,posted_at")
     .not("images", "eq", "{}")
     .order("posted_at", { ascending: false, nullsFirst: false })
-    .limit(10);
+    .limit(1);
 
-  if (postsError) {
-    throw new Error(postsError.message);
+  if (fallbackError) {
+    throw new Error(fallbackError.message);
   }
 
-  return { ...follows, posts };
+  return { ...follows, posts: fallbackPosts };
 };
 
 const Page = async () => {

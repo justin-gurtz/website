@@ -86,7 +86,6 @@ const getLastSeen = (location: Location) => {
 };
 
 const LocationInfo = ({ location }: { location: Location }) => {
-  const [renderedFirstItem, setRenderedFirstItem] = useState(false);
   const [mode, setMode] = useState(modes[0]);
 
   useEffect(() => {
@@ -111,13 +110,12 @@ const LocationInfo = ({ location }: { location: Location }) => {
   }, [mode, location]);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.p
         key={mode}
-        initial={renderedFirstItem ? { opacity: 0 } : { opacity: 1 }}
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onAnimationComplete={() => setRenderedFirstItem(true)}
         className="text-sm text-neutral-500 leading-tight line-clamp-1"
       >
         {children}

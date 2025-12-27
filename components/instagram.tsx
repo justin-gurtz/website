@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,7 +10,6 @@ import {
   useState,
 } from "react";
 import type { InstagramFollows, InstagramPost } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
@@ -31,77 +31,62 @@ const InstagramLogo = ({ className }: { className?: string }) => {
 };
 
 type Post = Pick<InstagramPost, "id" | "images" | "caption" | "posted_at">;
-type Segment = {
-  id: string;
-  image: string;
-  caption: string | null;
-  posted_at: string | null;
-};
 
-const getSegments = (posts: Post[]) => {
-  const segments: Segment[] = [];
+const finalizePosts = (posts: Post[]) => {
+  const finalPosts: Post[] = [];
 
-  outer: for (const post of posts) {
-    const halfCount = Math.floor(post.images.length / 2);
-    const imagesToInclude = Math.max(1, halfCount);
+  for (const post of posts) {
+    const imagesToInclude = Math.max(1, post.images.length - 2);
     const images = post.images.slice(0, imagesToInclude);
 
-    for (const image of images) {
-      if (segments.length >= 5) {
-        break outer;
-      }
-
-      segments.push({
-        id: `${post.id}-${segments.length + 1}`,
-        image: image,
-        caption: post.caption,
-        posted_at: post.posted_at,
-      });
-    }
+    finalPosts.push({ ...post, images });
   }
 
-  return segments;
+  return finalPosts;
 };
 
-const StoryBar = ({
-  segments,
-  index,
-  setIndex,
-}: {
-  segments: Segment[];
-  index: number;
-  setIndex: Dispatch<SetStateAction<number>>;
-}) => {
+const usePageVisible = () => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === "visible");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  return isVisible;
+};
+
+const StoryBar = ({ index, images }: { index: number; images: string[] }) => {
   const [mounted, setMounted] = useState(false);
+  const isPageVisible = usePageVisible();
 
   useEffect(() => {
     // Delay to ensure styled-jsx keyframes are injected
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((index) => (index + 1) % segments.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [segments, setIndex]);
-
   return (
     <div className="w-full h-0.5 flex items-center gap-0.5">
-      {segments.map((segment, i) => {
+      {images.map((image, i) => {
         const isPast = i < index;
         const isCurrent = i === index;
 
         return (
           <div
-            key={segment.id}
+            key={image}
             className="relative flex-1 h-full bg-white/25 rounded-full overflow-hidden"
           >
             {isPast && (
               <div className="absolute inset-0 bg-white rounded-full" />
             )}
-            {isCurrent && (
+            {isCurrent && isPageVisible && (
               <div
                 key={`${index}-${mounted}`}
                 className="absolute inset-0 bg-white rounded-full"
@@ -130,6 +115,97 @@ const StoryBar = ({
   );
 };
 
+const PostView = ({
+  followerCount,
+  post,
+  setPostIndex,
+  postsCount,
+}: {
+  followerCount: number;
+  post: Post;
+  setPostIndex: Dispatch<SetStateAction<number>>;
+  postsCount: number;
+}) => {
+  const [imageIndex, setImageIndex] = useState(0);
+  const isPageVisible = usePageVisible();
+
+  const image = useMemo(() => {
+    return post.images[imageIndex];
+  }, [post.images, imageIndex]);
+
+  const formattedFollowers = useMemo(() => {
+    const f = followerCount;
+    if (f >= 1_000_000) return `${(f / 1_000_000).toFixed(1)}M`;
+    if (f >= 1_000) return `${(f / 1_000).toFixed(1)}k`;
+    return f.toString();
+  }, [followerCount]);
+
+  const hasMultipleImages = useMemo(() => {
+    return !!(postsCount > 1 || post.images.length > 1);
+  }, [post.images.length, postsCount]);
+
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+    if (!isPageVisible) return;
+
+    const interval = setInterval(() => {
+      if (imageIndex < post.images.length - 1) {
+        setImageIndex(imageIndex + 1);
+      } else if (postsCount === 1) {
+        setImageIndex(0);
+      } else {
+        setPostIndex((postIndex) => (postIndex + 1) % postsCount);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [
+    post.images,
+    imageIndex,
+    setPostIndex,
+    postsCount,
+    isPageVisible,
+    hasMultipleImages,
+  ]);
+
+  return (
+    <div className="relative block size-full rounded-squircle overflow-hidden bg-neutral-400 dark:bg-neutral-800">
+      {/** biome-ignore lint/performance/noImgElement: dynamic image */}
+      <img
+        src={image}
+        alt={post.caption || "Instagram post"}
+        className="size-full object-cover"
+      />
+      <div className="absolute inset-0 flex flex-col justify-between">
+        <div className="relative px-3.5 pt-3 pb-2.5 flex flex-col gap-1.5">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0" />
+          {hasMultipleImages && (
+            <div className="relative">
+              <StoryBar index={imageIndex} images={post.images} />
+            </div>
+          )}
+          <div className="relative flex items-center gap-1.5 text-xs text-white">
+            <p className="font-semibold">@gurtz</p>
+            {post.posted_at && (
+              <Timestamp className="opacity-75" date={post.posted_at} />
+            )}
+          </div>
+        </div>
+        <div className="relative p-3 flex items-center gap-1.5">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 to-black/0" />
+          <InstagramLogo className="relative size-5 fill-white" />
+          <p className="relative opacity-75 text-xs text-white">
+            {formattedFollowers} followers
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 50cqw = 50% of container width (using CSS container query units)
+const faceDepth = "50cqw";
+
 const Instagram = ({
   data,
 }: {
@@ -137,55 +213,56 @@ const Instagram = ({
     posts: Post[];
   };
 }) => {
-  const segments = useRef(getSegments(data.posts));
+  const posts = useRef(finalizePosts(data.posts));
 
-  const [index, setIndex] = useState(0);
+  const [postIndex, setPostIndex] = useState(0);
+
+  // Preload all images on mount
+  useEffect(() => {
+    for (const post of posts.current) {
+      for (const src of post.images) {
+        const img = new Image();
+        img.src = src;
+      }
+    }
+  }, []);
 
   const post = useMemo(() => {
-    return segments.current[index];
-  }, [index]);
-
-  const formattedFollowers = useMemo(() => {
-    const f = data.follower_count;
-    if (f >= 1_000_000) return `${(f / 1_000_000).toFixed(1)}M`;
-    if (f >= 1_000) return `${(f / 1_000).toFixed(1)}k`;
-    return f.toString();
-  }, [data.follower_count]);
+    return posts.current[postIndex];
+  }, [postIndex]);
 
   return (
     <Link
       href="https://www.instagram.com/gurtz"
-      className="relative w-full lg:w-[11.25rem] aspect-square"
+      className="w-full lg:w-[11.25rem] aspect-square bg-black"
       contentBrightness="dark"
+      style={{ perspective: 600, containerType: "inline-size" }}
     >
-      {/** biome-ignore lint/performance/noImgElement: dynamic image */}
-      <img
-        src={post.image}
-        alt={post.caption || "Instagram post"}
-        className="size-full object-cover"
-      />
-      <div className="absolute inset-0 flex flex-col justify-between">
-        <div className="px-3.5 pt-3 pb-2.5 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0 flex flex-col gap-1.5">
-          {segments.current.length > 1 && (
-            <StoryBar
-              segments={segments.current}
-              index={index}
-              setIndex={setIndex}
+      <div
+        className="relative size-full"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: `translateZ(calc(-1 * ${faceDepth}))`,
+        }}
+      >
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={post.id}
+            className="absolute inset-0"
+            style={{ backfaceVisibility: "hidden" }}
+            initial={{ transform: `rotateY(90deg) translateZ(${faceDepth})` }}
+            animate={{ transform: `rotateY(0deg) translateZ(${faceDepth})` }}
+            exit={{ transform: `rotateY(-90deg) translateZ(${faceDepth})` }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <PostView
+              followerCount={data.follower_count}
+              post={post}
+              setPostIndex={setPostIndex}
+              postsCount={posts.current.length}
             />
-          )}
-          <div className="flex items-center gap-1.5 text-xs text-white">
-            <p className="font-semibold">@gurtz</p>
-            {post.posted_at && (
-              <Timestamp className="opacity-75" date={post.posted_at} />
-            )}
-          </div>
-        </div>
-        <div className="p-3 bg-gradient-to-t from-black/40 dark:from-black/60 to-black/0 flex items-center gap-1.5">
-          <InstagramLogo className="size-5 fill-white" />
-          <p className="opacity-75 text-xs text-white">
-            {formattedFollowers} followers
-          </p>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </Link>
   );
