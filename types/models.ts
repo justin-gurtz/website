@@ -9,6 +9,7 @@ export type GarminData = Tables["garmin"]["Row"];
 export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagram_follows"]["Row"];
+export type DuolingoData = Tables["duolingo"]["Row"];
 
 // JSON payload types (from third-party APIs - keep original casing)
 export type StravaActivity = {
@@ -26,14 +27,10 @@ export type StravaActivity = {
   };
 };
 
-export type DuolingoLearning = {
-  createdAt: string;
-  streak: number;
-  courses: {
-    learningLanguage: string;
-    title: string;
-    xp: number;
-  }[];
+export type DuolingoCourse = {
+  learningLanguage: string;
+  title: string;
+  xp: number;
 };
 
 export type GitContributionLevel =
@@ -43,11 +40,13 @@ export type GitContributionLevel =
   | "THIRD_QUARTILE"
   | "FOURTH_QUARTILE";
 
-export type GitHubContributions = {
-  contributionDays: {
-    weekday: number;
-    date: string;
-    contributionCount: number;
-    contributionLevel: GitContributionLevel;
-  }[];
-}[];
+export type GitHubContributionDay = {
+  weekday: number;
+  date: string;
+  contributionCount: number;
+  contributionLevel: GitContributionLevel;
+};
+
+export type GitHubContribution = {
+  contributionDays: GitHubContributionDay[];
+};

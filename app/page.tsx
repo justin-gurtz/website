@@ -13,8 +13,8 @@ import Strava from "@/components/strava";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { BIRTH_DATE, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type {
-  DuolingoLearning,
-  GitHubContributions,
+  DuolingoCourse,
+  GitHubContribution,
   StravaActivity,
 } from "@/types/models";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
@@ -65,7 +65,7 @@ const getGitHub = async (supabase: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return data.contributions as GitHubContributions;
+  return data.contributions as GitHubContribution[];
 };
 
 const getDuolingo = async (supabase: SupabaseClient) => {
@@ -80,7 +80,7 @@ const getDuolingo = async (supabase: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return data as DuolingoLearning;
+  return data as Omit<typeof data, "courses"> & { courses: DuolingoCourse[] };
 };
 
 const getStrava = async (supabase: SupabaseClient) => {

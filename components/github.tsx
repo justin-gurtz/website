@@ -5,7 +5,7 @@ import times from "lodash/times";
 import { useMemo } from "react";
 import Day from "@/components/github-day";
 import Link from "@/components/link";
-import type { GitHubContributions } from "@/types/models";
+import type { GitHubContribution, GitHubContributionDay } from "@/types/models";
 
 const GitHubLogo = ({ className }: { className?: string }) => (
   <svg
@@ -29,11 +29,9 @@ const Month = ({ children }: { children?: string }) => (
   </td>
 );
 
-type ContributionDay = GitHubContributions[0]["contributionDays"][0];
-
-const GitHub = ({ contributions }: { contributions: GitHubContributions }) => {
+const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
   const weeks = useMemo(() => {
-    const daysByWeekday = times(7, () => [] as ContributionDay[]);
+    const daysByWeekday = times(7, () => [] as GitHubContributionDay[]);
 
     forEach(contributions, (week) => {
       forEach(week.contributionDays, (day) => {

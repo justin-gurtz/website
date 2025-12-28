@@ -8,7 +8,7 @@ import slice from "lodash/slice";
 import localFont from "next/font/local";
 import { useId, useMemo } from "react";
 import Link from "@/components/link";
-import type { DuolingoLearning, Movement } from "@/types/models";
+import type { DuolingoCourse, DuolingoData, Movement } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import DuolingoOwl from "./duolingo-owl";
 
@@ -159,7 +159,9 @@ const Duolingo = ({
   learning,
   location,
 }: {
-  learning: DuolingoLearning;
+  learning: Pick<DuolingoData, "createdAt" | "streak"> & {
+    courses: DuolingoCourse[];
+  };
   location: Pick<Movement, "timeZoneId">;
 }) => {
   const hasPracticedToday = useMemo(() => {

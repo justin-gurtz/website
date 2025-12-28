@@ -3,7 +3,7 @@ import { request } from "graphql-request";
 import isEqual from "lodash/isEqual";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { GITHUB_ACCESS_TOKEN, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { GitHubContributions } from "@/types/models";
+import type { GitHubContribution } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
@@ -11,7 +11,7 @@ type GitHubData = {
   viewer: {
     contributionsCollection: {
       contributionCalendar: {
-        weeks: GitHubContributions;
+        weeks: GitHubContribution[];
       };
     };
   };

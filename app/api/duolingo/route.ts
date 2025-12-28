@@ -3,7 +3,7 @@ import { backOff } from "exponential-backoff";
 import isEqual from "lodash/isEqual";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { DuolingoLearning } from "@/types/models";
+import type { DuolingoCourse, DuolingoData } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
@@ -15,10 +15,9 @@ export const POST = async () => {
   const streak = await backOff(() => duo.getStreak());
   const courses = await backOff(() => duo.getCourses());
 
-  const newData = { streak, courses } as Pick<
-    DuolingoLearning,
-    "streak" | "courses"
-  >;
+  const newData = { streak, courses } as Pick<DuolingoData, "streak"> & {
+    courses: DuolingoCourse[];
+  };
 
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
