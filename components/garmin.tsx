@@ -390,7 +390,7 @@ const AnimatedContent = ({
   data,
   percentage: finalPercentage,
 }: {
-  data: Pick<GarminData, "vo2_max_value" | "start_time_local">;
+  data: Pick<GarminData, "vo2MaxValue" | "startTimeLocal">;
   percentage: number;
 }) => {
   const percentage = useEasedNumber(finalPercentage, { duration: 3000 });
@@ -402,12 +402,12 @@ const AnimatedContent = ({
 
   const vO2MaxValue = useMemo(() => {
     if (finalPercentage === 0) return 0;
-    return data.vo2_max_value * (percentage / finalPercentage);
-  }, [data.vo2_max_value, percentage, finalPercentage]);
+    return data.vo2MaxValue * (percentage / finalPercentage);
+  }, [data.vo2MaxValue, percentage, finalPercentage]);
 
   return (
     <Content
-      startTimeLocal={data.start_time_local}
+      startTimeLocal={data.startTimeLocal}
       vO2MaxValue={vO2MaxValue}
       category={category}
       percentage={percentage}
@@ -419,23 +419,23 @@ const Garmin = ({
   data: d,
   age,
 }: {
-  data: Pick<GarminData, "vo2_max_value" | "start_time_local">;
+  data: Pick<GarminData, "vo2MaxValue" | "startTimeLocal">;
   age: number;
 }) => {
   const data = useMemo(() => {
     // The float is rounded by the Garmin API, let's add a little more to
     // account for that, to visually match the chart on my watch
-    const vo2MaxValue = d.vo2_max_value + 0.5;
-    return { ...d, vo2_max_value: vo2MaxValue };
+    const vo2MaxValue = d.vo2MaxValue + 0.5;
+    return { ...d, vo2MaxValue };
   }, [d]);
 
   const percentage = useMemo(() => {
-    const finalCategory = getVo2MaxCategory(data.vo2_max_value, age, "male");
+    const finalCategory = getVo2MaxCategory(data.vo2MaxValue, age, "male");
     if (!finalCategory) return null;
 
     const { index, min, max } = finalCategory;
 
-    const completed = data.vo2_max_value - min;
+    const completed = data.vo2MaxValue - min;
     const total = max - min;
 
     let preliminary = completed / total;
@@ -450,12 +450,12 @@ const Garmin = ({
     const previous = (index - 1) * 0.2;
 
     return previous + current;
-  }, [data.vo2_max_value, age]);
+  }, [data.vo2MaxValue, age]);
 
   return percentage === null ? (
     <Content
-      vO2MaxValue={data.vo2_max_value}
-      startTimeLocal={data.start_time_local}
+      vO2MaxValue={data.vo2MaxValue}
+      startTimeLocal={data.startTimeLocal}
       percentage={percentage}
     />
   ) : (

@@ -1,5 +1,4 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { backOff } from "exponential-backoff";
 import { GarminConnect } from "garmin-connect";
 import type {
@@ -15,8 +14,9 @@ import {
   GARMIN_USERNAME,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
-import type { Database, Json } from "@/types/database";
+import type { Json } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient, type SupabaseClient } from "@/utils/supabase";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96 bits for GCM
@@ -67,7 +67,7 @@ const decryptToken = (encryptedToken: string): IOauth1Token | IOauth2Token => {
 };
 
 const saveTokens = async (
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient,
   oauth1Token: IOauth1Token,
   oauth2Token: IOauth2Token,
 ) => {
@@ -79,9 +79,9 @@ const saveTokens = async (
   const { error } = await supabase.from("garmin_tokens").upsert(
     {
       id: 1, // Use a fixed ID since we only need one token set
-      oauth1_token: encryptedOauth1,
-      oauth2_token: encryptedOauth2,
-      updated_at: new Date().toISOString(),
+      oauth1Token: encryptedOauth1,
+      oauth2Token: encryptedOauth2,
+      updatedAt: new Date().toISOString(),
     },
     {
       onConflict: "id",
@@ -93,11 +93,11 @@ const saveTokens = async (
   }
 };
 
-const getStoredTokens = async (supabase: SupabaseClient<Database>) => {
+const getStoredTokens = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("garmin_tokens")
-    .select("oauth1_token, oauth2_token")
-    .order("updated_at", { ascending: false })
+    .select("oauth1Token, oauth2Token")
+    .order("updatedAt", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -109,8 +109,8 @@ const getStoredTokens = async (supabase: SupabaseClient<Database>) => {
     return null;
   }
 
-  const oauth1Token = decryptToken(data.oauth1_token as unknown as string);
-  const oauth2Token = decryptToken(data.oauth2_token as unknown as string);
+  const oauth1Token = decryptToken(data.oauth1Token as unknown as string);
+  const oauth2Token = decryptToken(data.oauth2Token as unknown as string);
 
   return {
     oauth1: oauth1Token,
@@ -121,7 +121,7 @@ const getStoredTokens = async (supabase: SupabaseClient<Database>) => {
 export const POST = async () => {
   await validatePresharedKey("cron");
 
-  const supabase = createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );
@@ -185,8 +185,8 @@ export const POST = async () => {
 
     const data = map(validActivities, (activity) => ({
       id: activity.activityId,
-      vo2_max_value: activity.vO2MaxValue,
-      start_time_local: activity.startTimeLocal,
+      vo2MaxValue: activity.vO2MaxValue,
+      startTimeLocal: activity.startTimeLocal,
       payload: activity as unknown as Json,
     }));
 

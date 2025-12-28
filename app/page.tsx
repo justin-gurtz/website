@@ -1,4 +1,3 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { differenceInYears, subYears } from "date-fns";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
@@ -13,22 +12,22 @@ import Spotify from "@/components/spotify";
 import Strava from "@/components/strava";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { BIRTH_DATE, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { Database } from "@/types/database";
 import type {
   DuolingoLearning,
   GitHubContributions,
   StravaActivity,
 } from "@/types/models";
+import { createClient, type SupabaseClient } from "@/utils/supabase";
 
 export const revalidate = 60;
 
 const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
 
-const getLocation = async (supabase: SupabaseClient<Database>) => {
+const getLocation = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("movements")
-    .select("moved_at,city,region,country,time_zone_id")
-    .order("moved_at", { ascending: false })
+    .select("movedAt,city,region,country,timeZoneId")
+    .order("movedAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -39,11 +38,11 @@ const getLocation = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getSpotify = async (supabase: SupabaseClient<Database>) => {
+const getSpotify = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("spotify")
-    .select("created_at,image,name,by")
-    .order("created_at", { ascending: false })
+    .select("createdAt,image,name,by")
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -54,11 +53,11 @@ const getSpotify = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getGitHub = async (supabase: SupabaseClient<Database>) => {
+const getGitHub = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("github")
     .select("contributions")
-    .order("created_at", { ascending: false })
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -69,11 +68,11 @@ const getGitHub = async (supabase: SupabaseClient<Database>) => {
   return data.contributions as GitHubContributions;
 };
 
-const getDuolingo = async (supabase: SupabaseClient<Database>) => {
+const getDuolingo = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("duolingo")
-    .select("created_at,streak,courses")
-    .order("created_at", { ascending: false })
+    .select("createdAt,streak,courses")
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -84,15 +83,15 @@ const getDuolingo = async (supabase: SupabaseClient<Database>) => {
   return data as DuolingoLearning;
 };
 
-const getStrava = async (supabase: SupabaseClient<Database>) => {
+const getStrava = async (supabase: SupabaseClient) => {
   const oneYearAgo = subYears(new Date(), 1);
 
   const { data, error } = await supabase
     .from("strava")
     .select("payload")
     .filter("type", "eq", "Run")
-    .filter("start_date", "gte", oneYearAgo.toISOString())
-    .order("start_date", { ascending: true });
+    .filter("startDate", "gte", oneYearAgo.toISOString())
+    .order("startDate", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -101,11 +100,11 @@ const getStrava = async (supabase: SupabaseClient<Database>) => {
   return map(data, ({ payload }) => payload) as StravaActivity[];
 };
 
-const getGarmin = async (supabase: SupabaseClient<Database>) => {
+const getGarmin = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("garmin")
-    .select("vo2_max_value,start_time_local")
-    .order("start_time_local", { ascending: false })
+    .select("vo2MaxValue,startTimeLocal")
+    .order("startTimeLocal", { ascending: false })
     .limit(1)
     .single();
 
@@ -116,11 +115,11 @@ const getGarmin = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getNYTimes = async (supabase: SupabaseClient<Database>) => {
+const getNYTimes = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("nytimes")
-    .select("created_at,title,url")
-    .order("created_at", { ascending: false })
+    .select("title,url")
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -131,11 +130,11 @@ const getNYTimes = async (supabase: SupabaseClient<Database>) => {
   return data;
 };
 
-const getInstagram = async (supabase: SupabaseClient<Database>) => {
+const getInstagram = async (supabase: SupabaseClient) => {
   const { data: follows, error: followsError } = await supabase
     .from("instagram_follows")
-    .select("follower_count")
-    .order("created_at", { ascending: false })
+    .select("followerCount")
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 
@@ -147,10 +146,10 @@ const getInstagram = async (supabase: SupabaseClient<Database>) => {
 
   const { data: pastYearPosts, error: pastYearError } = await supabase
     .from("instagram")
-    .select("id,images,caption,posted_at")
+    .select("id,images,caption,postedAt")
     .not("images", "eq", "{}")
-    .gte("posted_at", oneYearAgo.toISOString())
-    .order("posted_at", { ascending: false, nullsFirst: false });
+    .gte("postedAt", oneYearAgo.toISOString())
+    .order("postedAt", { ascending: false, nullsFirst: false });
 
   if (pastYearError) {
     throw new Error(pastYearError.message);
@@ -162,9 +161,9 @@ const getInstagram = async (supabase: SupabaseClient<Database>) => {
 
   const { data: fallbackPosts, error: fallbackError } = await supabase
     .from("instagram")
-    .select("id,images,caption,posted_at")
+    .select("id,images,caption,postedAt")
     .not("images", "eq", "{}")
-    .order("posted_at", { ascending: false, nullsFirst: false })
+    .order("postedAt", { ascending: false, nullsFirst: false })
     .limit(1);
 
   if (fallbackError) {
@@ -175,7 +174,7 @@ const getInstagram = async (supabase: SupabaseClient<Database>) => {
 };
 
 const Page = async () => {
-  const supabase = await createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );

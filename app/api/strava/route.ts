@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
@@ -8,9 +7,9 @@ import {
   STRAVA_REFERSH_TOKEN,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
-import type { Database } from "@/types/database";
 import type { StravaActivity } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient } from "@/utils/supabase";
 
 export const POST = async () => {
   await validatePresharedKey("cron");
@@ -47,7 +46,7 @@ export const POST = async () => {
     throw new Error("Strava API error");
   }
 
-  const supabase = await createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );
@@ -55,8 +54,8 @@ export const POST = async () => {
   const data = map(activities, (activity: StravaActivity) => ({
     id: activity.id,
     type: activity.type,
-    start_date: activity.start_date,
-    payload: activity,
+    startDate: activity.start_date, // API returns snake_case, we use camelCase
+    payload: activity, // Payload stored as-is (not transformed)
   }));
 
   const { error } = await supabase.from("strava").upsert(data);

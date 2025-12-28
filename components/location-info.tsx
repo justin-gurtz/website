@@ -18,7 +18,7 @@ import type { Movement } from "@/types/models";
 
 type Location = Pick<
   Movement,
-  "moved_at" | "city" | "region" | "country" | "time_zone_id"
+  "movedAt" | "city" | "region" | "country" | "timeZoneId"
 >;
 
 enum Mode {
@@ -57,11 +57,9 @@ const getCurrentlyIn = (location: Location) => {
 };
 
 const getLocalTime = (location: Location) => {
-  const { time_zone_id: timeZoneId } = location;
-
-  if (timeZoneId) {
+  if (location.timeZoneId) {
     const now = new Date();
-    const date = toZonedTime(now, timeZoneId);
+    const date = toZonedTime(now, location.timeZoneId);
 
     if (isValid(date)) {
       return date.toLocaleTimeString(undefined, {
@@ -76,7 +74,7 @@ const getLocalTime = (location: Location) => {
 };
 
 const getLastSeen = (location: Location) => {
-  const d = new Date(location.moved_at);
+  const d = new Date(location.movedAt);
   const seconds = differenceInSeconds(new Date(), d);
 
   if (seconds < 60) return "Just now";

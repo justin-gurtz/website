@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import reduce from "lodash/reduce";
@@ -10,8 +9,8 @@ import {
   SPOTIFY_REFRESH_TOKEN,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
-import type { Database } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient } from "@/utils/supabase";
 
 const ImageSchema = z.object({
   width: z.number(),
@@ -161,7 +160,7 @@ export const POST = async () => {
   const { is_playing: isPlaying, item } = currentlyPlaying || {};
 
   if (isPlaying && item && currentlyPlaying) {
-    const supabase = await createClient<Database>(
+    const supabase = createClient(
       NEXT_PUBLIC_SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY,
     );
@@ -170,7 +169,7 @@ export const POST = async () => {
     const image = getBestImage(sanitized.images);
 
     const { error } = await supabase.from("spotify").insert({
-      media_type: sanitized.mediaType,
+      mediaType: sanitized.mediaType,
       image: image?.url,
       name: item.name,
       by: sanitized.by,

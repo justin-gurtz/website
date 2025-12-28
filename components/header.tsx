@@ -7,7 +7,7 @@ const Header = ({
 }: {
   location: Pick<
     Movement,
-    "moved_at" | "city" | "region" | "country" | "time_zone_id"
+    "movedAt" | "city" | "region" | "country" | "timeZoneId"
   >;
 }) => {
   return (

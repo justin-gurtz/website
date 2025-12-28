@@ -160,20 +160,20 @@ const Duolingo = ({
   location,
 }: {
   learning: DuolingoLearning;
-  location: Pick<Movement, "time_zone_id">;
+  location: Pick<Movement, "timeZoneId">;
 }) => {
   const hasPracticedToday = useMemo(() => {
-    const timeZoneId = location.time_zone_id || "America/New_York";
+    const timeZoneId = location.timeZoneId || "America/New_York";
 
     const now = new Date();
     const nowInTimeZone = toZonedTime(now, timeZoneId);
     const todayStart = startOfDay(nowInTimeZone);
 
-    const createdAt = new Date(learning.created_at);
+    const createdAt = new Date(learning.createdAt);
     const createdAtInTimeZone = toZonedTime(createdAt, timeZoneId);
 
     return createdAtInTimeZone >= todayStart;
-  }, [learning.created_at, location.time_zone_id]);
+  }, [learning.createdAt, location.timeZoneId]);
 
   const courses = useMemo(() => {
     const withFlagOffsets = map(learning.courses, (course) => {

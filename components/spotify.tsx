@@ -36,9 +36,9 @@ const SpotifyLogo = ({ className }: { className?: string }) => (
 const Spotify = ({
   data,
 }: {
-  data: Pick<SpotifyData, "created_at" | "image" | "name" | "by">;
+  data: Pick<SpotifyData, "createdAt" | "image" | "name" | "by">;
 }) => {
-  const isPlaying = isAfter(data.created_at, subMinutes(new Date(), 2));
+  const isPlaying = isAfter(data.createdAt, subMinutes(new Date(), 2));
   const byLine = getByLine(data.by);
 
   return (
@@ -73,7 +73,7 @@ const Spotify = ({
             <Timestamp
               ago
               className="text-white text-xs"
-              date={data.created_at}
+              date={data.createdAt}
             />
           )}
         </div>

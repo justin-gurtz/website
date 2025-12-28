@@ -1,9 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { Database } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient } from "@/utils/supabase";
 
 export const POST = async (request: Request) => {
   await validatePresharedKey("nytimes");
@@ -11,7 +10,7 @@ export const POST = async (request: Request) => {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
-  const supabase = await createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );

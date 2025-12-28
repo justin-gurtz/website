@@ -1,13 +1,16 @@
-import type { Database } from "@/types/database";
+import type { CamelCaseDatabase } from "@/types/camel-case";
 
-export type Movement = Database["public"]["Tables"]["movements"]["Row"];
-export type SpotifyData = Database["public"]["Tables"]["spotify"]["Row"];
-export type GarminData = Database["public"]["Tables"]["garmin"]["Row"];
-export type NYTimesData = Database["public"]["Tables"]["nytimes"]["Row"];
-export type InstagramPost = Database["public"]["Tables"]["instagram"]["Row"];
-export type InstagramFollows =
-  Database["public"]["Tables"]["instagram_follows"]["Row"];
+type Tables = CamelCaseDatabase["public"]["Tables"];
 
+// Database row types (camelCase)
+export type Movement = Tables["movements"]["Row"];
+export type SpotifyData = Tables["spotify"]["Row"];
+export type GarminData = Tables["garmin"]["Row"];
+export type NYTimesData = Tables["nytimes"]["Row"];
+export type InstagramPost = Tables["instagram"]["Row"];
+export type InstagramFollows = Tables["instagram_follows"]["Row"];
+
+// JSON payload types (from third-party APIs - keep original casing)
 export type StravaActivity = {
   id: number;
   type: string;
@@ -24,7 +27,7 @@ export type StravaActivity = {
 };
 
 export type DuolingoLearning = {
-  created_at: string;
+  createdAt: string;
   streak: number;
   courses: {
     learningLanguage: string;

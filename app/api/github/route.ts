@@ -1,12 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
 import { backOff } from "exponential-backoff";
 import { request } from "graphql-request";
 import isEqual from "lodash/isEqual";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { GITHUB_ACCESS_TOKEN, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { Database } from "@/types/database";
 import type { GitHubContributions } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient } from "@/utils/supabase";
 
 type GitHubData = {
   viewer: {
@@ -51,7 +50,7 @@ export const POST = async () => {
       res.viewer.contributionsCollection.contributionCalendar.weeks,
   };
 
-  const supabase = await createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );
@@ -59,7 +58,7 @@ export const POST = async () => {
   const { error: selectError, data: selectData } = await supabase
     .from("github")
     .select("contributions")
-    .order("created_at", { ascending: false })
+    .order("createdAt", { ascending: false })
     .limit(1)
     .maybeSingle();
 

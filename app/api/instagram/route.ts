@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import {
   Client,
   GetMediaChildrenRequest,
@@ -13,8 +12,8 @@ import {
   INSTAGRAM_PAGE_ID,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
-import type { Database } from "@/types/database";
 import { validatePresharedKey } from "@/utils/server";
+import { createClient } from "@/utils/supabase";
 
 export const POST = async () => {
   await validatePresharedKey("cron");
@@ -103,7 +102,7 @@ export const POST = async () => {
     }),
   );
 
-  const supabase = createClient<Database>(
+  const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
   );
@@ -113,8 +112,8 @@ export const POST = async () => {
 
   const { data: followsData, error: followsError } = await supabase
     .from("instagram_follows")
-    .select("follower_count, following_count")
-    .order("created_at", { ascending: false })
+    .select("followerCount, followingCount")
+    .order("createdAt", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -123,14 +122,14 @@ export const POST = async () => {
   }
 
   if (
-    followsData?.follower_count !== followerCount ||
-    followsData?.following_count !== followingCount
+    followsData?.followerCount !== followerCount ||
+    followsData?.followingCount !== followingCount
   ) {
     const { error: insertError } = await supabase
       .from("instagram_follows")
       .upsert({
-        follower_count: followerCount,
-        following_count: followingCount,
+        followerCount,
+        followingCount,
       });
 
     if (insertError) {
@@ -140,12 +139,12 @@ export const POST = async () => {
 
   const postsData = posts.map((post) => ({
     id: post.id,
-    posted_at: post.timestamp,
-    media_type: post.media_type,
+    postedAt: post.timestamp,
+    mediaType: post.media_type,
     caption: post.caption,
     images: post.images,
-    like_count: post.like_count,
-    comment_count: post.comments_count,
+    likeCount: post.like_count,
+    commentCount: post.comments_count,
     url: post.permalink,
   }));
 

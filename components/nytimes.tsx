@@ -29,11 +29,7 @@ const NYTimesLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const NYTimes = ({
-  data,
-}: {
-  data: Pick<NYTimesData, "created_at" | "title" | "url">;
-}) => {
+const NYTimes = ({ data }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   return (
     <Link
       href={data.url}

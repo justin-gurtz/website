@@ -31,7 +31,7 @@ const InstagramLogo = ({ className }: { className?: string }) => {
   );
 };
 
-type Post = Pick<InstagramPost, "id" | "images" | "caption" | "posted_at">;
+type Post = Pick<InstagramPost, "id" | "images" | "caption" | "postedAt">;
 
 const finalizePosts = (posts: Post[]) => {
   const finalPosts: Post[] = [];
@@ -169,8 +169,8 @@ const PostView = ({
           )}
           <div className="relative flex items-center gap-1.5 text-xs text-white">
             <p className="font-semibold">@gurtz</p>
-            {post.posted_at && (
-              <Timestamp className="opacity-75" date={post.posted_at} />
+            {post.postedAt && (
+              <Timestamp className="opacity-75" date={post.postedAt} />
             )}
           </div>
         </div>
@@ -192,7 +192,7 @@ const faceDepth = "50cqw";
 const Instagram = ({
   data,
 }: {
-  data: Pick<InstagramFollows, "follower_count"> & {
+  data: Pick<InstagramFollows, "followerCount"> & {
     posts: Post[];
   };
 }) => {
@@ -239,7 +239,7 @@ const Instagram = ({
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
             <PostView
-              followerCount={data.follower_count}
+              followerCount={data.followerCount}
               post={post}
               setPostIndex={setPostIndex}
               postsCount={posts.current.length}
