@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { InstagramFollows, InstagramPost } from "@/types/models";
 import Link from "./link";
 import Timestamp from "./timestamp";
@@ -45,27 +46,9 @@ const finalizePosts = (posts: Post[]) => {
   return finalPosts;
 };
 
-const usePageVisible = () => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsVisible(document.visibilityState === "visible");
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  return isVisible;
-};
-
 const StoryBar = ({ index, images }: { index: number; images: string[] }) => {
   const [mounted, setMounted] = useState(false);
-  const isPageVisible = usePageVisible();
+  const pageIsVisible = usePageIsVisible();
 
   useEffect(() => {
     // Delay to ensure styled-jsx keyframes are injected
@@ -86,7 +69,7 @@ const StoryBar = ({ index, images }: { index: number; images: string[] }) => {
             {isPast && (
               <div className="absolute inset-0 bg-white rounded-full" />
             )}
-            {isCurrent && isPageVisible && (
+            {isCurrent && pageIsVisible && (
               <div
                 key={`${index}-${mounted}`}
                 className="absolute inset-0 bg-white rounded-full"
@@ -127,7 +110,7 @@ const PostView = ({
   postsCount: number;
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
-  const isPageVisible = usePageVisible();
+  const pageIsVisible = usePageIsVisible();
 
   const image = useMemo(() => {
     return post.images[imageIndex];
@@ -146,7 +129,7 @@ const PostView = ({
 
   useEffect(() => {
     if (!hasMultipleImages) return;
-    if (!isPageVisible) return;
+    if (!pageIsVisible) return;
 
     const interval = setInterval(() => {
       if (imageIndex < post.images.length - 1) {
@@ -164,7 +147,7 @@ const PostView = ({
     imageIndex,
     setPostIndex,
     postsCount,
-    isPageVisible,
+    pageIsVisible,
     hasMultipleImages,
   ]);
 
