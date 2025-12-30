@@ -30,14 +30,22 @@ const Link = ({
       href={href}
       className={cn(
         contentBrightness === "light"
-          ? "border-[0.5px] border-neutral-300 dark:border-neutral-700 hover:shadow-2xl/15 dark:hover:shadow-2xl/75"
-          : "dark:border-[0.5px] dark:border-neutral-700 hover:shadow-2xl/75",
+          ? "hover:shadow-2xl/15 dark:hover:shadow-2xl/75"
+          : "hover:shadow-2xl/75",
         "block relative overflow-hidden rounded-squircle z-0 hover:z-10 hover:scale-102 active:scale-98 active:shadow-none! transition-[box-shadow,scale,z-index] duration-200",
         className,
       )}
       style={style}
     >
       {children}
+      <div
+        className={cn(
+          contentBrightness === "light"
+            ? "border-[0.5px] border-neutral-300 dark:border-neutral-700"
+            : "dark:border-[0.5px] dark:border-neutral-700",
+          "absolute inset-0 pointer-events-none rounded-squircle",
+        )}
+      />
     </NextLink>
   );
 };

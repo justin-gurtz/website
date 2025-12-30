@@ -334,11 +334,11 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
           )}
         />
       </div>
-      <div className="absolute top-0 right-0 left-0 p-3 @sm:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
+      <div className="absolute top-0 right-0 left-0 p-3 @xs:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
         <StravaLogo className="h-4" />
         <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
       </div>
-      <div className="absolute right-0 bottom-0 left-0 p-3 @sm:p-5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @sm:gap-5">
+      <div className="absolute right-0 bottom-0 left-0 px-3 py-2.5 @xs:px-5 @xs:py-4.5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @xs:gap-4">
         <Stat label="Distance" value={distance} />
         <Rule />
         <Stat label="Pace" value={pace} />

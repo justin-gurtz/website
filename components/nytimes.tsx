@@ -33,23 +33,25 @@ const NYTimes = ({ data }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   return (
     <Link
       href={data.url}
-      className="w-full lg:w-[11.25rem] h-[11.25rem] bg-white dark:bg-neutral-800 px-3.5 pb-3 pt-4 flex flex-col justify-between"
+      className="@container w-full lg:w-[11.25rem] h-[11.25rem] bg-white dark:bg-neutral-800"
       contentBrightness="light"
     >
-      <div className="flex items-center gap-2 justify-between">
-        <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-          Last read article
+      <div className="size-full px-3.5 pb-3 pt-4 @xs:px-5.5 @xs:pb-5 @xs:pt-6 flex flex-col justify-between">
+        <div className="flex items-center gap-2 justify-between">
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            Last read article
+          </p>
+          <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
+        </div>
+        <p
+          className={cn(
+            "line-clamp-5 text-lg lg:text-base leading-tight text-pretty",
+            cheltenham.className,
+          )}
+        >
+          {data.title}
         </p>
-        <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
       </div>
-      <p
-        className={cn(
-          "line-clamp-5 text-lg lg:text-base leading-tight",
-          cheltenham.className,
-        )}
-      >
-        {data.title}
-      </p>
     </Link>
   );
 };

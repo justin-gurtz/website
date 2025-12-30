@@ -47,52 +47,54 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
   return (
     <Link
       href="https://github.com/justin-gurtz"
-      className="@container bg-white dark:bg-neutral-800 px-5 py-4 h-[11.25rem] flex flex-col justify-between"
+      className="@container bg-white dark:bg-neutral-800 w-full h-[11.25rem]"
       contentBrightness="light"
     >
-      <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-5 -mt-0.5 @sm:mt-0.5">
-        <table className="table-fixed w-full border-separate border-spacing-[3px]">
-          <thead>
-            <tr>
-              {map(weeks[0], (day, i) => {
-                const month = parseISO(day.date).getMonth();
+      <div className="size-full px-3 py-3 @xs:px-5 @xs:py-4 flex flex-col justify-between">
+        <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-5 -mt-0.5 @sm:mt-0.5">
+          <table className="table-fixed w-full border-separate border-spacing-[3px]">
+            <thead>
+              <tr>
+                {map(weeks[0], (day, i) => {
+                  const month = parseISO(day.date).getMonth();
 
-                if (month !== monthCursor && weeks[0][i + 1]) {
-                  monthCursor = month;
+                  if (month !== monthCursor && weeks[0][i + 1]) {
+                    monthCursor = month;
 
-                  return (
-                    <Month key={day.date}>
-                      {format(parseISO(day.date), "MMM")}
-                    </Month>
-                  );
-                }
+                    return (
+                      <Month key={day.date}>
+                        {format(parseISO(day.date), "MMM")}
+                      </Month>
+                    );
+                  }
 
-                return <Month key={day.date} />;
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {map(weeks, (week, i) => (
-              <tr key={i}>
-                {map(week, (day) => (
-                  <Day
-                    key={day.date}
-                    contributionLevel={day.contributionLevel}
-                    animated
-                  />
-                ))}
+                  return <Month key={day.date} />;
+                })}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex flex-row-reverse @sm:flex-row items-end @sm:items-center justify-between gap-x-1.5">
-        <GitHubLogo className="size-5 @sm:size-4 fill-neutral-800 dark:fill-white -translate-y-px" />
-        <div className="flex flex-col @sm:flex-row @sm:items-center @sm:justify-between gap-x-5 flex-1">
-          <p className="text-xs font-medium">Code contributions</p>
+            </thead>
+            <tbody>
+              {map(weeks, (week, i) => (
+                <tr key={i}>
+                  {map(week, (day) => (
+                    <Day
+                      key={day.date}
+                      contributionLevel={day.contributionLevel}
+                      animated
+                    />
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex flex-row items-center justify-between gap-3.5">
+          <div className="flex flex-row items-center gap-1.5 flex-1">
+            <GitHubLogo className="size-4.5 fill-neutral-800 dark:fill-white -translate-y-px shrink-0" />
+            <p className="text-xs font-medium">Code contributions</p>
+          </div>
           <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
             <p>Less</p>
-            <table className="border-separate border-spacing-[3px]">
+            <table className="border-separate border-spacing-[3px] shrink-0">
               <tbody>
                 <tr>
                   <Day contributionLevel="NONE" />
