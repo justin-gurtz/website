@@ -1,7 +1,23 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+const botRedirects = [
+  "/index",
+  "/index.html",
+  "/index.php",
+  "/index.htm",
+  "/home",
+  "/default.aspx",
+];
+
 const nextConfig: NextConfig = {
+  async redirects() {
+    return botRedirects.map((redirect) => ({
+      source: redirect,
+      destination: "/",
+      permanent: true,
+    }));
+  },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.md$/,
