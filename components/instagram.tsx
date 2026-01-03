@@ -217,33 +217,35 @@ const Instagram = ({
       href="https://www.instagram.com/gurtz"
       className="@container w-full lg:w-[11.25rem] aspect-square bg-black"
       contentBrightness="dark"
-      style={{ perspective: 600, containerType: "inline-size" }}
+      style={{ containerType: "inline-size" }}
     >
-      <div
-        className="relative size-full"
-        style={{
-          transformStyle: "preserve-3d",
-          transform: `translateZ(calc(-1 * ${faceDepth}))`,
-        }}
-      >
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={post.id}
-            className="absolute inset-0"
-            style={{ backfaceVisibility: "hidden" }}
-            initial={{ transform: `rotateY(90deg) translateZ(${faceDepth})` }}
-            animate={{ transform: `rotateY(0deg) translateZ(${faceDepth})` }}
-            exit={{ transform: `rotateY(-90deg) translateZ(${faceDepth})` }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            <PostView
-              followerCount={data.followerCount}
-              post={post}
-              setPostIndex={setPostIndex}
-              postsCount={posts.current.length}
-            />
-          </motion.div>
-        </AnimatePresence>
+      <div className="size-full" style={{ perspective: "300cqw" }}>
+        <div
+          className="relative size-full"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: `translateZ(calc(-1 * ${faceDepth}))`,
+          }}
+        >
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={post.id}
+              className="absolute inset-0"
+              style={{ backfaceVisibility: "hidden" }}
+              initial={{ transform: `rotateY(90deg) translateZ(${faceDepth})` }}
+              animate={{ transform: `rotateY(0deg) translateZ(${faceDepth})` }}
+              exit={{ transform: `rotateY(-90deg) translateZ(${faceDepth})` }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <PostView
+                followerCount={data.followerCount}
+                post={post}
+                setPostIndex={setPostIndex}
+                postsCount={posts.current.length}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </Link>
   );
