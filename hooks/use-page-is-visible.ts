@@ -4,14 +4,16 @@ const usePageIsVisible = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
+    const updateVisibility = () => {
       setIsVisible(document.visibilityState === "visible");
     };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    updateVisibility();
+
+    document.addEventListener("visibilitychange", updateVisibility);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", updateVisibility);
     };
   }, []);
 
