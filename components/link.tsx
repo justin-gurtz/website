@@ -9,12 +9,14 @@ const Link = ({
   children,
   contentBrightness,
   style,
+  disabled,
 }: {
   href: string;
   className?: string;
   children: React.ReactNode;
   contentBrightness: "light" | "dark";
   style?: React.CSSProperties;
+  disabled?: boolean;
 }) => {
   const target = useMemo(() => {
     if (startsWith(href, "http")) {
@@ -29,10 +31,15 @@ const Link = ({
       target={target}
       href={href}
       className={cn(
-        contentBrightness === "light"
-          ? "hover:shadow-2xl/15 dark:hover:shadow-2xl/75"
-          : "hover:shadow-2xl/75",
-        "block relative overflow-hidden rounded-squircle z-0 hover:z-10 hover:scale-102 active:scale-98 active:shadow-none! transition-[box-shadow,scale,z-index] duration-200",
+        "block relative overflow-hidden rounded-squircle z-0 transition-[box-shadow,scale,z-index] duration-200",
+        disabled
+          ? "pointer-events-none"
+          : [
+              contentBrightness === "light"
+                ? "hover:shadow-2xl/15 dark:hover:shadow-2xl/75"
+                : "hover:shadow-2xl/75",
+              "hover:z-10 hover:scale-102 active:scale-98 active:shadow-none!",
+            ],
         className,
       )}
       style={style}

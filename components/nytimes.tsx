@@ -1,4 +1,9 @@
+"use client";
+
+import { AnimatePresence, motion } from "motion/react";
 import localFont from "next/font/local";
+import { useCallback, useEffect, useState } from "react";
+import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { NYTimesData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import Link from "./link";
@@ -29,30 +34,83 @@ const NYTimesLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const NYTimes = ({ data }: { data: Pick<NYTimesData, "title" | "url"> }) => {
+const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
+  const [data, setData] = useState(d);
+  const [overflowHidden, setOverflowHidden] = useState(true);
+  const [disabled, setDisabled] = useState(true);
+
+  const pageIsVisible = usePageIsVisible();
+
+  useEffect(() => {
+    if (!pageIsVisible) return;
+    if (data.title === d.title) return;
+
+    setDisabled(true);
+
+    const timeout = setTimeout(() => {
+      setOverflowHidden(true);
+      setData(d);
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [d, data, pageIsVisible]);
+
+  const handleAnimationComplete = useCallback(() => {
+    setOverflowHidden(false);
+    setDisabled(false);
+  }, []);
+
   return (
-    <Link
-      href={data.url}
-      className="@container w-full lg:w-[11.25rem] h-[11.25rem] bg-white dark:bg-neutral-800"
-      contentBrightness="light"
+    <div
+      className={cn(
+        "relative w-full lg:w-[11.25rem] h-[11.25rem]",
+        overflowHidden && "overflow-hidden rounded-squircle",
+      )}
     >
-      <div className="size-full px-3.5 pb-3.5 pt-3 @xs:px-4.5 @xs:pb-4.5 @xs:pt-4 flex flex-col justify-between">
-        <div className="flex items-center gap-2 justify-between">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-            Last read article
-          </p>
-          <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
-        </div>
-        <p
-          className={cn(
-            "line-clamp-5 text-lg lg:text-base leading-tight text-pretty",
-            cheltenham.className,
-          )}
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={data.title}
+          initial={{ transform: "translateY(100%)", marginTop: "0.75rem" }}
+          animate={{ transform: "translateY(0)", marginTop: 0 }}
+          exit={{
+            transform: "translateY(-100%)",
+            marginTop: "-0.75rem",
+            opacity: [1, 1, 0],
+          }}
+          transition={{
+            duration: 1.25,
+            ease: [0.16, 1, 0.3, 1],
+            opacity: { times: [0, 0.5, 1] },
+          }}
+          onAnimationComplete={handleAnimationComplete}
+          className="size-full"
         >
-          {data.title}
-        </p>
-      </div>
-    </Link>
+          <Link
+            href={data.url}
+            className="@container size-full bg-white dark:bg-neutral-800"
+            contentBrightness="light"
+            disabled={disabled}
+          >
+            <div className="size-full px-3.5 pb-3.5 pt-3 @xs:px-4.5 @xs:pb-4.5 @xs:pt-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2 justify-between">
+                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                  Last read article
+                </p>
+                <NYTimesLogo className="size-5 -mr-0.5 fill-black dark:fill-white" />
+              </div>
+              <p
+                className={cn(
+                  "line-clamp-5 text-lg lg:text-base leading-tight text-pretty font-serif",
+                  cheltenham.className,
+                )}
+              >
+                {data.title}
+              </p>
+            </div>
+          </Link>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 };
 
