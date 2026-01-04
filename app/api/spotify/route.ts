@@ -1,6 +1,7 @@
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import reduce from "lodash/reduce";
+import { Vibrant } from "node-vibrant/node";
 import { z } from "zod";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
@@ -111,6 +112,27 @@ const getBestImage = (images: Image[] | undefined) => {
   );
 };
 
+const getDominantColor = async (
+  imageUrl: string | undefined,
+): Promise<string | null> => {
+  if (!imageUrl) return null;
+
+  try {
+    const palette = await Vibrant.from(imageUrl).getPalette();
+
+    // Prefer DarkVibrant for a colorful but dark background
+    // Fall back to Vibrant (darkened), then DarkMuted
+    const swatch =
+      palette.DarkVibrant ?? palette.Vibrant ?? palette.DarkMuted ?? null;
+
+    if (!swatch) return null;
+
+    return swatch.hex;
+  } catch {
+    return null;
+  }
+};
+
 export const POST = async () => {
   await validatePresharedKey("cron");
 
@@ -167,12 +189,14 @@ export const POST = async () => {
 
     const sanitized = sanitize(currentlyPlaying);
     const image = getBestImage(sanitized.images);
+    const color = await getDominantColor(image?.url);
 
     const { error } = await supabase.from("spotify").insert({
       mediaType: sanitized.mediaType,
       image: image?.url,
       name: item.name,
       by: sanitized.by,
+      color,
       payload: currentlyPlaying,
     });
 

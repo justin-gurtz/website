@@ -227,6 +227,7 @@ export type Database = {
       spotify: {
         Row: {
           by: string[];
+          color: string | null;
           created_at: string;
           id: number;
           image: string | null;
@@ -236,6 +237,7 @@ export type Database = {
         };
         Insert: {
           by: string[];
+          color?: string | null;
           created_at?: string;
           id?: number;
           image?: string | null;
@@ -245,6 +247,7 @@ export type Database = {
         };
         Update: {
           by?: string[];
+          color?: string | null;
           created_at?: string;
           id?: number;
           image?: string | null;
