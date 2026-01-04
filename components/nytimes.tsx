@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import localFont from "next/font/local";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { NYTimesData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
@@ -39,6 +39,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   const [overflowHidden, setOverflowHidden] = useState(true);
   const [disabled, setDisabled] = useState(true);
 
+  const isFirstRender = useRef(true);
   const pageIsVisible = usePageIsVisible();
 
   useEffect(() => {
@@ -56,6 +57,8 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   }, [d, data, pageIsVisible]);
 
   const handleAnimationComplete = useCallback(() => {
+    isFirstRender.current = false;
+
     setOverflowHidden(false);
     setDisabled(false);
   }, []);
@@ -81,6 +84,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
             duration: 1.25,
             ease: [0.16, 1, 0.3, 1],
             opacity: { times: [0, 0.5, 1] },
+            delay: isFirstRender.current ? 0.5 : 0,
           }}
           onAnimationComplete={handleAnimationComplete}
           className="size-full"
