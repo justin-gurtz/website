@@ -50,7 +50,7 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
       className="@container bg-white dark:bg-neutral-800 w-full h-[11.25rem]"
       contentBrightness="light"
     >
-      <div className="size-full px-3 py-3 @xs:px-5 @xs:py-4 flex flex-col justify-between">
+      <div className="size-full px-3 py-3 @xs:px-4 @xs:py-4 flex flex-col justify-between">
         <div className="overflow-x-hidden flex-1 flex flex-row-reverse items-start -ml-5 -mt-0.5 @sm:mt-0.5">
           <table className="table-fixed w-full border-separate border-spacing-[3px]">
             <thead>
@@ -87,12 +87,15 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
             </tbody>
           </table>
         </div>
-        <div className="flex flex-row items-center justify-between gap-3.5">
-          <div className="flex flex-row items-center gap-1.5 flex-1">
+        <div className="flex flex-row items-center justify-between gap-3">
+          <div className="flex flex-row items-center gap-2 @xs:gap-1.5 flex-1">
             <GitHubLogo className="size-4.5 fill-neutral-800 dark:fill-white -translate-y-px shrink-0" />
-            <p className="text-xs font-medium">Code contributions</p>
+            <p className="text-xs font-medium">
+              Code <br className="@xs:hidden" />
+              contributions
+            </p>
           </div>
-          <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center">
+          <div className="text-neutral-700 dark:text-neutral-300 text-xs flex gap-1 items-center mr-0.5">
             <p>Less</p>
             <table className="border-separate border-spacing-[3px] shrink-0">
               <tbody>

@@ -160,7 +160,7 @@ const PostView = ({
         className="size-full object-cover"
       />
       <div className="absolute inset-0 flex flex-col justify-between">
-        <div className="relative px-3.5 pt-3 pb-2.5 @xs:px-5.5 @xs:pt-5 @xs:pb-4.5 flex flex-col gap-1.5 @xs:gap-2.5">
+        <div className="relative px-3.5 pt-3.5 pb-2.5 @xs:px-4.5 @xs:pt-4.5 @xs:pb-3.5 flex flex-col gap-1.5 @xs:gap-2.5">
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0" />
           {hasMultipleImages && (
             <StoryBar index={imageIndex} images={post.images} />
@@ -172,7 +172,7 @@ const PostView = ({
             )}
           </div>
         </div>
-        <div className="relative p-3 @xs:p-5 flex items-center gap-1.5">
+        <div className="relative p-3 @xs:p-4 flex items-center gap-1.5">
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 to-black/0" />
           <InstagramLogo className="relative size-5 fill-white" />
           <p className="relative opacity-75 text-xs text-white">

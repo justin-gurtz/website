@@ -113,15 +113,18 @@ const Stat = ({
   label,
   value,
   icon: OptionalIcon,
+  className,
 }: {
   label: string;
   value: string;
   icon?: Icon;
+  className?: string;
 }) => (
   <div
     className={cn(
       "flex flex-col gap-0 items-start",
       OptionalIcon ? "items-end" : undefined,
+      className,
     )}
   >
     <p className="text-xs text-white/50 -mb-0.5">{label}</p>
@@ -334,11 +337,16 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
           )}
         />
       </div>
-      <div className="absolute top-0 right-0 left-0 p-3 @xs:p-5 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
+      <div className="absolute top-0 right-0 left-0 p-3 @xs:p-4 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
         <StravaLogo className="h-4" />
-        <Stat label="Past Year Runs" value={totalRuns} icon={IconRun} />
+        <Stat
+          label="Past Year Runs"
+          value={totalRuns}
+          icon={IconRun}
+          className="-mt-0.5"
+        />
       </div>
-      <div className="absolute right-0 bottom-0 left-0 px-3 py-2.5 @xs:px-5 @xs:py-4.5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @xs:gap-4">
+      <div className="absolute right-0 bottom-0 left-0 px-3 py-2.5 @xs:px-4 @xs:py-3.5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @xs:gap-4">
         <Stat label="Distance" value={distance} />
         <Rule />
         <Stat label="Pace" value={pace} />

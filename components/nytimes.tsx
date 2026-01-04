@@ -36,7 +36,7 @@ const NYTimes = ({ data }: { data: Pick<NYTimesData, "title" | "url"> }) => {
       className="@container w-full lg:w-[11.25rem] h-[11.25rem] bg-white dark:bg-neutral-800"
       contentBrightness="light"
     >
-      <div className="size-full px-3.5 pb-3 pt-4 @xs:px-5.5 @xs:pb-5 @xs:pt-6 flex flex-col justify-between">
+      <div className="size-full px-3.5 pb-3.5 pt-3 @xs:px-4.5 @xs:pb-4.5 @xs:pt-4 flex flex-col justify-between">
         <div className="flex items-center gap-2 justify-between">
           <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
             Last read article
