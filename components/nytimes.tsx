@@ -44,6 +44,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
 
   useEffect(() => {
     if (!pageIsVisible) return;
+    if (disabled) return;
     if (data.title === d.title) return;
 
     setDisabled(true);
@@ -54,7 +55,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
     }, 200);
 
     return () => clearTimeout(timeout);
-  }, [d, data, pageIsVisible]);
+  }, [d, data, pageIsVisible, disabled]);
 
   const handleAnimationComplete = useCallback(() => {
     isFirstRender.current = false;

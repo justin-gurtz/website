@@ -1,21 +1,15 @@
-import { IconMusic } from "@tabler/icons-react";
+"use client";
+
 import { isAfter, subMinutes } from "date-fns";
-import Carousel from "@/components/carousel";
+import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "@/components/link";
 import ScrollingText from "@/components/scrolling-text";
 import Soundbars from "@/components/soundbars";
+import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { SpotifyData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import Timestamp from "./timestamp";
-
-const getByLine = (by: SpotifyData["by"]) => {
-  if (!by?.length) return undefined;
-
-  if (by.length === 1) return by[0];
-  if (by.length === 2) return by.join(" & ");
-
-  return `${by.slice(0, -1).join(", ")}, & ${by.slice(-1)}`;
-};
 
 const SpotifyLogo = ({ className }: { className?: string }) => (
   <svg
@@ -33,38 +27,143 @@ const SpotifyLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const Spotify = ({
-  data,
+const QuarterNote = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 15 42"
+    aria-label="Quarter Note"
+    role="img"
+    className={className}
+  >
+    <g transform="translate(-440.95 -9.4689)">
+      <path
+        d="m451.09 49.39c3.3958-1.82 5.2053-5.1146 4.0922-7.593-1.1873-2.6436-5.267-3.3897-9.1066-1.6654-3.8396 1.7244-5.9922 5.2694-4.8049 7.913 1.1873 2.6436 5.267 3.3897 9.1066 1.6654 0.23997-0.10777 0.48628-0.19874 0.71268-0.32007z"
+        fillRule="evenodd"
+      />
+      <path d="m454.73 43.056v-33.588" fill="none" strokeWidth="2.75" />
+    </g>
+  </svg>
+);
+
+const albumArtBgClassName = "bg-neutral-300 dark:bg-neutral-600";
+
+const AlbumArtImage = ({
+  image,
+  name,
 }: {
-  data: Pick<SpotifyData, "createdAt" | "image" | "name" | "by">;
+  image: NonNullable<SpotifyData["image"]>;
+  name: SpotifyData["name"];
 }) => {
-  const isPlaying = isAfter(data.createdAt, subMinutes(new Date(), 2));
-  const byLine = getByLine(data.by);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  return (
+    // biome-ignore lint/performance/noImgElement: src is remote
+    <img
+      src={image}
+      alt={name}
+      className={cn("size-full object-cover", isLoading && albumArtBgClassName)}
+      onLoad={handleLoad}
+    />
+  );
+};
+
+const AlbumArt = ({
+  data,
+  onAnimationComplete: handleAnimationComplete,
+}: {
+  data: Pick<SpotifyData, "image" | "name">;
+  onAnimationComplete: () => void;
+}) => {
+  return (
+    <AnimatePresence mode="sync" initial={false}>
+      <motion.div
+        key={data.image || "no-image"}
+        className="absolute inset-0 [backface-visibility:hidden] rounded-md shadow-md overflow-hidden"
+        initial={{ rotateY: 180 }}
+        animate={{ rotateY: 0 }}
+        exit={{ rotateY: -180 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        style={{ transformStyle: "preserve-3d" }}
+        onAnimationComplete={handleAnimationComplete}
+      >
+        {data.image ? (
+          <AlbumArtImage image={data.image} name={data.name} />
+        ) : (
+          <div
+            className={cn(
+              "size-full flex items-center justify-center",
+              albumArtBgClassName,
+            )}
+          >
+            <QuarterNote className="size-1/3 stroke-neutral-900 fill-neutral-900 dark:fill-white dark:stroke-white opacity-50" />
+          </div>
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+const getIsPlaying = (createdAt: SpotifyData["createdAt"]) => {
+  return isAfter(createdAt, subMinutes(new Date(), 2));
+};
+
+const Spotify = ({
+  data: d,
+}: {
+  data: Pick<SpotifyData, "createdAt" | "image" | "name" | "by" | "color">;
+}) => {
+  // Use d instead of data here; data controls the animation
+  const [isPlaying, setIsPlaying] = useState(getIsPlaying(d.createdAt));
+
+  useEffect(() => {
+    setIsPlaying(getIsPlaying(d.createdAt));
+
+    const interval = setInterval(() => {
+      setIsPlaying(getIsPlaying(d.createdAt));
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [d.createdAt]);
+
+  const [data, setData] = useState(d);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const pageIsVisible = usePageIsVisible();
+
+  useEffect(() => {
+    if (!pageIsVisible) return;
+    if (isAnimating) return;
+    if (data.image === d.image) return;
+
+    setIsAnimating(true);
+    setData(d);
+  }, [d, data, pageIsVisible, isAnimating]);
+
+  const handleAnimationComplete = useCallback(() => {
+    setIsAnimating(false);
+  }, []);
+
+  const style = useMemo(() => {
+    if (!data.color) return undefined;
+    return {
+      backgroundColor: `color-mix(in srgb, ${data.color} 85%, white)`,
+    };
+  }, [data.color]);
 
   return (
     <Link
       href="https://open.spotify.com/user/gurtz"
-      className="bg-neutral-300 dark:bg-neutral-600 size-[11.25rem]"
+      className="size-[11.25rem]"
       contentBrightness="dark"
     >
-      {data.image ? (
-        <Carousel image={data.image} />
-      ) : (
-        <IconMusic
-          size={48}
-          stroke={1.25}
-          className="stroke-neutral-900 dark:stroke-white opacity-15 absolute top-0 right-0 bottom-0 left-0 m-auto"
-        />
-      )}
       <div
-        className={cn(
-          "absolute top-0 left-0 w-full h-full",
-          data.image
-            ? "bg-[linear-gradient(15deg,rgba(0,0,0,0.85),rgba(0,0,0,0.25))]"
-            : "bg-[linear-gradient(15deg,rgba(0,0,0,0.25),rgba(0,0,0,0))]",
-        )}
-      />
-      <div className="absolute top-0 left-0 w-full h-full p-3.5 flex flex-col justify-between">
+        className="bg-neutral-400 dark:bg-neutral-800 size-full p-3.5 flex flex-col justify-between gap-4 transition-colors duration-500"
+        style={style}
+      >
         <div className="flex items-center justify-between">
           <SpotifyLogo className="size-6" />
           {isPlaying ? (
@@ -72,18 +171,29 @@ const Spotify = ({
           ) : (
             <Timestamp
               ago
-              className="text-white text-xs"
+              className="text-white text-xs opacity-80"
               date={data.createdAt}
             />
           )}
         </div>
-        <div className="flex flex-col gap-0.5 text-white">
-          <ScrollingText parentPadding={14} className="font-semibold text-sm">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 aspect-square [perspective:500px]">
+            <AlbumArt
+              data={data}
+              onAnimationComplete={handleAnimationComplete}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-0.25 text-white">
+          <ScrollingText parentPadding={14} className="font-semibold text-xs">
             {data.name}
           </ScrollingText>
-          {byLine && (
-            <ScrollingText parentPadding={14} className="text-xs mt-0.5">
-              {byLine}
+          {data.by.length > 0 && (
+            <ScrollingText
+              parentPadding={14}
+              className="font-medium text-xs opacity-80"
+            >
+              {data.by.join(", ")}
             </ScrollingText>
           )}
         </div>

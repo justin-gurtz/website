@@ -3,7 +3,7 @@
 import { cn } from "@/utils/tailwind";
 
 const minHeight = "3px";
-const sharedClassName = "w-[1.5px] h-[3px] bg-white";
+const sharedClassName = "w-[1.5px] h-[3px] rounded-full bg-white";
 
 const Soundbars = ({ className }: { className?: string }) => (
   <>
