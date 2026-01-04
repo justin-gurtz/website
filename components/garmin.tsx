@@ -370,7 +370,7 @@ const Content = ({
         <div className="absolute left-0 right-0 top-0 h-1/2 flex flex-col items-center justify-end pb-5">
           <p className="font-bold text-xs">VO2 Max.</p>
         </div>
-        <p className="text-4xl font-bold">{Math.floor(vO2MaxValue)}</p>
+        <p className="text-4xl font-bold">{Math.round(vO2MaxValue)}</p>
         <div className="absolute left-0 right-0 bottom-0 h-1/2 flex flex-col items-center justify-start pt-5">
           {category ? (
             <>
@@ -416,19 +416,12 @@ const AnimatedContent = ({
 };
 
 const Garmin = ({
-  data: d,
+  data,
   age,
 }: {
   data: Pick<GarminData, "vo2MaxValue" | "startTimeLocal">;
   age: number;
 }) => {
-  const data = useMemo(() => {
-    // The float is rounded by the Garmin API, let's add a little more to
-    // account for that, to visually match the chart on my watch
-    const vo2MaxValue = d.vo2MaxValue + 0.5;
-    return { ...d, vo2MaxValue };
-  }, [d]);
-
   const percentage = useMemo(() => {
     const finalCategory = getVo2MaxCategory(data.vo2MaxValue, age, "male");
     if (!finalCategory) return null;
