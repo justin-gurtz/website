@@ -8,7 +8,7 @@ import {
 } from "instagram-graph-api";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
-  INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+  INSTAGRAM_ACCESS_TOKEN,
   INSTAGRAM_PAGE_ID,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
@@ -18,10 +18,7 @@ import { createClient } from "@/utils/supabase";
 export const POST = async () => {
   await validatePresharedKey("cron");
 
-  const client = new Client(
-    INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
-    INSTAGRAM_PAGE_ID,
-  );
+  const client = new Client(INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_PAGE_ID);
 
   const pageInfoRequest = client.newGetPageInfoRequest();
   const pageMediaRequest = client.newGetPageMediaRequest(
@@ -68,7 +65,7 @@ export const POST = async () => {
       if (post.media_type === "CAROUSEL_ALBUM") {
         try {
           const childrenRequest = new GetMediaChildrenRequest(
-            INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+            INSTAGRAM_ACCESS_TOKEN,
             post.id,
           );
           const childrenResponse = await childrenRequest.execute();
@@ -77,7 +74,7 @@ export const POST = async () => {
           const childMediaUrls = await Promise.all(
             children.map(async (child) => {
               const mediaRequest = new GetMediaInfoRequest(
-                INSTAGRAM_LONG_LIVED_ACCESS_TOKEN,
+                INSTAGRAM_ACCESS_TOKEN,
                 child.id,
                 PublicMediaField.MEDIA_URL,
               );
