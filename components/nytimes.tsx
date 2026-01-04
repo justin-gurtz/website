@@ -84,7 +84,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
             duration: 1.25,
             ease: [0.16, 1, 0.3, 1],
             opacity: { times: [0, 0.5, 1] },
-            delay: isFirstRender.current ? 0.5 : 0,
+            delay: isFirstRender.current ? 0.3 : 0,
           }}
           onAnimationComplete={handleAnimationComplete}
           className="size-full"
