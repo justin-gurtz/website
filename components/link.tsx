@@ -48,8 +48,8 @@ const Link = ({
       <div
         className={cn(
           contentBrightness === "light"
-            ? "border-[0.5px] border-neutral-300 dark:border-neutral-700"
-            : "dark:border-[0.5px] dark:border-neutral-700",
+            ? "border-[1px] sm:border-[0.5px] border-neutral-200 sm:border-neutral-300 dark:border-neutral-700"
+            : "dark:border-[1px] sm:dark:border-[0.5px] dark:border-neutral-700",
           "absolute inset-0 pointer-events-none rounded-squircle",
         )}
       />
