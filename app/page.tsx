@@ -42,8 +42,8 @@ const getLocation = async (supabase: SupabaseClient) => {
 const getSpotify = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("spotify")
-    .select("createdAt,image,name,by,color")
-    .order("createdAt", { ascending: false })
+    .select("updatedAt,image,name,by,color")
+    .order("id", { ascending: false })
     .limit(1)
     .single();
 

@@ -107,27 +107,27 @@ const AlbumArt = ({
   );
 };
 
-const getIsPlaying = (createdAt: SpotifyData["createdAt"]) => {
-  return isAfter(createdAt, subMinutes(new Date(), 2));
+const getIsPlaying = (updatedAt: SpotifyData["updatedAt"]) => {
+  return isAfter(updatedAt, subMinutes(new Date(), 2));
 };
 
 const Spotify = ({
   data: d,
 }: {
-  data: Pick<SpotifyData, "createdAt" | "image" | "name" | "by" | "color">;
+  data: Pick<SpotifyData, "updatedAt" | "image" | "name" | "by" | "color">;
 }) => {
   // Use d instead of data here; data controls the animation
-  const [isPlaying, setIsPlaying] = useState(getIsPlaying(d.createdAt));
+  const [isPlaying, setIsPlaying] = useState(getIsPlaying(d.updatedAt));
 
   useEffect(() => {
-    setIsPlaying(getIsPlaying(d.createdAt));
+    setIsPlaying(getIsPlaying(d.updatedAt));
 
     const interval = setInterval(() => {
-      setIsPlaying(getIsPlaying(d.createdAt));
+      setIsPlaying(getIsPlaying(d.updatedAt));
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [d.createdAt]);
+  }, [d.updatedAt]);
 
   const [data, setData] = useState(d);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -172,7 +172,7 @@ const Spotify = ({
             <Timestamp
               ago
               className="text-white text-xs opacity-80"
-              date={data.createdAt}
+              date={data.updatedAt}
             />
           )}
         </div>

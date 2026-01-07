@@ -187,21 +187,46 @@ export const POST = async () => {
       SUPABASE_SERVICE_ROLE_KEY,
     );
 
+    // Get the most recent row to check if it's the same song
+    const { data: lastRow } = await supabase
+      .from("spotify")
+      .select("id, name, by")
+      .order("id", { ascending: false })
+      .limit(1)
+      .single();
+
     const sanitized = sanitize(currentlyPlaying);
-    const image = getBestImage(sanitized.images);
-    const color = await getDominantColor(image?.url);
+    const isSameSong =
+      lastRow?.name === item.name &&
+      JSON.stringify(lastRow?.by) === JSON.stringify(sanitized.by);
 
-    const { error } = await supabase.from("spotify").insert({
-      mediaType: sanitized.mediaType,
-      image: image?.url,
-      name: item.name,
-      by: sanitized.by,
-      color,
-      payload: currentlyPlaying,
-    });
+    if (isSameSong && lastRow) {
+      // Same song - just update the timestamp
+      const { error } = await supabase
+        .from("spotify")
+        .update({ updatedAt: new Date().toISOString() })
+        .eq("id", lastRow.id);
 
-    if (error) {
-      throw new Error(error.message);
+      if (error) {
+        throw new Error(error.message);
+      }
+    } else {
+      // Different song - calculate color and insert new row
+      const image = getBestImage(sanitized.images);
+      const color = await getDominantColor(image?.url);
+
+      const { error } = await supabase.from("spotify").insert({
+        mediaType: sanitized.mediaType,
+        image: image?.url,
+        name: item.name,
+        by: sanitized.by,
+        color,
+        payload: currentlyPlaying,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
     }
   }
 

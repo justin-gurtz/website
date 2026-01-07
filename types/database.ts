@@ -234,6 +234,7 @@ export type Database = {
           media_type: string;
           name: string;
           payload: Json;
+          updated_at: string;
         };
         Insert: {
           by: string[];
@@ -244,6 +245,7 @@ export type Database = {
           media_type?: string;
           name: string;
           payload: Json;
+          updated_at?: string;
         };
         Update: {
           by?: string[];
@@ -254,6 +256,7 @@ export type Database = {
           media_type?: string;
           name?: string;
           payload?: Json;
+          updated_at?: string;
         };
         Relationships: [];
       };
