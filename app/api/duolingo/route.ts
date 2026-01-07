@@ -1,4 +1,3 @@
-import Duo from "duo-wrapper";
 import { backOff } from "exponential-backoff";
 import isEqual from "lodash/isEqual";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
@@ -7,13 +6,27 @@ import type { DuolingoCourse, DuolingoData } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
+const fetchDuolingoData = async (username: string) => {
+  const res = await fetch(
+    `https://www.duolingo.com/2017-06-30/users?username=${username}`,
+  );
+  if (!res.ok) {
+    throw new Error(`Duolingo API error: ${res.status}`);
+  }
+  const data = await res.json();
+  const user = data.users?.[0];
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user as { streak: number; courses: DuolingoCourse[] };
+};
+
 export const POST = async () => {
   await validatePresharedKey("cron");
 
-  const duo = new Duo("JustinGurtz");
-
-  const streak = await backOff(() => duo.getStreak());
-  const courses = await backOff(() => duo.getCourses());
+  const { streak, courses } = await backOff(() =>
+    fetchDuolingoData("JustinGurtz"),
+  );
 
   const newData = { streak, courses } as Pick<DuolingoData, "streak"> & {
     courses: DuolingoCourse[];
