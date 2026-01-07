@@ -1,4 +1,5 @@
 import { differenceInYears, subYears } from "date-fns";
+import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
@@ -189,14 +190,14 @@ const Page = async () => {
     nytimes,
     instagram,
   ] = await Promise.all([
-    getLocation(supabase),
-    getSpotify(supabase),
-    getStrava(supabase),
-    getGitHub(supabase),
-    getDuolingo(supabase),
-    getGarmin(supabase),
-    getNYTimes(supabase),
-    getInstagram(supabase),
+    backOff(() => getLocation(supabase)),
+    backOff(() => getSpotify(supabase)),
+    backOff(() => getStrava(supabase)),
+    backOff(() => getGitHub(supabase)),
+    backOff(() => getDuolingo(supabase)),
+    backOff(() => getGarmin(supabase)),
+    backOff(() => getNYTimes(supabase)),
+    backOff(() => getInstagram(supabase)),
   ]);
 
   return (
