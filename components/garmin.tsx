@@ -19,6 +19,15 @@ type Gender = "male" | "female";
 type AgeGroup = "20-29" | "30-39" | "40-49" | "50-59" | "60-69" | "70-79";
 type Vo2MaxCategory = "poor" | "fair" | "good" | "excellent" | "superior";
 
+/**
+ * VO2 max category thresholds from the Garmin Forerunner 55 Owner's Manual.
+ * Data sourced from The Cooper Institute.
+ *
+ * Note: Some Garmin documentation shows Superior as ">threshold" while the
+ * Forerunner 55 manual shows "≥threshold". We use ≥ here to match the FR55.
+ *
+ * @see https://www8.garmin.com/manuals/webhelp/GUID-3A791586-B59F-4B37-B9C5-5A41F8C6BE0B/EN-GB/GUID-1FBCCD9E-19E1-4E4C-BD60-1793B5B97EB3.html
+ */
 const garminVo2Categories: Record<
   Gender,
   Record<AgeGroup, Record<number, number>>
@@ -26,88 +35,88 @@ const garminVo2Categories: Record<
   male: {
     "20-29": {
       5: 55.4,
-      4: 49.0,
-      3: 43.0,
-      2: 38.0,
+      4: 51.1,
+      3: 45.4,
+      2: 41.7,
       1: 0,
     },
     "30-39": {
       5: 54.0,
-      4: 46.0,
-      3: 41.0,
-      2: 36.0,
+      4: 48.3,
+      3: 44.0,
+      2: 40.5,
       1: 0,
     },
     "40-49": {
       5: 52.5,
-      4: 44.0,
-      3: 38.0,
-      2: 34.0,
+      4: 46.4,
+      3: 42.4,
+      2: 38.5,
       1: 0,
     },
     "50-59": {
       5: 48.9,
-      4: 41.0,
-      3: 35.0,
-      2: 31.0,
+      4: 43.4,
+      3: 39.2,
+      2: 35.6,
       1: 0,
     },
     "60-69": {
       5: 45.7,
-      4: 38.0,
-      3: 32.0,
-      2: 28.0,
+      4: 39.5,
+      3: 35.5,
+      2: 32.3,
       1: 0,
     },
     "70-79": {
       5: 42.1,
-      4: 35.0,
-      3: 29.0,
-      2: 25.0,
+      4: 36.7,
+      3: 32.3,
+      2: 29.4,
       1: 0,
     },
   },
   female: {
     "20-29": {
       5: 49.6,
-      4: 44.0,
-      3: 39.0,
-      2: 35.0,
+      4: 43.9,
+      3: 39.5,
+      2: 36.1,
       1: 0,
     },
     "30-39": {
       5: 47.4,
-      4: 42.0,
-      3: 37.0,
-      2: 33.0,
+      4: 42.4,
+      3: 37.8,
+      2: 34.4,
       1: 0,
     },
     "40-49": {
       5: 45.3,
-      4: 39.0,
-      3: 35.0,
-      2: 31.0,
+      4: 39.7,
+      3: 36.3,
+      2: 33.0,
       1: 0,
     },
     "50-59": {
       5: 41.1,
-      4: 36.0,
-      3: 32.0,
-      2: 28.0,
+      4: 36.7,
+      3: 33.0,
+      2: 30.1,
       1: 0,
     },
     "60-69": {
-      5: 37.7,
+      5: 37.8,
       4: 33.0,
-      3: 29.0,
-      2: 26.0,
+      3: 30.0,
+      2: 27.5,
       1: 0,
     },
     "70-79": {
-      5: 35.0,
-      4: 30.0,
-      3: 26.0,
-      2: 22.0,
+      5: 36.7,
+      4: 30.9,
+      3: 28.1,
+      2: 25.9,
       1: 0,
     },
   },
