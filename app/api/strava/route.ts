@@ -4,7 +4,7 @@ import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
   STRAVA_CLIENT_ID,
   STRAVA_CLIENT_SECRET,
-  STRAVA_REFERSH_TOKEN,
+  STRAVA_REFRESH_TOKEN,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
 import type { StravaActivity } from "@/types/models";
@@ -20,7 +20,7 @@ export const POST = async () => {
       body: new URLSearchParams({
         client_id: STRAVA_CLIENT_ID,
         client_secret: STRAVA_CLIENT_SECRET,
-        refresh_token: STRAVA_REFERSH_TOKEN,
+        refresh_token: STRAVA_REFRESH_TOKEN,
         grant_type: "refresh_token",
       }),
     }),

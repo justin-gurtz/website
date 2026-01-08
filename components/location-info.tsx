@@ -103,7 +103,7 @@ const LocationInfo = ({ location }: { location: Location }) => {
       case Mode.LastSeen:
         return `Last seen: ${getLastSeen(location)}`;
       default:
-        throw new Error(`Invalid elevator mode: ${mode}`);
+        throw new Error(`Invalid mode: ${mode}`);
     }
   }, [mode, location]);
 
