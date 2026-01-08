@@ -204,12 +204,12 @@ const Duolingo = ({
       )}
       contentBrightness="light"
     >
-      <div className="p-5 @sm:p-7 h-[11.25rem]">
+      <div className="p-5 @xs:p-7 h-[11.25rem]">
         <div className="flex justify-between size-full">
           <div
             className={cn(
               "flex flex-col gap-1 dark:gap-2 -mt-1 dark:-mt-0.5",
-              courses.length === 3 && "@sm:justify-between",
+              courses.length === 3 && "@xs:justify-between",
             )}
           >
             {map(courses, (course) => (
