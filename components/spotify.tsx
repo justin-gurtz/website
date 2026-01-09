@@ -116,31 +116,50 @@ const Spotify = ({
 }: {
   data: Pick<SpotifyData, "updatedAt" | "image" | "name" | "by" | "color">;
 }) => {
-  // Use d instead of data here; data controls the animation
-  const [isPlaying, setIsPlaying] = useState(getIsPlaying(d.updatedAt));
-
-  useEffect(() => {
-    setIsPlaying(getIsPlaying(d.updatedAt));
-
-    const interval = setInterval(() => {
-      setIsPlaying(getIsPlaying(d.updatedAt));
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [d.updatedAt]);
-
   const [data, setData] = useState(d);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const pageIsVisible = usePageIsVisible();
+
+  // When song changes (image differs), use data.updatedAt so isPlaying syncs with animation
+  // When same song (only updatedAt changes), use d.updatedAt for instant update
+  const updatedAtForIsPlaying = useMemo(() => {
+    return data.image === d.image ? d.updatedAt : data.updatedAt;
+  }, [data.updatedAt, d.updatedAt, data.image, d.image]);
+
+  const [isPlaying, setIsPlaying] = useState(
+    getIsPlaying(updatedAtForIsPlaying),
+  );
+
+  useEffect(() => {
+    setIsPlaying(getIsPlaying(updatedAtForIsPlaying));
+
+    const interval = setInterval(() => {
+      setIsPlaying(getIsPlaying(updatedAtForIsPlaying));
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [updatedAtForIsPlaying]);
 
   useEffect(() => {
     if (!pageIsVisible) return;
     if (isAnimating) return;
     if (data.image === d.image) return;
 
-    setIsAnimating(true);
-    setData(d);
+    const startAnimation = () => {
+      setIsAnimating(true);
+      setData(d);
+    };
+
+    // Preload the new image before starting the animation
+    if (d.image) {
+      const img = new Image();
+      img.onload = startAnimation;
+      img.onerror = startAnimation; // Still animate even if image fails to load
+      img.src = d.image;
+    } else {
+      startAnimation();
+    }
   }, [d, data, pageIsVisible, isAnimating]);
 
   const handleAnimationComplete = useCallback(() => {
@@ -184,7 +203,7 @@ const Spotify = ({
             />
           </div>
         </div>
-        <div className="flex flex-col gap-0.25 text-white">
+        <div className="flex flex-col gap-0.25 text-white -mb-1">
           <ScrollingText parentPadding={14} className="font-semibold text-xs">
             {data.name}
           </ScrollingText>
