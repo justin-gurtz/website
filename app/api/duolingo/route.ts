@@ -59,7 +59,7 @@ export const POST = async () => {
   if (!isEqual(selectData, newData)) {
     const { error: insertError } = await supabase
       .from("duolingo")
-      .insert({ ...newData, streakOld: newData.streak.length });
+      .insert(newData);
 
     if (insertError) {
       throw new Error(insertError.message);

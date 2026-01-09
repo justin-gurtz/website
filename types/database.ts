@@ -20,21 +20,18 @@ export type Database = {
           created_at: string;
           id: number;
           streak: Json;
-          streak_old: number;
         };
         Insert: {
           courses: Json;
           created_at?: string;
           id?: number;
           streak: Json;
-          streak_old: number;
         };
         Update: {
           courses?: Json;
           created_at?: string;
           id?: number;
           streak?: Json;
-          streak_old?: number;
         };
         Relationships: [];
       };
