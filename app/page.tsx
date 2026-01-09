@@ -72,7 +72,7 @@ const getGitHub = async (supabase: SupabaseClient) => {
 const getDuolingo = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("duolingo")
-    .select("createdAt,streak,courses")
+    .select("createdAt,streak:streakOld,courses")
     .order("createdAt", { ascending: false })
     .limit(1)
     .single();
