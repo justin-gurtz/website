@@ -1,5 +1,4 @@
-import { startOfDay } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 import compact from "lodash/compact";
 import forEach from "lodash/forEach";
 import isString from "lodash/isString";
@@ -8,7 +7,7 @@ import slice from "lodash/slice";
 import localFont from "next/font/local";
 import { useId, useMemo } from "react";
 import Link from "@/components/link";
-import type { DuolingoCourse, DuolingoData, Movement } from "@/types/models";
+import type { DuolingoCourse, DuolingoStreak, Movement } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import DuolingoOwl from "./duolingo-owl";
 
@@ -156,29 +155,24 @@ const DuolingoFlag = ({
 );
 
 const Duolingo = ({
-  learning,
+  data,
   location,
 }: {
-  learning: Pick<DuolingoData, "createdAt" | "streak"> & {
+  data: {
+    streak: DuolingoStreak;
     courses: DuolingoCourse[];
   };
   location: Pick<Movement, "timeZoneId">;
 }) => {
   const hasPracticedToday = useMemo(() => {
     const timeZoneId = location.timeZoneId || "America/New_York";
+    const today = formatInTimeZone(new Date(), timeZoneId, "yyyy-MM-dd");
 
-    const now = new Date();
-    const nowInTimeZone = toZonedTime(now, timeZoneId);
-    const todayStart = startOfDay(nowInTimeZone);
-
-    const createdAt = new Date(learning.createdAt);
-    const createdAtInTimeZone = toZonedTime(createdAt, timeZoneId);
-
-    return createdAtInTimeZone >= todayStart;
-  }, [learning.createdAt, location.timeZoneId]);
+    return data.streak.endDate === today;
+  }, [data.streak.endDate, location.timeZoneId]);
 
   const courses = useMemo(() => {
-    const withFlagOffsets = map(learning.courses, (course) => {
+    const withFlagOffsets = map(data.courses, (course) => {
       if (isString(course.learningLanguage)) {
         const flagOffset = flagOffsets[course.learningLanguage];
 
@@ -193,7 +187,7 @@ const Duolingo = ({
     const withoutNull = compact(withFlagOffsets);
 
     return slice(withoutNull, 0, 3);
-  }, [learning.courses]);
+  }, [data.courses]);
 
   return (
     <Link
@@ -242,7 +236,7 @@ const Duolingo = ({
                     : "text-[#ACACAC] dark:text-[#53676F]",
                 )}
               >
-                {learning.streak}
+                {data.streak.length}
               </p>
             </div>
           </div>

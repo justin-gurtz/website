@@ -2,7 +2,7 @@ import { backOff } from "exponential-backoff";
 import isEqual from "lodash/isEqual";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
-import type { DuolingoCourse, DuolingoData } from "@/types/models";
+import type { DuolingoCourse, DuolingoStreak } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
@@ -10,15 +10,22 @@ const fetchDuolingoData = async (username: string) => {
   const res = await fetch(
     `https://www.duolingo.com/2017-06-30/users?username=${username}`,
   );
+
   if (!res.ok) {
     throw new Error(`Duolingo API error: ${res.status}`);
   }
+
   const data = await res.json();
   const user = data.users?.[0];
+
   if (!user) {
     throw new Error("User not found");
   }
-  return user as { streak: number; courses: DuolingoCourse[] };
+
+  const streak = user.streakData.currentStreak as DuolingoStreak;
+  const courses = user.courses as DuolingoCourse[];
+
+  return { streak, courses };
 };
 
 export const POST = async () => {
@@ -28,7 +35,8 @@ export const POST = async () => {
     fetchDuolingoData("JustinGurtz"),
   );
 
-  const newData = { streak, courses } as Pick<DuolingoData, "streak"> & {
+  const newData = { streak, courses } as {
+    streak: DuolingoStreak;
     courses: DuolingoCourse[];
   };
 
@@ -51,7 +59,7 @@ export const POST = async () => {
   if (!isEqual(selectData, newData)) {
     const { error: insertError } = await supabase
       .from("duolingo")
-      .insert({ ...newData, streakOld: newData.streak });
+      .insert({ ...newData, streakOld: newData.streak.length });
 
     if (insertError) {
       throw new Error(insertError.message);

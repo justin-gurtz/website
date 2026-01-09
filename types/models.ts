@@ -9,7 +9,6 @@ export type GarminData = Tables["garmin"]["Row"];
 export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagramFollows"]["Row"];
-export type DuolingoData = Tables["duolingo"]["Row"];
 
 // JSON payload types (from third-party APIs - keep original casing)
 export type StravaActivity = {
@@ -25,6 +24,12 @@ export type StravaActivity = {
   map: {
     summary_polyline: string;
   };
+};
+
+export type DuolingoStreak = {
+  startDate: string;
+  length: number;
+  endDate: string;
 };
 
 export type DuolingoCourse = {

@@ -15,6 +15,7 @@ import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { BIRTH_DATE, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type {
   DuolingoCourse,
+  DuolingoStreak,
   GitHubContribution,
   StravaActivity,
 } from "@/types/models";
@@ -72,7 +73,7 @@ const getGitHub = async (supabase: SupabaseClient) => {
 const getDuolingo = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("duolingo")
-    .select("createdAt,streak:streakOld,courses")
+    .select("streak,courses")
     .order("createdAt", { ascending: false })
     .limit(1)
     .single();
@@ -81,7 +82,10 @@ const getDuolingo = async (supabase: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return data as Omit<typeof data, "courses"> & { courses: DuolingoCourse[] };
+  return data as {
+    streak: DuolingoStreak;
+    courses: DuolingoCourse[];
+  };
 };
 
 const getStrava = async (supabase: SupabaseClient) => {
@@ -224,7 +228,7 @@ const Page = async () => {
                 <div className="flex gap-3 flex-col-reverse lg:flex-row">
                   <Garmin data={garmin} age={age} />
                   <div className="flex-1">
-                    <Duolingo learning={duolingo} location={location} />
+                    <Duolingo data={duolingo} location={location} />
                   </div>
                 </div>
               </div>
