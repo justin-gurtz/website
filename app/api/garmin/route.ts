@@ -76,7 +76,7 @@ const saveTokens = async (
   const encryptedOauth2 = encryptToken(oauth2Token);
 
   // Upsert: if a row exists, update it; otherwise insert a new one
-  const { error } = await supabase.from("garmin_tokens").upsert(
+  const { error } = await supabase.from("garminTokens").upsert(
     {
       id: 1, // Use a fixed ID since we only need one token set
       oauth1Token: encryptedOauth1,
@@ -95,7 +95,7 @@ const saveTokens = async (
 
 const getStoredTokens = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
-    .from("garmin_tokens")
+    .from("garminTokens")
     .select("oauth1Token, oauth2Token")
     .order("updatedAt", { ascending: false })
     .limit(1)

@@ -12,7 +12,7 @@ export type KeysToCamelCase<T> = T extends object
     : { [K in keyof T as SnakeToCamelCase<K & string>]: T[K] }
   : T;
 
-// Transform Database schema - only Row/Insert/Update keys, not recursively
+// Transform Database schema - table names and Row/Insert/Update keys
 type CamelCaseSchema<D> = {
   [K in keyof D]: K extends "__InternalSupabase"
     ? D[K]
@@ -20,7 +20,7 @@ type CamelCaseSchema<D> = {
       ? {
           [P in keyof D[K]]: P extends "Tables" | "Views"
             ? {
-                [T in keyof D[K][P]]: {
+                [T in keyof D[K][P] as SnakeToCamelCase<T & string>]: {
                   [R in keyof D[K][P][T]]: R extends "Row" | "Insert" | "Update"
                     ? KeysToCamelCase<D[K][P][T][R]>
                     : D[K][P][T][R];

@@ -8,7 +8,7 @@ export type SpotifyData = Tables["spotify"]["Row"];
 export type GarminData = Tables["garmin"]["Row"];
 export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
-export type InstagramFollows = Tables["instagram_follows"]["Row"];
+export type InstagramFollows = Tables["instagramFollows"]["Row"];
 export type DuolingoData = Tables["duolingo"]["Row"];
 
 // JSON payload types (from third-party APIs - keep original casing)

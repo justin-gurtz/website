@@ -108,7 +108,7 @@ export const POST = async () => {
   const followingCount = pageInfo.getFollows() ?? 0;
 
   const { data: followsData, error: followsError } = await supabase
-    .from("instagram_follows")
+    .from("instagramFollows")
     .select("followerCount, followingCount")
     .order("createdAt", { ascending: false })
     .limit(1)
@@ -123,7 +123,7 @@ export const POST = async () => {
     followsData?.followingCount !== followingCount
   ) {
     const { error: insertError } = await supabase
-      .from("instagram_follows")
+      .from("instagramFollows")
       .upsert({
         followerCount,
         followingCount,

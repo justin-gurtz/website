@@ -137,8 +137,13 @@ const wrapClient = (
       const value = Reflect.get(target, prop, receiver);
 
       if (prop === "from") {
-        return (...args: unknown[]) =>
-          wrapQueryBuilder((value as AnyFn).apply(target, args) as object);
+        return (tableName: string, ...rest: unknown[]) =>
+          wrapQueryBuilder(
+            (value as AnyFn).apply(target, [
+              toSnakeCase(tableName),
+              ...rest,
+            ]) as object,
+          );
       }
 
       return typeof value === "function"

@@ -133,7 +133,7 @@ const getNYTimes = async (supabase: SupabaseClient) => {
 
 const getInstagram = async (supabase: SupabaseClient) => {
   const { data: follows, error: followsError } = await supabase
-    .from("instagram_follows")
+    .from("instagramFollows")
     .select("followerCount")
     .order("createdAt", { ascending: false })
     .limit(1)
