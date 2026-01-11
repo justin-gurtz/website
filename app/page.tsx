@@ -1,12 +1,15 @@
 import { differenceInYears, subYears } from "date-fns";
 import { backOff } from "exponential-backoff";
+import compact from "lodash/compact";
+import includes from "lodash/includes";
+import join from "lodash/join";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
 import Garmin from "@/components/garmin";
 import GitHub from "@/components/github";
 import Header from "@/components/header";
-import Instagram from "@/components/instagram";
+// import Instagram from "@/components/instagram";
 import NYTimes from "@/components/nytimes";
 import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
@@ -17,6 +20,7 @@ import type {
   DuolingoCourse,
   DuolingoStreak,
   GitHubContribution,
+  Movement,
   StravaActivity,
 } from "@/types/models";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
@@ -25,19 +29,72 @@ export const revalidate = 60;
 
 const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
 
-const getLocation = async (supabase: SupabaseClient) => {
-  const { data, error } = await supabase
-    .from("movements")
-    .select("movedAt,city,region,country,timeZoneId")
-    .order("movedAt", { ascending: false })
-    .limit(1)
-    .single();
+const getCurrentLocationName = (
+  movement: Pick<Movement, "city" | "region" | "country">,
+) => {
+  const { city, region, country } = movement;
 
-  if (error) {
-    throw new Error(error.message);
+  if (city || region || country) {
+    let array: Array<string | null | undefined> = [];
+
+    if (city) {
+      const prefersRegion = includes(["US", "CA", "AU"], country);
+      const suffix = prefersRegion ? region || country : country || region;
+
+      array = [city, suffix];
+    } else if (region) {
+      array = [region, country];
+    } else {
+      array = [country];
+    }
+
+    const compacted = compact(array);
+
+    if (compacted.length) {
+      return join(compacted, ", ");
+    }
   }
 
-  return data;
+  return null;
+};
+
+const getLocation = async (supabase: SupabaseClient) => {
+  let lastMovedAtChecked = new Date().toISOString();
+
+  // The first, if not second or third movement should have the right data
+  const getCurrentLocation = async () => {
+    const { data, error } = await supabase
+      .from("movements")
+      .select("movedAt,city,region,country,timeZoneId")
+      .lt("movedAt", lastMovedAtChecked)
+      .order("movedAt", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data.timeZoneId) {
+      lastMovedAtChecked = data.movedAt;
+      return getCurrentLocation();
+    }
+
+    const currentLocationName = getCurrentLocationName(data);
+
+    if (!currentLocationName) {
+      lastMovedAtChecked = data.movedAt;
+      return getCurrentLocation();
+    }
+
+    return {
+      timestamp: data.movedAt,
+      name: currentLocationName,
+      timeZoneId: data.timeZoneId,
+    };
+  };
+
+  return getCurrentLocation();
 };
 
 const getSpotify = async (supabase: SupabaseClient) => {

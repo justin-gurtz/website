@@ -6,20 +6,12 @@ import {
   isValid,
 } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
-import compact from "lodash/compact";
 import filter from "lodash/filter";
-import includes from "lodash/includes";
 import isNumber from "lodash/isNumber";
-import join from "lodash/join";
 import values from "lodash/values";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import type { Movement } from "@/types/models";
-
-type Location = Pick<
-  Movement,
-  "movedAt" | "city" | "region" | "country" | "timeZoneId"
->;
+import type { CurrentLocation } from "@/types/models";
 
 enum Mode {
   CurrentLocation,
@@ -29,52 +21,21 @@ enum Mode {
 
 const modes = filter(values(Mode), isNumber);
 
-const getCurrentlyIn = (location: Location) => {
-  const { city, region, country } = location;
+const getLocalTime = (location: CurrentLocation) => {
+  const now = new Date();
+  const date = toZonedTime(now, location.timeZoneId);
 
-  if (city || region || country) {
-    let array: Array<string | null | undefined> = [];
-
-    if (city) {
-      const prefersRegion = includes(["US", "CA", "AU"], country);
-      const suffix = prefersRegion ? region || country : country || region;
-
-      array = [city, suffix];
-    } else if (region) {
-      array = [region, country];
-    } else {
-      array = [country];
-    }
-
-    const compacted = compact(array);
-
-    if (compacted.length) {
-      return join(compacted, ", ");
-    }
+  if (isValid(date)) {
+    return date.toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "numeric",
+      timeZoneName: "short",
+    });
   }
-
-  return "unknown";
 };
 
-const getLocalTime = (location: Location) => {
-  if (location.timeZoneId) {
-    const now = new Date();
-    const date = toZonedTime(now, location.timeZoneId);
-
-    if (isValid(date)) {
-      return date.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "numeric",
-        timeZoneName: "short",
-      });
-    }
-  }
-
-  return "unknown";
-};
-
-const getLastSeen = (location: Location) => {
-  const d = new Date(location.movedAt);
+const getLastSeen = (location: CurrentLocation) => {
+  const d = new Date(location.timestamp);
   const seconds = differenceInSeconds(new Date(), d);
 
   if (seconds < 60) return "Just now";
@@ -83,7 +44,7 @@ const getLastSeen = (location: Location) => {
   return `${distance} ago`;
 };
 
-const LocationInfo = ({ location }: { location: Location }) => {
+const LocationInfo = ({ location }: { location: CurrentLocation }) => {
   const [mode, setMode] = useState(modes[0]);
 
   useEffect(() => {
@@ -97,7 +58,7 @@ const LocationInfo = ({ location }: { location: Location }) => {
   const children = useMemo(() => {
     switch (mode) {
       case Mode.CurrentLocation:
-        return `Currently in: ${getCurrentlyIn(location)}`;
+        return `Currently in: ${location.name}`;
       case Mode.LocalTime:
         return `Local time: ${getLocalTime(location)}`;
       case Mode.LastSeen:

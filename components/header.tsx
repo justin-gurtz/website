@@ -1,15 +1,8 @@
 import Image from "next/image";
 import LocationInfo from "@/components/location-info";
-import type { Movement } from "@/types/models";
+import type { CurrentLocation } from "@/types/models";
 
-const Header = ({
-  location,
-}: {
-  location: Pick<
-    Movement,
-    "movedAt" | "city" | "region" | "country" | "timeZoneId"
-  >;
-}) => {
+const Header = ({ location }: { location: CurrentLocation }) => {
   return (
     <div className="flex gap-4 items-center">
       <Image

@@ -10,6 +10,12 @@ export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagramFollows"]["Row"];
 
+export type CurrentLocation = {
+  timestamp: string;
+  name: string;
+  timeZoneId: string;
+};
+
 // JSON payload types (from third-party APIs - keep original casing)
 export type StravaActivity = {
   id: number;

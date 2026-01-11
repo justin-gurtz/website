@@ -7,7 +7,11 @@ import slice from "lodash/slice";
 import localFont from "next/font/local";
 import { useId, useMemo } from "react";
 import Link from "@/components/link";
-import type { DuolingoCourse, DuolingoStreak, Movement } from "@/types/models";
+import type {
+  CurrentLocation,
+  DuolingoCourse,
+  DuolingoStreak,
+} from "@/types/models";
 import { cn } from "@/utils/tailwind";
 import DuolingoOwl from "./duolingo-owl";
 
@@ -162,13 +166,16 @@ const Duolingo = ({
     streak: DuolingoStreak;
     courses: DuolingoCourse[];
   };
-  location: Pick<Movement, "timeZoneId">;
+  location: CurrentLocation;
 }) => {
   const hasPracticedToday = useMemo(() => {
     if (!data.streak?.endDate) return false;
 
-    const timeZoneId = location.timeZoneId || "America/New_York";
-    const today = formatInTimeZone(new Date(), timeZoneId, "yyyy-MM-dd");
+    const today = formatInTimeZone(
+      new Date(),
+      location.timeZoneId,
+      "yyyy-MM-dd",
+    );
 
     return data.streak.endDate === today;
   }, [data.streak?.endDate, location.timeZoneId]);
