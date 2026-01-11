@@ -7,6 +7,8 @@ import Day from "@/components/github-day";
 import Link from "@/components/link";
 import type { GitHubContribution, GitHubContributionDay } from "@/types/models";
 
+export const githubUrl = "https://github.com/justin-gurtz";
+
 const GitHubLogo = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 98 96"
@@ -46,7 +48,7 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
 
   return (
     <Link
-      href="https://github.com/justin-gurtz"
+      href={githubUrl}
       className="@container bg-white dark:bg-neutral-800 w-full h-[11.25rem]"
       contentBrightness="light"
     >

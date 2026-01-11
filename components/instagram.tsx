@@ -14,6 +14,8 @@ import type { InstagramFollows, InstagramPost } from "@/types/models";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
+export const instagramUrl = "https://www.instagram.com/gurtz";
+
 const InstagramLogo = ({ className }: { className?: string }) => {
   return (
     <svg
@@ -214,7 +216,7 @@ const Instagram = ({
 
   return (
     <Link
-      href="https://www.instagram.com/gurtz"
+      href={instagramUrl}
       className="@container w-full lg:w-[11.25rem] aspect-square bg-black"
       contentBrightness="dark"
       style={{ containerType: "inline-size" }}
