@@ -1,7 +1,6 @@
-export const title = "Justin Gurtz";
-export const description =
+export const websiteTitle = "Justin Gurtz";
+export const websiteDescription =
   "Working at the intersection of design, product, and engineering";
-
 export const websiteUrl = "https://justingurtz.com";
 
 export const instagramUrl = "https://www.instagram.com/gurtz";

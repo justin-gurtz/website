@@ -6,10 +6,10 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import ConsoleEasterEgg from "@/components/console-easter-egg";
 import {
-  description,
   githubUrl,
   instagramUrl,
-  title,
+  websiteDescription,
+  websiteTitle,
   websiteUrl,
   xHandle,
 } from "@/constants";
@@ -22,10 +22,10 @@ const opengraphImage = "/images/headshot/large.png";
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: title,
+  name: websiteTitle,
   url: websiteUrl,
   image: `${websiteUrl}/images/headshot/large.png`,
-  description,
+  description: websiteDescription,
   sameAs: [instagramUrl, githubUrl],
 };
 
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  title,
-  description,
+  title: websiteTitle,
+  description: websiteDescription,
   icons: {
     icon: favicon,
     shortcut: favicon,
