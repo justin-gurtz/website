@@ -192,7 +192,7 @@ const Page = async () => {
     duolingo,
     garmin,
     nytimes,
-    instagram,
+    // instagram,
   ] = await Promise.all([
     backOff(() => getLocation(supabase)),
     backOff(() => getSpotify(supabase)),
@@ -212,7 +212,7 @@ const Page = async () => {
             <Header location={location} />
             <div className="self-end w-full lg:w-auto flex flex-col lg:flex-row gap-3 items-end justify-end">
               <Spotify data={spotify} />
-              <Instagram data={instagram} />
+              {/* <Instagram data={instagram} /> */}
               <NYTimes data={nytimes} />
             </div>
           </div>
