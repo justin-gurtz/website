@@ -27,8 +27,6 @@ import { createClient, type SupabaseClient } from "@/utils/supabase";
 
 export const revalidate = 60;
 
-const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
-
 const getCurrentLocationName = (
   movement: Pick<Movement, "city" | "region" | "country">,
 ) => {
@@ -236,6 +234,8 @@ const getInstagram = async (supabase: SupabaseClient) => {
 };
 
 const Page = async () => {
+  const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
+
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
