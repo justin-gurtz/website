@@ -5,18 +5,19 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import ConsoleEasterEgg from "@/components/console-easter-egg";
-import { githubUrl } from "@/components/github";
-import { instagramUrl } from "@/components/instagram";
+import {
+  description,
+  githubUrl,
+  instagramUrl,
+  title,
+  websiteUrl,
+  xHandle,
+} from "@/constants";
 
 const bodyClassName = `${GeistSans.variable} ${GeistMono.variable} antialiased font-sans text-neutral-800 dark:text-white bg-neutral-100 dark:bg-neutral-900`;
 
 const favicon = "/images/headshot/thumbnail.png";
 const opengraphImage = "/images/headshot/large.png";
-
-const title = "Justin Gurtz";
-const description =
-  "Working at the intersection of design, product, and engineering";
-const websiteUrl = "https://justingurtz.com";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -47,8 +48,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@gurtz",
-    creator: "@gurtz",
+    site: xHandle,
+    creator: xHandle,
   },
 };
 

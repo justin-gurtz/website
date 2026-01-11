@@ -9,12 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { instagramUrl } from "@/constants";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { InstagramFollows, InstagramPost } from "@/types/models";
 import Link from "./link";
 import Timestamp from "./timestamp";
-
-export const instagramUrl = "https://www.instagram.com/gurtz";
 
 const InstagramLogo = ({ className }: { className?: string }) => {
   return (

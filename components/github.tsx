@@ -5,9 +5,8 @@ import times from "lodash/times";
 import { useMemo } from "react";
 import Day from "@/components/github-day";
 import Link from "@/components/link";
+import { githubUrl } from "@/constants";
 import type { GitHubContribution, GitHubContributionDay } from "@/types/models";
-
-export const githubUrl = "https://github.com/justin-gurtz";
 
 const GitHubLogo = ({ className }: { className?: string }) => (
   <svg
