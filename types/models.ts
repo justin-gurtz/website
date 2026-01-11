@@ -30,7 +30,7 @@ export type DuolingoStreak = {
   startDate: string;
   length: number;
   endDate: string;
-};
+} | null;
 
 export type DuolingoCourse = {
   learningLanguage: string;

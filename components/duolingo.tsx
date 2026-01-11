@@ -165,11 +165,13 @@ const Duolingo = ({
   location: Pick<Movement, "timeZoneId">;
 }) => {
   const hasPracticedToday = useMemo(() => {
+    if (!data.streak?.endDate) return false;
+
     const timeZoneId = location.timeZoneId || "America/New_York";
     const today = formatInTimeZone(new Date(), timeZoneId, "yyyy-MM-dd");
 
     return data.streak.endDate === today;
-  }, [data.streak.endDate, location.timeZoneId]);
+  }, [data.streak?.endDate, location.timeZoneId]);
 
   const courses = useMemo(() => {
     const withFlagOffsets = map(data.courses, (course) => {
@@ -236,7 +238,7 @@ const Duolingo = ({
                     : "text-[#ACACAC] dark:text-[#53676F]",
                 )}
               >
-                {data.streak.length}
+                {data.streak?.length ?? 0}
               </p>
             </div>
           </div>

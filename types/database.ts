@@ -19,19 +19,19 @@ export type Database = {
           courses: Json;
           created_at: string;
           id: number;
-          streak: Json;
+          streak: Json | null;
         };
         Insert: {
           courses: Json;
           created_at?: string;
           id?: number;
-          streak: Json;
+          streak?: Json | null;
         };
         Update: {
           courses?: Json;
           created_at?: string;
           id?: number;
-          streak?: Json;
+          streak?: Json | null;
         };
         Relationships: [];
       };
