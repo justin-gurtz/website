@@ -6,7 +6,7 @@ const Header = ({ location }: { location: CurrentLocation }) => {
   return (
     <div className="flex gap-4 items-center">
       <Image
-        src="/images/headshot-thumbnail.png"
+        src="/images/headshot/thumbnail.png"
         alt="Headshot"
         width={50}
         height={50}

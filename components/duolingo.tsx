@@ -149,7 +149,7 @@ const DuolingoFlag = ({
     aria-label="Duolingo Flag"
     role="img"
   >
-    <image href="/svgs/duolingo-flags.svg" />
+    <image href="/images/duolingo/flags.svg" />
   </svg>
 );
 

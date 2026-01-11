@@ -14,7 +14,7 @@ const DuolingoOwl = () => {
   return (
     <Image
       onLoad={handleLoad}
-      src="/images/duo-owl.webp"
+      src="/images/duolingo/owl.webp"
       alt="Duolingo Owl"
       width={100}
       height={100}

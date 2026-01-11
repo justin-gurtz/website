@@ -8,8 +8,8 @@ import ConsoleEasterEgg from "@/components/console-easter-egg";
 
 const bodyClassName = `${GeistSans.variable} ${GeistMono.variable} antialiased font-sans text-neutral-800 dark:text-white bg-neutral-100 dark:bg-neutral-900`;
 
-const favicon = "/images/headshot-thumbnail.png";
-const opengraphImage = "/images/headshot-large.png";
+const favicon = "/images/headshot/thumbnail.png";
+const opengraphImage = "/images/headshot/large.png";
 
 const websiteUrl = "https://justingurtz.com";
 
