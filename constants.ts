@@ -1,3 +1,9 @@
+export const bodyBaseStyles =
+  "antialiased font-sans text-neutral-800 dark:text-white bg-neutral-100 dark:bg-neutral-900";
+
+export const getBodyClassName = (fontVariables: string) =>
+  `${fontVariables} ${bodyBaseStyles}`;
+
 export const websiteTitle = "Justin Gurtz";
 export const websiteDescription =
   "Working at the intersection of design, product, and engineering";

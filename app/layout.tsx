@@ -6,6 +6,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import ConsoleEasterEgg from "@/components/console-easter-egg";
 import {
+  getBodyClassName,
   githubUrl,
   instagramUrl,
   websiteDescription,
@@ -14,7 +15,9 @@ import {
   xHandle,
 } from "@/constants";
 
-const bodyClassName = `${GeistSans.variable} ${GeistMono.variable} antialiased font-sans text-neutral-800 dark:text-white bg-neutral-100 dark:bg-neutral-900`;
+const bodyClassName = getBodyClassName(
+  `${GeistSans.variable} ${GeistMono.variable}`,
+);
 
 const favicon = "/images/headshot/thumbnail.png";
 const opengraphImage = "/images/headshot/large.png";
