@@ -12,7 +12,8 @@ import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 export const POST = async () => {
-  await validatePresharedKey("cron");
+  const authError = await validatePresharedKey("cron");
+  if (authError) return authError;
 
   const tokenRes = await backOff(() =>
     fetch("https://www.strava.com/oauth/token", {

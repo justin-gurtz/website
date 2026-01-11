@@ -16,7 +16,8 @@ import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 export const POST = async () => {
-  await validatePresharedKey("cron");
+  const authError = await validatePresharedKey("cron");
+  if (authError) return authError;
 
   const client = new Client(INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_PAGE_ID);
 

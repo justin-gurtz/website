@@ -29,7 +29,8 @@ const fetchDuolingoData = async (username: string) => {
 };
 
 export const POST = async () => {
-  await validatePresharedKey("cron");
+  const authError = await validatePresharedKey("cron");
+  if (authError) return authError;
 
   const { streak, courses } = await backOff(() =>
     fetchDuolingoData("JustinGurtz"),

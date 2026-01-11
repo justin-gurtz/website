@@ -134,7 +134,8 @@ const getDominantColor = async (
 };
 
 export const POST = async () => {
-  await validatePresharedKey("cron");
+  const authError = await validatePresharedKey("cron");
+  if (authError) return authError;
 
   const tokenRes = await backOff(() =>
     fetch("https://accounts.spotify.com/api/token", {

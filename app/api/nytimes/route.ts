@@ -5,7 +5,8 @@ import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 export const POST = async (request: Request) => {
-  await validatePresharedKey("nytimes");
+  const authError = await validatePresharedKey("nytimes");
+  if (authError) return authError;
 
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
