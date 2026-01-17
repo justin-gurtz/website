@@ -18,6 +18,7 @@ const DuolingoOwl = () => {
       alt="Duolingo Owl"
       width={100}
       height={100}
+      loading="lazy"
       className={cn(
         "absolute bottom-0 right-[10%] @xs:right-[15%] @sm:right-[20%] transition-transform duration-500",
         isVisible ? "translate-y-0" : "translate-y-full",
