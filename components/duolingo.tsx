@@ -196,10 +196,8 @@ const Duolingo = ({
   return (
     <Link
       href="https://www.duolingo.com/profile/JustinGurtz"
-      className={cn(
-        "@container bg-white dark:bg-neutral-800",
-        dinRoundPro.className,
-      )}
+      className={cn("@container", dinRoundPro.className)}
+      standardBackground
       contentBrightness="light"
     >
       <div className="p-5 @xs:p-7 h-[11.25rem]">

@@ -68,7 +68,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
     <div
       className={cn(
         "relative w-full lg:w-[11.25rem] h-[11.25rem]",
-        overflowHidden && "overflow-hidden rounded-squircle",
+        overflowHidden && "overflow-hidden rounded-squircle-outside",
       )}
     >
       <AnimatePresence mode="popLayout">
@@ -92,7 +92,8 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
         >
           <Link
             href={data.url}
-            className="@container size-full bg-white dark:bg-neutral-800"
+            className="@container size-full"
+            standardBackground
             contentBrightness="light"
             disabled={disabled}
           >

@@ -4,7 +4,6 @@ import mapboxgl from "mapbox-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import polyline from "@mapbox/polyline";
-import { type Icon, IconRun } from "@tabler/icons-react";
 import * as turf from "@turf/turf";
 import filter from "lodash/filter";
 import forEach from "lodash/forEach";
@@ -20,71 +19,18 @@ import startsWith from "lodash/startsWith";
 import Link from "@/components/link";
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from "@/env/public";
 import type { StravaActivity } from "@/types/models";
+import { mapboxDarkStyle, mapboxLightStyle } from "@/utils/mapbox-styles";
 import { cn } from "@/utils/tailwind";
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN;
 
 const href = "https://www.strava.com/athletes/gurtz";
 
-const maxZoom = 10.5;
+const maxZoom = 10.4;
 const nycPoint = turf.point([-73.97, 40.725]);
-
-const colorScale = map(
-  [
-    "#0000FF", // blue
-    "#8000FF", // purple
-    "#FF00FF", // magenta
-    "#FF0080", // pink
-    "#FF0000", // red
-    "#FF8000", // orange
-    "#FFFF00", // yellow
-  ],
-  (color, index, array) => ({
-    color,
-    position: index / (array.length - 1),
-    index,
-  }),
-);
 
 const padded = (value: number, radix?: number) =>
   padStart(value.toString(radix), 2, "0");
-
-const interpolateColor = (color1: string, color2: string, factor: number) => {
-  const r1 = parseInt(color1.substring(1, 3), 16);
-  const g1 = parseInt(color1.substring(3, 5), 16);
-  const b1 = parseInt(color1.substring(5, 7), 16);
-  const r2 = parseInt(color2.substring(1, 3), 16);
-  const g2 = parseInt(color2.substring(3, 5), 16);
-  const b2 = parseInt(color2.substring(5, 7), 16);
-
-  const r = Math.round(r1 + factor * (r2 - r1));
-  const g = Math.round(g1 + factor * (g2 - g1));
-  const b = Math.round(b1 + factor * (b2 - b1));
-
-  return `#${padded(r, 16)}${padded(g, 16)}${padded(b, 16)}`;
-};
-
-const getColorForRun = (position: number, totalRuns: number) => {
-  const normalizedPosition = position / (totalRuns - 1);
-  let { color } = colorScale[colorScale.length - 1];
-
-  forEach(colorScale, (scale) => {
-    const i = scale.index;
-
-    if (i > 0 && normalizedPosition <= colorScale[i].position) {
-      const t =
-        (normalizedPosition - colorScale[i - 1].position) /
-        (colorScale[i].position - colorScale[i - 1].position);
-      color = interpolateColor(colorScale[i - 1].color, colorScale[i].color, t);
-
-      return false;
-    }
-
-    return true;
-  });
-
-  return color;
-};
 
 const getComponents = (seconds: number) => {
   const days = Math.floor(seconds / 86400);
@@ -109,37 +55,29 @@ const StravaLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const Stat = ({
-  label,
-  value,
-  icon: OptionalIcon,
-  className,
-}: {
-  label: string;
-  value: string;
-  icon?: Icon;
-  className?: string;
-}) => (
-  <div
-    className={cn(
-      "flex flex-col gap-0 items-start",
-      OptionalIcon ? "items-end" : undefined,
-      className,
-    )}
+const RunIcon = ({ className }: { className?: string }) => (
+  <svg
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
   >
-    <p className="text-xs text-white/50 -mb-0.5">{label}</p>
-    <div className="flex items-center gap-0.5">
-      {OptionalIcon && (
-        <OptionalIcon size={18} stroke={2.5} className="stroke-white" />
-      )}
-      <p className="text-md text-white font-semibold tabular-nums">{value}</p>
-    </div>
-  </div>
+    <title>Run</title>
+    <path
+      d="M8.688 0C8.025 0 7.38.215 6.85.613l-3.32 2.49-2.845.948A1 1 0 000 5c0 1.579.197 2.772.567 3.734.376.978.907 1.654 1.476 2.223.305.305.6.567.886.82.785.697 1.5 1.33 2.159 2.634 1.032 2.57 2.37 4.748 4.446 6.27C11.629 22.218 14.356 23 18 23c2.128 0 3.587-.553 4.549-1.411a4.378 4.378 0 001.408-2.628c.152-.987-.389-1.787-.967-2.25l-3.892-3.114a1 1 0 01-.329-.477l-3.094-9.726A2 2 0 0013.769 2h-1.436a2 2 0 00-1.2.4l-.57.428-.516-1.803A1.413 1.413 0 008.688 0zM8.05 2.213c.069-.051.143-.094.221-.127l1.168 4.086L12.333 4h1.436l.954 3H12v2h3.36l.318 1H13v2h3.314l.55 1.726a3 3 0 00.984 1.433l3.106 2.485c-.77.19-1.778.356-2.954.356-1.97 0-3.178-.431-4.046-1.087-.895-.677-1.546-1.675-2.251-3.056-.224-.437-.45-.907-.688-1.403C9.875 10.08 8.444 7.1 5.531 4.102zM3.743 5.14c2.902 2.858 4.254 5.664 5.441 8.126.25.517.49 1.018.738 1.502.732 1.432 1.55 2.777 2.827 3.74C14.053 19.495 15.72 20 18 20c1.492 0 2.754-.23 3.684-.479a2.285 2.285 0 01-.467.575c-.5.446-1.435.904-3.217.904-3.356 0-5.629-.718-7.284-1.931-1.663-1.22-2.823-3.028-3.788-5.44a1.012 1.012 0 00-.034-.076c-.853-1.708-1.947-2.673-2.79-3.417a14.61 14.61 0 01-.647-.593c-.431-.431-.775-.88-1.024-1.527-.21-.545-.367-1.271-.417-2.3z"
+      fill=""
+    ></path>
+  </svg>
 );
 
-const Rule = () => (
-  <div className="py-0.5 -mt-0.5">
-    <div className="w-px h-full bg-white/25" />
+const Stat = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex flex-col gap-0 items-start">
+    <p className="text-[0.625rem] text-neutral-600 dark:text-neutral-200">
+      {label}
+    </p>
+    <p className="text-sm font-bold">{value}</p>
   </div>
 );
 
@@ -147,10 +85,13 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   const previousRuns = useRef<StravaActivity[]>([]);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapbox = useRef<mapboxgl.Map | null>(null);
+  const isInitialStyleRef = useRef(true);
 
   const [mapIsReady, setMapIsReady] = useState(false);
   const [hasAddedRunsToMap, setHasAddedRunsToMap] = useState(false);
   const [mapClassName, setMapClassName] = useState("opacity-0");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [styleVersion, setStyleVersion] = useState(0);
 
   const runs = useMemo(() => {
     return filter(activities, ({ visibility }) => visibility === "everyone");
@@ -183,17 +124,61 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
       distance: `${milesString} mi`,
       pace: `${p.hours}:${padded(p.minutes)} /mi`,
       time: join(slicedTStrings, " "),
-      totalRuns: runs.length.toString(),
+      totalRuns: runs.length,
     };
   }, [runs]);
+
+  // Detect and listen for system dark mode changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDarkMode(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Update map style when dark mode changes
+  useEffect(() => {
+    if (!mapbox.current || !mapIsReady) return;
+
+    // Skip the first render - initial style is set during map creation
+    if (isInitialStyleRef.current) {
+      isInitialStyleRef.current = false;
+      return;
+    }
+
+    const map = mapbox.current;
+
+    const readdRuns = () => {
+      previousRuns.current = [];
+      setStyleVersion((v) => v + 1);
+    };
+
+    map.setStyle(isDarkMode ? mapboxDarkStyle : mapboxLightStyle);
+
+    // Style loads synchronously with local objects, so use idle event
+    map.once("idle", readdRuns);
+
+    return () => {
+      map.off("idle", readdRuns);
+    };
+  }, [isDarkMode, mapIsReady]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
     if (mapbox.current) return;
 
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+
     mapbox.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: prefersDark ? mapboxDarkStyle : mapboxLightStyle,
       attributionControl: false,
       logoPosition: "bottom-left",
       center: nycPoint.geometry.coordinates as [number, number],
@@ -213,6 +198,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     });
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: styleVersion triggers re-add after style change
   useEffect(() => {
     if (runs.length === 0) return;
     if (!mapbox.current) return;
@@ -274,26 +260,28 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
         },
       });
 
-      const runColor = getColorForRun(index, array.length);
-
-      currentMap.addLayer({
-        id: layerId,
-        type: "line",
-        source: sourceId,
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
+      currentMap.addLayer(
+        {
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": "#FC4C02",
+            "line-width": 1.25,
+            "line-emissive-strength": 1,
+          },
         },
-        paint: {
-          "line-color": runColor,
-          "line-width": 1.75,
-        },
-      });
+        "water-label", // Insert below labels
+      );
     });
 
     if (!bounds.isEmpty()) {
       mapbox.current.fitBounds(bounds, {
-        padding: { top: 100, right: 50, bottom: 100, left: 50 },
+        padding: 50,
         animate: hasAddedRunsToMap,
         maxZoom,
       });
@@ -302,7 +290,7 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     setHasAddedRunsToMap(true);
 
     previousRuns.current = runs;
-  }, [mapIsReady, runs, hasAddedRunsToMap]);
+  }, [mapIsReady, runs, hasAddedRunsToMap, styleVersion]);
 
   useEffect(() => {
     if (!mapbox.current) return;
@@ -326,32 +314,31 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
     <Link
       href={href}
       className="@container absolute size-full"
-      contentBrightness="dark"
+      standardBackground
+      contentBrightness="light"
     >
-      <div className="absolute size-full bg-[#1f1f1f]">
-        <div
-          ref={mapContainer}
-          className={cn(
-            "absolute size-full [&_.mapboxgl-ctrl]:hidden!",
-            mapClassName,
-          )}
-        />
-      </div>
-      <div className="absolute top-0 right-0 left-0 p-3 @xs:p-4 bg-linear-to-b from-black/50 to-black/0 flex items-start justify-between">
-        <StravaLogo className="h-4" />
-        <Stat
-          label="Past Year Runs"
-          value={totalRuns}
-          icon={IconRun}
-          className="-mt-0.5"
-        />
-      </div>
-      <div className="absolute right-0 bottom-0 left-0 px-3 py-2.5 @xs:px-4 @xs:py-3.5 bg-linear-to-t from-black/50 to-black/0 flex flex-wrap gap-3 @xs:gap-4">
-        <Stat label="Distance" value={distance} />
-        <Rule />
-        <Stat label="Pace" value={pace} />
-        <Rule />
-        <Stat label="Time" value={time} />
+      <div className="size-full px-3 py-2.5 @xs:px-4 @xs:py-3.5 flex flex-col gap-5 items-start">
+        <div className="flex flex-col gap-3 items-start">
+          <p className="font-bold text-lg">
+            {totalRuns} Past Year Run{totalRuns === 1 ? "" : "s"}{" "}
+            <RunIcon className="inline-block size-4.5 ml-0.5" />
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Stat label="Distance" value={distance} />
+            <Stat label="Pace" value={pace} />
+            <Stat label="Time" value={time} />
+          </div>
+        </div>
+        <div className="w-full flex-1 bg-black/4 dark:bg-white/4 rounded-squircle-inside overflow-hidden relative">
+          <div
+            ref={mapContainer}
+            className={cn(
+              "absolute size-full [&_.mapboxgl-ctrl]:hidden!",
+              mapClassName,
+            )}
+          />
+        </div>
+        <StravaLogo className="h-3.5 mt-2 mb-1" />
       </div>
     </Link>
   );

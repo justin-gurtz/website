@@ -153,7 +153,7 @@ const PostView = ({
   ]);
 
   return (
-    <div className="relative block size-full rounded-squircle overflow-hidden bg-neutral-400 dark:bg-neutral-800">
+    <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
       {/** biome-ignore lint/performance/noImgElement: dynamic image */}
       <img
         src={image}

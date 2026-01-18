@@ -7,6 +7,7 @@ const Link = ({
   href,
   className,
   children,
+  standardBackground,
   contentBrightness,
   style,
   disabled,
@@ -14,6 +15,7 @@ const Link = ({
   href: string;
   className?: string;
   children: React.ReactNode;
+  standardBackground?: boolean;
   contentBrightness: "light" | "dark";
   style?: React.CSSProperties;
   disabled?: boolean;
@@ -31,7 +33,8 @@ const Link = ({
       target={target}
       href={href}
       className={cn(
-        "block relative overflow-hidden rounded-squircle z-0 transition-[box-shadow,scale,z-index] duration-200",
+        "block relative overflow-hidden rounded-squircle-outside z-0 transition-[box-shadow,scale,z-index] duration-200",
+        standardBackground && "bg-white dark:bg-neutral-800",
         disabled
           ? "pointer-events-none"
           : [
@@ -50,7 +53,7 @@ const Link = ({
           contentBrightness === "light"
             ? "border-[1px] lg:border-[0.5px] border-neutral-200 lg:border-neutral-300 dark:border-neutral-700"
             : "dark:border-[1px] lg:dark:border-[0.5px] dark:border-neutral-700",
-          "absolute inset-0 pointer-events-none rounded-squircle",
+          "absolute inset-0 pointer-events-none rounded-squircle-outside",
         )}
       />
     </NextLink>

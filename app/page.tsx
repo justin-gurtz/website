@@ -275,7 +275,7 @@ const Page = async () => {
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
             <div className="w-full lg:max-w-[23.25rem]">
-              <div className="relative pb-[125%] lg:pb-[152%]">
+              <div className="relative pb-[152%]">
                 <Strava activities={strava} />
               </div>
             </div>

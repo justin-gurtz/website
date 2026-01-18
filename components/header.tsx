@@ -10,7 +10,7 @@ const Header = ({ location }: { location: CurrentLocation }) => {
         alt="Headshot"
         width={50}
         height={50}
-        className="rounded-lg bg-black/5 dark:bg-white/5"
+        className="rounded-squircle-inside bg-black/5 dark:bg-white/5"
         priority
       />
       <div className="flex flex-col gap-0.5">

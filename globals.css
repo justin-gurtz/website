@@ -25,13 +25,23 @@
     border-color: var(--color-gray-200, currentColor);
   }
 
-  .rounded-squircle {
+  .rounded-squircle-inside {
+    border-radius: 0.5rem;
+  }
+
+  .rounded-squircle-outside {
     border-radius: 0.75rem;
   }
 
   /* biome-ignore lint/correctness/noUnknownProperty: corner-shape: squircle is experimental */
   @supports (corner-shape: squircle) {
-    .rounded-squircle {
+    .rounded-squircle-inside {
+      /* biome-ignore lint/correctness/noUnknownProperty: corner-shape: squircle is experimental */
+      corner-shape: squircle;
+      border-radius: 0.83rem;
+    }
+
+    .rounded-squircle-outside {
       /* biome-ignore lint/correctness/noUnknownProperty: corner-shape: squircle is experimental */
       corner-shape: squircle;
       border-radius: 1.25rem;

@@ -48,7 +48,8 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
   return (
     <Link
       href={githubUrl}
-      className="@container bg-white dark:bg-neutral-800 w-full h-[11.25rem]"
+      className="@container w-full h-[11.25rem]"
+      standardBackground
       contentBrightness="light"
     >
       <div className="size-full px-3 py-3 @xs:px-4 @xs:py-4 flex flex-col justify-between">
