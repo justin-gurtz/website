@@ -40,6 +40,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   const [disabled, setDisabled] = useState(true);
 
   const isFirstRender = useRef(true);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pageIsVisible = usePageIsVisible();
 
   useEffect(() => {
@@ -49,13 +50,17 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
 
     setDisabled(true);
 
-    const timeout = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setOverflowHidden(true);
       setData(d);
     }, 200);
-
-    return () => clearTimeout(timeout);
   }, [d, data, pageIsVisible, disabled]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const handleAnimationComplete = useCallback(() => {
     isFirstRender.current = false;
