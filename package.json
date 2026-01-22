@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
-    "@tailwindcss/postcss": "^4.1.13",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/lodash": "^4.17.20",
     "@types/mapbox__polyline": "^1.0.5",
     "@types/node": "^24.3.1",
@@ -52,7 +52,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.2"
   },
   "lint-staged": {
