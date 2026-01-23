@@ -200,7 +200,7 @@ const Duolingo = ({
       standardBackground
       contentBrightness="light"
     >
-      <div className="p-5 @xs:p-7 h-[11.25rem]">
+      <div className="p-5 @xs:p-7 h-45">
         <div className="flex justify-between size-full">
           <div
             className={cn(

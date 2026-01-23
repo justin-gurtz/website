@@ -216,7 +216,7 @@ const Instagram = ({
   return (
     <Link
       href={instagramUrl}
-      className="@container w-full lg:w-[11.25rem] aspect-square bg-black"
+      className="@container w-full lg:w-45 aspect-square bg-black"
       contentBrightness="dark"
       style={{ containerType: "inline-size" }}
     >

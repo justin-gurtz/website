@@ -48,7 +48,7 @@ const GitHub = ({ contributions }: { contributions: GitHubContribution[] }) => {
   return (
     <Link
       href={githubUrl}
-      className="@container w-full h-[11.25rem]"
+      className="@container w-full h-45"
       standardBackground
       contentBrightness="light"
     >

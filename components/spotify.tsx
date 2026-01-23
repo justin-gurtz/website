@@ -121,25 +121,23 @@ const Spotify = ({
 
   const pageIsVisible = usePageIsVisible();
 
-  // When song changes (image differs), use data.updatedAt so isPlaying syncs with animation
+  // When song changes (image differs), use data.updatedAt so display syncs with animation
   // When same song (only updatedAt changes), use d.updatedAt for instant update
-  const updatedAtForIsPlaying = useMemo(() => {
+  const displayedUpdatedAt = useMemo(() => {
     return data.image === d.image ? d.updatedAt : data.updatedAt;
   }, [data.updatedAt, d.updatedAt, data.image, d.image]);
 
-  const [isPlaying, setIsPlaying] = useState(
-    getIsPlaying(updatedAtForIsPlaying),
-  );
+  const [isPlaying, setIsPlaying] = useState(getIsPlaying(displayedUpdatedAt));
 
   useEffect(() => {
-    setIsPlaying(getIsPlaying(updatedAtForIsPlaying));
+    setIsPlaying(getIsPlaying(displayedUpdatedAt));
 
     const interval = setInterval(() => {
-      setIsPlaying(getIsPlaying(updatedAtForIsPlaying));
+      setIsPlaying(getIsPlaying(displayedUpdatedAt));
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [updatedAtForIsPlaying]);
+  }, [displayedUpdatedAt]);
 
   useEffect(() => {
     if (!pageIsVisible) return;
@@ -176,7 +174,7 @@ const Spotify = ({
   return (
     <Link
       href="https://open.spotify.com/user/gurtz"
-      className="size-[11.25rem]"
+      className="size-45"
       contentBrightness="dark"
     >
       <div
@@ -191,12 +189,12 @@ const Spotify = ({
             <Timestamp
               ago
               className="text-white text-xs opacity-80"
-              date={data.updatedAt}
+              date={displayedUpdatedAt}
             />
           )}
         </div>
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 aspect-square [perspective:500px]">
+          <div className="absolute inset-y-0 left-0 aspect-square perspective-normal">
             <AlbumArt
               data={data}
               onAnimationComplete={handleAnimationComplete}

@@ -72,7 +72,7 @@ const NYTimes = ({ data: d }: { data: Pick<NYTimesData, "title" | "url"> }) => {
   return (
     <div
       className={cn(
-        "relative w-full lg:w-[11.25rem] h-[11.25rem]",
+        "relative w-full lg:w-45 h-45",
         overflowHidden && "overflow-hidden rounded-squircle-outside",
       )}
     >
