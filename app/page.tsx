@@ -9,7 +9,7 @@ import Footer from "@/components/footer";
 import Garmin from "@/components/garmin";
 import GitHub from "@/components/github";
 import Header from "@/components/header";
-// import Instagram from "@/components/instagram";
+import Instagram from "@/components/instagram";
 import NYTimes from "@/components/nytimes";
 import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
@@ -215,22 +215,46 @@ const getInstagram = async (supabase: SupabaseClient) => {
     throw new Error(pastYearError.message);
   }
 
-  if (pastYearPosts.length) {
-    return { ...follows, posts: pastYearPosts };
+  let posts = pastYearPosts;
+
+  if (!posts.length) {
+    const { data: fallbackPosts, error: fallbackError } = await supabase
+      .from("instagram")
+      .select("id,images,caption,postedAt")
+      .not("images", "eq", "{}")
+      .order("postedAt", { ascending: false, nullsFirst: false })
+      .limit(1);
+
+    if (fallbackError) {
+      throw new Error(fallbackError.message);
+    }
+
+    posts = fallbackPosts;
   }
 
-  const { data: fallbackPosts, error: fallbackError } = await supabase
+  // Generate signed URLs for all storage paths
+  const allPaths = posts.flatMap((post) => post.images);
+  const { data: signedUrls, error: signedError } = await supabase.storage
     .from("instagram")
-    .select("id,images,caption,postedAt")
-    .not("images", "eq", "{}")
-    .order("postedAt", { ascending: false, nullsFirst: false })
-    .limit(1);
+    .createSignedUrls(allPaths, 3600); // 1 hour expiration
 
-  if (fallbackError) {
-    throw new Error(fallbackError.message);
+  if (signedError) {
+    throw new Error(signedError.message);
   }
 
-  return { ...follows, posts: fallbackPosts };
+  // Map paths to signed URLs
+  const pathToUrl = new Map(
+    signedUrls.map((item) => [item.path, item.signedUrl]),
+  );
+
+  const postsWithSignedUrls = posts.map((post) => ({
+    ...post,
+    images: post.images
+      .map((path) => pathToUrl.get(path))
+      .filter((url): url is string => !!url),
+  }));
+
+  return { ...follows, posts: postsWithSignedUrls };
 };
 
 const Page = async () => {
@@ -249,7 +273,7 @@ const Page = async () => {
     duolingo,
     garmin,
     nytimes,
-    // instagram,
+    instagram,
   ] = await Promise.all([
     backOff(() => getLocation(supabase)),
     backOff(() => getSpotify(supabase)),
@@ -264,17 +288,17 @@ const Page = async () => {
   return (
     <>
       <div className="min-h-svh flex items-center justify-center p-5 sm:p-10">
-        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-[59.25rem]">
+        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-237">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
             <Header location={location} />
             <div className="self-end w-full lg:w-auto flex flex-col lg:flex-row gap-3 items-end justify-end">
               <Spotify data={spotify} />
-              {/* <Instagram data={instagram} /> */}
+              <Instagram data={instagram} />
               <NYTimes data={nytimes} />
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
-            <div className="w-full lg:max-w-[23.25rem]">
+            <div className="w-full lg:max-w-93">
               <div className="relative pb-[152%]">
                 <Strava activities={strava} />
               </div>

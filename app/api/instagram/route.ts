@@ -15,6 +15,49 @@ import {
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
+// Upload image to Supabase Storage, returns the storage path
+const uploadImage = async (
+  supabase: ReturnType<typeof createClient>,
+  postId: string,
+  imageIndex: number,
+  imageUrl: string,
+): Promise<string | null> => {
+  const storagePath = `${postId}/${imageIndex}.jpg`;
+
+  // Check if file already exists
+  const { data: existingFile } = await supabase.storage
+    .from("instagram")
+    .list(postId, { limit: 1, search: `${imageIndex}.jpg` });
+
+  if (existingFile && existingFile.length > 0) {
+    return storagePath;
+  }
+
+  // Download image from Instagram CDN
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    console.error(`Failed to fetch image: ${imageUrl}`);
+    return null;
+  }
+
+  const blob = await response.blob();
+
+  // Upload to Supabase Storage
+  const { error } = await supabase.storage
+    .from("instagram")
+    .upload(storagePath, blob, {
+      contentType: "image/jpeg",
+      upsert: true,
+    });
+
+  if (error) {
+    console.error(`Failed to upload image: ${error.message}`);
+    return null;
+  }
+
+  return storagePath;
+};
+
 export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
@@ -34,6 +77,11 @@ export const POST = async () => {
   );
 
   const pageInfo = await pageInfoRequest.execute();
+
+  const supabase = createClient(
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+  );
 
   // Recursively fetch all pages of media
   const allMedia: MediaData[] = [];
@@ -58,10 +106,10 @@ export const POST = async () => {
 
   await fetchAllMedia(pageMediaRequest);
 
-  // Fetch images for each post (including carousel children)
+  // Fetch images for each post (including carousel children) and upload to storage
   const posts = await Promise.all(
     allMedia.map(async (post) => {
-      let images: string[] = [];
+      let imageUrls: string[] = [];
 
       if (post.media_type === "CAROUSEL_ALBUM") {
         try {
@@ -83,26 +131,32 @@ export const POST = async () => {
               return mediaResponse.getMediaUrl();
             }),
           );
-          images = childMediaUrls.filter((url): url is string => !!url);
+          imageUrls = childMediaUrls.filter((url): url is string => !!url);
         } catch {
           // Fallback below will handle this
         }
 
         // Fallback to cover image if children fetch failed
-        if (images.length === 0 && post.media_url) {
-          images = [post.media_url];
+        if (imageUrls.length === 0 && post.media_url) {
+          imageUrls = [post.media_url];
         }
       } else if (post.media_url) {
-        images = [post.media_url];
+        imageUrls = [post.media_url];
       }
+
+      // Upload images to Supabase Storage
+      const storagePaths = await Promise.all(
+        imageUrls.map((url, index) =>
+          uploadImage(supabase, post.id, index, url),
+        ),
+      );
+
+      const images = storagePaths.filter(
+        (path): path is string => path !== null,
+      );
 
       return { ...post, images };
     }),
-  );
-
-  const supabase = createClient(
-    NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
   );
 
   const followerCount = pageInfo.getFollowers() ?? 0;
