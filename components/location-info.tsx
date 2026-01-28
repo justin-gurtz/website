@@ -75,7 +75,7 @@ const LocationInfo = ({ location }: { location: CurrentLocation }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="text-sm text-neutral-500 leading-tight line-clamp-1"
+        className="text-[0.8125rem] text-neutral-500 dark:text-neutral-400 leading-tight line-clamp-1"
       >
         {children}
       </motion.p>

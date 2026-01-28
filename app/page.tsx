@@ -259,6 +259,7 @@ const getInstagram = async (supabase: SupabaseClient) => {
 
 const Page = async () => {
   const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
+  const showSeriesACopy = Date.now() < Date.UTC(2026, 9, 1); // October 1, 2026 UTC
 
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
@@ -290,11 +291,12 @@ const Page = async () => {
       <div className="min-h-svh flex items-center justify-center p-5 sm:p-10">
         <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-237">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
-            <Header location={location} />
+            <div className="w-full lg:max-w-93">
+              <Header location={location} showSeriesACopy={showSeriesACopy} />
+            </div>
             <div className="self-end w-full lg:w-auto flex flex-col lg:flex-row gap-3 items-end justify-end">
               <Spotify data={spotify} />
               <Instagram data={instagram} />
-              <NYTimes data={nytimes} />
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
@@ -303,17 +305,18 @@ const Page = async () => {
                 <Strava activities={strava} />
               </div>
             </div>
-            <div className="w-full flex flex-col gap-20 lg:gap-3">
+            <div className="w-full flex flex-col gap-3">
               <div className="flex flex-col gap-3">
-                <GitHub contributions={github} />
-                <div className="flex gap-3 flex-col-reverse lg:flex-row">
-                  <Garmin data={garmin} age={age} />
+                <div className="flex gap-3 flex-col lg:flex-row">
+                  <NYTimes data={nytimes} />
                   <div className="flex-1">
                     <Duolingo data={duolingo} location={location} />
                   </div>
                 </div>
+                <GitHub contributions={github} />
               </div>
-              <div className="flex-1 flex items-end">
+              <div className="flex-1 flex flex-col lg:flex-row-reverse justify-between lg:items-end gap-20 lg:gap-3">
+                <Garmin data={garmin} age={age} />
                 <Footer />
               </div>
             </div>
