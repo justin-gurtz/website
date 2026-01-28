@@ -13,4 +13,4 @@ minimumReleaseAgeExclude:
   - next
   - react
   - react-dom
-  - '@next/env'
+  - '@next/*'
