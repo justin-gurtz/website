@@ -1,5 +1,7 @@
 import LocationInfo from "@/components/location-info";
+import { bodyBaseStyles } from "@/constants";
 import type { CurrentLocation } from "@/types/models";
+import { cn } from "@/utils/tailwind";
 
 const Link = ({
   href,
@@ -13,7 +15,10 @@ const Link = ({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="underline underline-offset-2"
+      className={cn(
+        bodyBaseStyles,
+        "hover:underline hover:underline-offset-2 font-medium",
+      )}
     >
       {children}
     </a>
@@ -29,8 +34,8 @@ const Header = ({
 }) => {
   return (
     <div className="flex flex-col gap-3">
-      <h1 className="text-2xl font-bold leading-tight">Hey! I'm Justin.</h1>
-      <p className="text-pretty text-sm">
+      <h1 className="text-2xl font-bold leading-tight">Hey, I'm Justin.</h1>
+      <p className="text-pretty text-sm text-neutral-500 dark:text-neutral-400">
         I'm an engineer at <Link href="https://boldvoice.com/">BoldVoice</Link>{" "}
         where{" "}
         {showSeriesACopy ? (
