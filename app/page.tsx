@@ -288,11 +288,13 @@ const Page = async () => {
 
   return (
     <>
-      <div className="min-h-svh flex items-center justify-center p-5 sm:p-10">
-        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-237">
+      <div className="min-h-svh flex items-center [@media(min-height:56.25rem)]:items-end justify-center p-5 sm:p-10 xl:p-14">
+        <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-237 xl:max-w-none">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
-            <div className="w-full lg:max-w-93">
-              <Header location={location} showSeriesACopy={showSeriesACopy} />
+            <div className="flex-1">
+              <div className="w-full lg:max-w-93 [@media(min-height:56.25rem)]:absolute [@media(min-height:56.25rem)]:left-14 [@media(min-height:56.25rem)]:top-14">
+                <Header location={location} showSeriesACopy={showSeriesACopy} />
+              </div>
             </div>
             <div className="self-end w-full lg:w-auto flex flex-col lg:flex-row gap-3 items-end justify-end">
               <Spotify data={spotify} />
@@ -306,7 +308,7 @@ const Page = async () => {
               </div>
             </div>
             <div className="w-full flex flex-col gap-3">
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 xl:max-w-141 xl:w-full xl:ml-auto">
                 <div className="flex gap-3 flex-col lg:flex-row">
                   <NYTimes data={nytimes} />
                   <div className="flex-1">
