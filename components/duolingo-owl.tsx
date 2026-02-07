@@ -1,15 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/utils/tailwind";
 
 const DuolingoOwl = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const handleLoad = useCallback(() => {
-    setIsVisible(true);
+    setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const timeout = setTimeout(() => setIsReady(true), 2000);
+    return () => clearTimeout(timeout);
+  }, [isLoaded]);
 
   return (
     <Image
@@ -22,7 +29,7 @@ const DuolingoOwl = () => {
       unoptimized
       className={cn(
         "absolute bottom-0 right-[10%] @xs:right-[15%] @sm:right-[20%] transition-transform duration-500",
-        isVisible ? "translate-y-0" : "translate-y-full",
+        isReady ? "translate-y-0" : "translate-y-full",
       )}
     />
   );
