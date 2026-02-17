@@ -232,29 +232,15 @@ const getInstagram = async (supabase: SupabaseClient) => {
     posts = fallbackPosts;
   }
 
-  // Generate signed URLs for all storage paths
-  const allPaths = posts.flatMap((post) => post.images);
-  const { data: signedUrls, error: signedError } = await supabase.storage
-    .from("instagram")
-    .createSignedUrls(allPaths, 3600); // 1 hour expiration
-
-  if (signedError) {
-    throw new Error(signedError.message);
-  }
-
-  // Map paths to signed URLs
-  const pathToUrl = new Map(
-    signedUrls.map((item) => [item.path, item.signedUrl]),
-  );
-
-  const postsWithSignedUrls = posts.map((post) => ({
+  const postsWithPublicUrls = posts.map((post) => ({
     ...post,
-    images: post.images
-      .map((path) => pathToUrl.get(path))
-      .filter((url): url is string => !!url),
+    images: post.images.map(
+      (path) =>
+        supabase.storage.from("instagram").getPublicUrl(path).data.publicUrl,
+    ),
   }));
 
-  return { ...follows, posts: postsWithSignedUrls };
+  return { ...follows, posts: postsWithPublicUrls };
 };
 
 const Page = async () => {
