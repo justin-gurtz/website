@@ -68,7 +68,8 @@
     "overrides": {
       "webpack": "5.105.2",
       "axios": ">=1.13.5",
-      "qs": ">=6.14.2"
+      "qs": ">=6.14.2",
+      "minimatch": ">=10.0.0"
     },
     "ignoredBuiltDependencies": [
       "@sentry/cli",
