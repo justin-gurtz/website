@@ -26,16 +26,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   async headers() {
-    return [
-      { source: "/(.*)", headers: securityHeaders },
-      {
-        source: "/demo.mov",
-        headers: [
-          { key: "Content-Type", value: "video/mp4" },
-          { key: "Content-Disposition", value: "inline" },
-        ],
-      },
-    ];
+    return [{ source: "/(.*)", headers: securityHeaders }];
   },
   async redirects() {
     return botRedirects.map((redirect) => ({
