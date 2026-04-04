@@ -1,7 +1,12 @@
 import { headers } from "next/headers";
-import { CRON_PRESHARED_KEY, NYTIMES_PRESHARED_KEY } from "@/env/secret";
+import {
+  CLAUDE_PRESHARED_KEY,
+  CRON_PRESHARED_KEY,
+  NYTIMES_PRESHARED_KEY,
+} from "@/env/secret";
 
 const presharedKeys = {
+  claude: CLAUDE_PRESHARED_KEY,
   cron: CRON_PRESHARED_KEY,
   nytimes: NYTIMES_PRESHARED_KEY,
 };

@@ -14,6 +14,36 @@ export type Database = {
   };
   public: {
     Tables: {
+      claude: {
+        Row: {
+          created_at: string;
+          device: string;
+          period: string;
+          input_tokens: number;
+          model: string;
+          output_tokens: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          device: string;
+          period: string;
+          input_tokens: number;
+          model: string;
+          output_tokens: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          device?: string;
+          period?: string;
+          input_tokens?: number;
+          model?: string;
+          output_tokens?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       duolingo: {
         Row: {
           courses: Json;
