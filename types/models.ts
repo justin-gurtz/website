@@ -9,9 +9,9 @@ export type GarminData = Tables["garmin"]["Row"];
 export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagramFollows"]["Row"];
+export type ClaudeData = Tables["claude"]["Row"];
 
 export type CurrentLocation = {
-  timestamp: string;
   name: string;
   timeZoneId: string;
 };

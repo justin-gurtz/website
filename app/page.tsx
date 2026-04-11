@@ -1,4 +1,4 @@
-import { differenceInYears, subYears } from "date-fns";
+import { subDays, subYears } from "date-fns";
 import { backOff } from "exponential-backoff";
 import compact from "lodash/compact";
 import includes from "lodash/includes";
@@ -6,7 +6,6 @@ import join from "lodash/join";
 import map from "lodash/map";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
-import Garmin from "@/components/garmin";
 import GitHub from "@/components/github";
 import Header from "@/components/header";
 import Instagram from "@/components/instagram";
@@ -15,7 +14,7 @@ import Refresh from "@/components/refresh";
 import Spotify from "@/components/spotify";
 import Strava from "@/components/strava";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
-import { BIRTH_DATE, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
+import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type {
   DuolingoCourse,
   DuolingoStreak,
@@ -86,13 +85,28 @@ const getLocation = async (supabase: SupabaseClient) => {
     }
 
     return {
-      timestamp: data.movedAt,
       name: currentLocationName,
       timeZoneId: data.timeZoneId,
     };
   };
 
   return getCurrentLocation();
+};
+
+const getClaude = async (supabase: SupabaseClient) => {
+  const oneWeekAgo = subDays(new Date(), 7);
+
+  const { data, error } = await supabase
+    .from("claude")
+    .select("inputTokens,outputTokens")
+    .gte("period", oneWeekAgo.toISOString())
+    .order("updatedAt", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 const getSpotify = async (supabase: SupabaseClient) => {
@@ -163,7 +177,7 @@ const getStrava = async (supabase: SupabaseClient) => {
 const getGarmin = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("garmin")
-    .select("vo2MaxValue,startTimeLocal")
+    .select("vo2MaxValue")
     .order("startTimeLocal", { ascending: false })
     .limit(1)
     .single();
@@ -244,7 +258,6 @@ const getInstagram = async (supabase: SupabaseClient) => {
 };
 
 const Page = async () => {
-  const age = differenceInYears(new Date(), new Date(BIRTH_DATE));
   const showSeriesACopy = Date.now() < Date.UTC(2026, 9, 1); // October 1, 2026 UTC
 
   const supabase = createClient(
@@ -254,6 +267,7 @@ const Page = async () => {
 
   const [
     location,
+    claude,
     spotify,
     strava,
     github,
@@ -263,6 +277,7 @@ const Page = async () => {
     instagram,
   ] = await Promise.all([
     backOff(() => getLocation(supabase)),
+    backOff(() => getClaude(supabase)),
     backOff(() => getSpotify(supabase)),
     backOff(() => getStrava(supabase)),
     backOff(() => getGitHub(supabase)),
@@ -278,13 +293,17 @@ const Page = async () => {
         <div className="shrink-0 flex flex-col gap-3 w-full max-w-md lg:max-w-237 xl:max-w-none">
           <div className="flex flex-col lg:flex-row gap-20 lg:gap-3 items-start justify-between">
             <div className="flex-1">
-              <div className="w-full lg:max-w-93 [@media(min-height:56.25rem)]:absolute [@media(min-height:56.25rem)]:left-14 [@media(min-height:56.25rem)]:top-14">
-                <Header location={location} showSeriesACopy={showSeriesACopy} />
+              <div className="w-full [@media(min-height:56.25rem)]:absolute [@media(min-height:56.25rem)]:left-14 [@media(min-height:56.25rem)]:top-14">
+                <Header
+                  location={location}
+                  claude={claude}
+                  garmin={garmin}
+                  showSeriesACopy={showSeriesACopy}
+                />
               </div>
             </div>
             <div className="self-end w-full lg:w-auto flex flex-col lg:flex-row gap-3 items-end justify-end">
               <Spotify data={spotify} />
-              <Instagram data={instagram} />
             </div>
           </div>
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
@@ -296,7 +315,7 @@ const Page = async () => {
             <div className="w-full flex flex-col gap-3">
               <div className="flex flex-col gap-3 xl:max-w-141 xl:w-full xl:ml-auto">
                 <div className="flex gap-3 flex-col lg:flex-row">
-                  <NYTimes data={nytimes} />
+                  <Instagram data={instagram} />
                   <div className="flex-1">
                     <Duolingo data={duolingo} location={location} />
                   </div>
@@ -304,7 +323,7 @@ const Page = async () => {
                 <GitHub contributions={github} />
               </div>
               <div className="flex-1 flex flex-col lg:flex-row-reverse justify-between lg:items-end gap-20 lg:gap-3">
-                <Garmin data={garmin} age={age} />
+                <NYTimes data={nytimes} />
                 <Footer />
               </div>
             </div>

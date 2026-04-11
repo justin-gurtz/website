@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 const schema = z.object({
-  BIRTH_DATE: z.string().min(1),
   CLAUDE_PRESHARED_KEY: z.string().min(1),
   CRON_PRESHARED_KEY: z.string().min(1),
   INSTAGRAM_ACCESS_TOKEN: z.string().min(1),
@@ -21,7 +20,6 @@ const schema = z.object({
 });
 
 export const {
-  BIRTH_DATE,
   CLAUDE_PRESHARED_KEY,
   CRON_PRESHARED_KEY,
   INSTAGRAM_ACCESS_TOKEN,
