@@ -1,7 +1,4 @@
-import reduce from "lodash/reduce";
-import { useMemo } from "react";
 import { bodyBaseStyles } from "@/constants";
-import type { ClaudeData, CurrentLocation, GarminData } from "@/types/models";
 import { cn } from "@/utils/tailwind";
 
 const Link = ({
@@ -41,24 +38,16 @@ const Stat = ({
 };
 
 const Header = ({
-  location,
-  claude,
-  garmin,
+  locationName,
+  totalTokens,
+  vo2Max,
   showSeriesACopy,
 }: {
-  location: Pick<CurrentLocation, "name">;
-  claude: Pick<ClaudeData, "inputTokens" | "outputTokens">[];
-  garmin: Pick<GarminData, "vo2MaxValue">;
+  locationName: string;
+  totalTokens: number;
+  vo2Max: number;
   showSeriesACopy: boolean;
 }) => {
-  const totalTokens = useMemo(() => {
-    return reduce(
-      claude,
-      (acc, item) => acc + item.inputTokens + item.outputTokens,
-      0,
-    );
-  }, [claude]);
-
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-bold leading-tight">Hey, I'm Justin.</h1>
@@ -79,7 +68,7 @@ const Header = ({
         using APIs and custom software.
       </p>
       <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
-        <Stat label="Current location" value={location.name} />
+        <Stat label="Current location" value={locationName} />
         {totalTokens > 0 && (
           <Stat
             label="Claude Code, past week"
@@ -92,7 +81,7 @@ const Header = ({
               Garmin VO<sub className="font-black">2</sub> Max
             </>
           }
-          value={garmin.vo2MaxValue}
+          value={vo2Max}
         />
       </div>
     </div>

@@ -4,6 +4,7 @@ import compact from "lodash/compact";
 import includes from "lodash/includes";
 import join from "lodash/join";
 import map from "lodash/map";
+import reduce from "lodash/reduce";
 import Duolingo from "@/components/duolingo";
 import Footer from "@/components/footer";
 import GitHub from "@/components/github";
@@ -99,14 +100,17 @@ const getClaude = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("claude")
     .select("inputTokens,outputTokens")
-    .gte("period", oneWeekAgo.toISOString())
-    .order("updatedAt", { ascending: false });
+    .gte("period", oneWeekAgo.toISOString());
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data;
+  return reduce(
+    data,
+    (acc, row) => acc + row.inputTokens + row.outputTokens,
+    0,
+  );
 };
 
 const getSpotify = async (supabase: SupabaseClient) => {
@@ -186,7 +190,7 @@ const getGarmin = async (supabase: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return data;
+  return data.vo2MaxValue;
 };
 
 const getNYTimes = async (supabase: SupabaseClient) => {
@@ -267,12 +271,12 @@ const Page = async () => {
 
   const [
     location,
-    claude,
+    totalTokens,
     spotify,
     strava,
     github,
     duolingo,
-    garmin,
+    vo2Max,
     nytimes,
     instagram,
   ] = await Promise.all([
@@ -295,9 +299,9 @@ const Page = async () => {
             <div className="flex-1">
               <div className="w-full [@media(min-height:56.25rem)]:absolute [@media(min-height:56.25rem)]:left-14 [@media(min-height:56.25rem)]:top-14">
                 <Header
-                  location={location}
-                  claude={claude}
-                  garmin={garmin}
+                  locationName={location.name}
+                  totalTokens={totalTokens}
+                  vo2Max={vo2Max}
                   showSeriesACopy={showSeriesACopy}
                 />
               </div>

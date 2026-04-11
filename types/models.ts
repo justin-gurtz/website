@@ -5,11 +5,9 @@ type Tables = CamelCaseDatabase["public"]["Tables"];
 // Database row types (camelCase)
 export type Movement = Tables["movements"]["Row"];
 export type SpotifyData = Tables["spotify"]["Row"];
-export type GarminData = Tables["garmin"]["Row"];
 export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagramFollows"]["Row"];
-export type ClaudeData = Tables["claude"]["Row"];
 
 export type CurrentLocation = {
   name: string;
