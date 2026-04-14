@@ -15,7 +15,13 @@ export const POST = async (request: Request) => {
   const authError = await validatePresharedKey("nytimes");
   if (authError) return authError;
 
-  const formData = await request.formData();
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return new Response("Invalid form data", { status: 400 });
+  }
+
   const parsed = bodySchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {

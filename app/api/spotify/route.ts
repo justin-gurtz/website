@@ -137,8 +137,8 @@ export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const tokenRes = await backOff(() =>
-    fetch("https://accounts.spotify.com/api/token", {
+  const { access_token: accessToken } = await backOff(async () => {
+    const res = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
         Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
@@ -148,41 +148,37 @@ export const POST = async () => {
         grant_type: "refresh_token",
         refresh_token: SPOTIFY_REFRESH_TOKEN,
       }),
-    }),
-  );
-
-  const { access_token: accessToken } = await tokenRes.json();
+    });
+    if (!res.ok) throw new Error(`Spotify token request failed: ${res.status}`);
+    return res.json();
+  });
 
   if (!accessToken) {
     throw new Error("No Spotify access token");
   }
 
-  const currentlyPlayingRes = await backOff(() =>
-    fetch(
+  const currentlyPlayingRes = await backOff(async () => {
+    const res = await fetch(
       "https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode",
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       },
-    ),
-  );
+    );
+    if (!res.ok) throw new Error(`Spotify currently playing: ${res.status}`);
+    return res;
+  });
 
-  if (!currentlyPlayingRes.ok) {
-    throw new Error("Spotify currently playing request failed");
+  if (currentlyPlayingRes.status === 204) {
+    return new Response(null, { status: 204 });
   }
 
-  let currentlyPlaying: SpotifyCurrentlyPlaying | undefined;
+  const currentlyPlaying: SpotifyCurrentlyPlaying =
+    await currentlyPlayingRes.json();
+  const { is_playing: isPlaying, item } = currentlyPlaying;
 
-  try {
-    currentlyPlaying = await currentlyPlayingRes.json();
-  } catch {
-    // Nothing playing
-  }
-
-  const { is_playing: isPlaying, item } = currentlyPlaying || {};
-
-  if (isPlaying && item && currentlyPlaying) {
+  if (isPlaying && item) {
     const supabase = createClient(
       NEXT_PUBLIC_SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY,

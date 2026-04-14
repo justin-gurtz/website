@@ -1,3 +1,4 @@
+import { backOff } from "exponential-backoff";
 import {
   Client,
   GetMediaChildrenRequest,
@@ -34,8 +35,14 @@ const uploadImage = async (
   }
 
   // Download image from Instagram CDN
-  const response = await fetch(imageUrl);
-  if (!response.ok) {
+  let response: Response;
+  try {
+    response = await backOff(async () => {
+      const res = await fetch(imageUrl);
+      if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+      return res;
+    });
+  } catch {
     console.error(`Failed to fetch image: ${imageUrl}`);
     return null;
   }
@@ -76,7 +83,7 @@ export const POST = async () => {
     PublicMediaField.PERMALINK,
   );
 
-  const pageInfo = await pageInfoRequest.execute();
+  const pageInfo = await backOff(() => pageInfoRequest.execute());
 
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
@@ -89,7 +96,7 @@ export const POST = async () => {
   const fetchAllMedia = async (
     request: ReturnType<typeof client.newGetPageMediaRequest>,
   ) => {
-    const response = await request.execute();
+    const response = await backOff(() => request.execute());
     allMedia.push(...response.getData());
 
     try {
@@ -117,7 +124,9 @@ export const POST = async () => {
             INSTAGRAM_ACCESS_TOKEN,
             post.id,
           );
-          const childrenResponse = await childrenRequest.execute();
+          const childrenResponse = await backOff(() =>
+            childrenRequest.execute(),
+          );
           const children = childrenResponse.getData();
 
           const childMediaUrls = await Promise.all(
@@ -127,7 +136,7 @@ export const POST = async () => {
                 child.id,
                 PublicMediaField.MEDIA_URL,
               );
-              const mediaResponse = await mediaRequest.execute();
+              const mediaResponse = await backOff(() => mediaRequest.execute());
               return mediaResponse.getMediaUrl();
             }),
           );

@@ -15,8 +15,8 @@ export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const tokenRes = await backOff(() =>
-    fetch("https://www.strava.com/oauth/token", {
+  const { access_token: accessToken } = await backOff(async () => {
+    const res = await fetch("https://www.strava.com/oauth/token", {
       method: "POST",
       body: new URLSearchParams({
         client_id: STRAVA_CLIENT_ID,
@@ -24,28 +24,28 @@ export const POST = async () => {
         refresh_token: STRAVA_REFRESH_TOKEN,
         grant_type: "refresh_token",
       }),
-    }),
-  );
-
-  const { access_token: accessToken } = await tokenRes.json();
+    });
+    if (!res.ok) throw new Error(`Strava token request failed: ${res.status}`);
+    return res.json();
+  });
 
   if (!accessToken) {
     throw new Error("No Strava access token");
   }
 
-  const activitiesRes = await backOff(() =>
-    fetch("https://www.strava.com/api/v3/athlete/activities", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+  const activities = await backOff(async () => {
+    const res = await fetch(
+      "https://www.strava.com/api/v3/athlete/activities",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    }),
-  );
-
-  const activities = await activitiesRes.json();
-
-  if (activities.errors) {
-    throw new Error("Strava API error");
-  }
+    );
+    if (!res.ok)
+      throw new Error(`Strava activities request failed: ${res.status}`);
+    return res.json();
+  });
 
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,
