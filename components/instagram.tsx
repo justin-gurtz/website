@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import NextImage, { getImageProps } from "next/image";
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import ReactDOM from "react-dom";
 import { instagramUrl } from "@/constants";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { InstagramFollows, InstagramPost } from "@/types/models";
@@ -33,6 +35,8 @@ const InstagramLogo = ({ className }: { className?: string }) => {
 };
 
 type Post = Pick<InstagramPost, "id" | "images" | "caption" | "postedAt">;
+
+const imageSizes = "(min-width: 1024px) 180px, 100vw";
 
 const finalizePosts = (posts: Post[]) => {
   const finalPosts: Post[] = [];
@@ -104,11 +108,13 @@ const PostView = ({
   post,
   setPostIndex,
   postsCount,
+  isInitial,
 }: {
   followerCount: number;
   post: Post;
   setPostIndex: Dispatch<SetStateAction<number>>;
   postsCount: number;
+  isInitial: boolean;
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const pageIsVisible = usePageIsVisible();
@@ -154,11 +160,13 @@ const PostView = ({
 
   return (
     <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
-      {/** biome-ignore lint/performance/noImgElement: dynamic image */}
-      <img
+      <NextImage
         src={image}
         alt={post.caption || "Instagram post"}
-        className="size-full object-cover"
+        fill
+        sizes={imageSizes}
+        priority={isInitial && imageIndex === 0}
+        className="object-cover"
       />
       <div className="absolute inset-0 flex flex-col justify-between">
         <div className="relative px-3.5 pt-3.5 pb-2.5 @xs:px-4.5 @xs:pt-4.5 @xs:pb-3.5 flex flex-col gap-1.5 @xs:gap-2.5">
@@ -199,13 +207,29 @@ const Instagram = ({
 
   const [postIndex, setPostIndex] = useState(0);
 
-  // Preload all images on mount
+  // Warm the cache for upcoming images so carousel transitions are instant.
+  // Uses getImageProps so the preloaded URL/srcSet match what NextImage will request.
   useEffect(() => {
-    for (const post of posts.current) {
-      for (const src of post.images) {
-        const img = new Image();
-        img.src = src;
-      }
+    const [firstPost, ...rest] = posts.current;
+    const upcoming = [
+      ...firstPost.images.slice(1),
+      ...rest.map((p) => p.images[0]),
+    ];
+
+    for (const src of upcoming) {
+      const { props } = getImageProps({
+        src,
+        alt: "",
+        width: 180,
+        height: 180,
+        sizes: imageSizes,
+      });
+      ReactDOM.preload(props.src, {
+        as: "image",
+        imageSrcSet: props.srcSet,
+        imageSizes: props.sizes,
+        fetchPriority: "low",
+      });
     }
   }, []);
 
@@ -243,6 +267,7 @@ const Instagram = ({
                 post={post}
                 setPostIndex={setPostIndex}
                 postsCount={posts.current.length}
+                isInitial={postIndex === 0}
               />
             </motion.div>
           </AnimatePresence>

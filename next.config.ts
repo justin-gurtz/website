@@ -1,5 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import { NEXT_PUBLIC_SUPABASE_URL } from "./env/public";
 
 const botRedirects = [
   "/index",
@@ -24,7 +25,18 @@ const securityHeaders = [
   },
 ];
 
+const supabaseHostname = new URL(NEXT_PUBLIC_SUPABASE_URL).hostname;
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: supabaseHostname,
+        pathname: "/storage/v1/object/public/instagram/**",
+      },
+    ],
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
