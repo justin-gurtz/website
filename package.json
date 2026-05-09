@@ -51,7 +51,7 @@
     "@types/react-dom": "^19.1.9",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.14",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.2"
   },
@@ -70,6 +70,9 @@
       "@vercel/speed-insights",
       "esbuild",
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "postcss": "^8.5.14"
+    }
   }
 }
