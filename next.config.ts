@@ -28,6 +28,9 @@ const securityHeaders = [
 const supabaseHostname = new URL(NEXT_PUBLIC_SUPABASE_URL).hostname;
 
 const nextConfig: NextConfig = {
+  logging: {
+    browserToTerminal: true,
+  },
   images: {
     remotePatterns: [
       {
