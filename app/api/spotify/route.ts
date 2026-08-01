@@ -7,7 +7,6 @@ import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
-  SPOTIFY_REFRESH_TOKEN,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
 import { validatePresharedKey } from "@/utils/server";
@@ -133,25 +132,61 @@ const getDominantColor = async (
   }
 };
 
+// Thrown when the refresh token itself is rejected — retrying won't help,
+// only re-authorizing at /api/spotify/auth will
+class SpotifyReauthorizeError extends Error {}
+
 export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const { access_token: accessToken } = await backOff(async () => {
-    const res = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: SPOTIFY_REFRESH_TOKEN,
-      }),
-    });
-    if (!res.ok) throw new Error(`Spotify token request failed: ${res.status}`);
-    return res.json();
-  });
+  const supabase = createClient(
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+  );
+
+  const { data: tokenRow, error: tokenRowError } = await supabase
+    .from("spotifyTokens")
+    .select("refreshToken")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (tokenRowError) {
+    throw new Error(tokenRowError.message);
+  }
+
+  if (!tokenRow) {
+    throw new SpotifyReauthorizeError(
+      "No Spotify refresh token stored — visit /api/spotify/auth to connect",
+    );
+  }
+
+  const { access_token: accessToken } = await backOff(
+    async () => {
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: tokenRow.refreshToken,
+        }),
+      });
+      if (res.status === 400 || res.status === 401) {
+        throw new SpotifyReauthorizeError(
+          `Spotify refresh token rejected (${res.status}) — re-authorize at /api/spotify/auth`,
+        );
+      }
+      if (!res.ok)
+        throw new Error(`Spotify token request failed: ${res.status}`);
+      return res.json();
+    },
+    {
+      retry: (error) => !(error instanceof SpotifyReauthorizeError),
+    },
+  );
 
   if (!accessToken) {
     throw new Error("No Spotify access token");
@@ -179,11 +214,6 @@ export const POST = async () => {
   const { is_playing: isPlaying, item } = currentlyPlaying;
 
   if (isPlaying && item) {
-    const supabase = createClient(
-      NEXT_PUBLIC_SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-    );
-
     // Get the most recent row to check if it's the same song
     const { data: lastRow } = await supabase
       .from("spotify")
