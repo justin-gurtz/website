@@ -18,28 +18,28 @@ export type Database = {
         Row: {
           created_at: string;
           device: string;
-          period: string;
           input_tokens: number;
           model: string;
           output_tokens: number;
+          period: string;
           updated_at: string;
         };
         Insert: {
           created_at?: string;
           device: string;
-          period: string;
           input_tokens: number;
           model: string;
           output_tokens: number;
+          period: string;
           updated_at?: string;
         };
         Update: {
           created_at?: string;
           device?: string;
-          period?: string;
           input_tokens?: number;
           model?: string;
           output_tokens?: number;
+          period?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -296,18 +296,21 @@ export type Database = {
           id: number;
           refresh_token: string;
           updated_at: string;
+          warned_at: string | null;
         };
         Insert: {
           created_at?: string;
           id?: number;
           refresh_token: string;
           updated_at?: string;
+          warned_at?: string | null;
         };
         Update: {
           created_at?: string;
           id?: number;
           refresh_token?: string;
           updated_at?: string;
+          warned_at?: string | null;
         };
         Relationships: [];
       };

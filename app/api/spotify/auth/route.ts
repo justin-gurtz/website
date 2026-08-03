@@ -94,6 +94,7 @@ export const GET = async (request: Request) => {
       id: 1,
       refreshToken,
       updatedAt: new Date().toISOString(),
+      warnedAt: null,
     },
     {
       onConflict: "id",

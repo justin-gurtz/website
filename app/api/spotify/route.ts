@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+import { addMonths, differenceInDays, differenceInHours } from "date-fns";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import reduce from "lodash/reduce";
@@ -147,7 +149,7 @@ export const POST = async () => {
 
   const { data: tokenRow, error: tokenRowError } = await supabase
     .from("spotifyTokens")
-    .select("refreshToken")
+    .select("refreshToken, updatedAt, warnedAt")
     .eq("id", 1)
     .maybeSingle();
 
@@ -159,6 +161,31 @@ export const POST = async () => {
     throw new SpotifyReauthorizeError(
       "No Spotify refresh token stored — visit /api/spotify/auth to connect",
     );
+  }
+
+  // Spotify refresh tokens expire 6 months after authorization (updatedAt is
+  // stamped on each re-auth). Warn via Sentry daily for the last 2 weeks.
+  const now = new Date();
+  const expiresAt = addMonths(new Date(tokenRow.updatedAt), 6);
+  const daysLeft = differenceInDays(expiresAt, now);
+  const alreadyWarnedToday =
+    tokenRow.warnedAt &&
+    differenceInHours(now, new Date(tokenRow.warnedAt)) < 23;
+
+  if (daysLeft <= 14 && !alreadyWarnedToday) {
+    Sentry.captureMessage(
+      `Spotify token expires in ${daysLeft} days — visit /api/spotify/auth?key=<CRON_PRESHARED_KEY> to re-authorize`,
+      "warning",
+    );
+
+    const { error } = await supabase
+      .from("spotifyTokens")
+      .update({ warnedAt: now.toISOString() })
+      .eq("id", 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   const { access_token: accessToken } = await backOff(
