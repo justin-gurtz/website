@@ -220,20 +220,20 @@ const getInstagram = async (supabase: SupabaseClient) => {
     throw new Error(followsError.message);
   }
 
-  const oneYearAgo = subYears(new Date(), 1);
+  const twoYearsAgo = subYears(new Date(), 2);
 
-  const { data: pastYearPosts, error: pastYearError } = await supabase
+  const { data: recentPosts, error: recentError } = await supabase
     .from("instagram")
     .select("id,images,caption,postedAt")
     .not("images", "eq", "{}")
-    .gte("postedAt", oneYearAgo.toISOString())
+    .gte("postedAt", twoYearsAgo.toISOString())
     .order("postedAt", { ascending: false, nullsFirst: false });
 
-  if (pastYearError) {
-    throw new Error(pastYearError.message);
+  if (recentError) {
+    throw new Error(recentError.message);
   }
 
-  let posts = pastYearPosts;
+  let posts = recentPosts;
 
   if (!posts.length) {
     const { data: fallbackPosts, error: fallbackError } = await supabase
