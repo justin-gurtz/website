@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { addMonths, differenceInDays, differenceInHours } from "date-fns";
+import { addDays, differenceInDays, differenceInHours } from "date-fns";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import reduce from "lodash/reduce";
@@ -163,10 +163,12 @@ export const POST = async () => {
     );
   }
 
-  // Spotify refresh tokens expire 6 months after authorization (updatedAt is
+  // Spotify refresh tokens expire 180 days after authorization (updatedAt is
   // stamped on each re-auth). Warn via Sentry daily for the last 2 weeks.
+  // The expiry date in the message keeps each cycle's events in fresh Sentry
+  // issues, so alert emails fire every cycle instead of deduping into old ones.
   const now = new Date();
-  const expiresAt = addMonths(new Date(tokenRow.updatedAt), 6);
+  const expiresAt = addDays(new Date(tokenRow.updatedAt), 180);
   const daysLeft = differenceInDays(expiresAt, now);
   const alreadyWarnedToday =
     tokenRow.warnedAt &&
@@ -174,7 +176,7 @@ export const POST = async () => {
 
   if (daysLeft <= 14 && !alreadyWarnedToday) {
     Sentry.captureMessage(
-      `Spotify token expires in ${daysLeft} days — visit /api/spotify/auth?key=<CRON_PRESHARED_KEY> to re-authorize`,
+      `Spotify token expires ${expiresAt.toISOString().slice(0, 10)} (${daysLeft} days) — visit /api/spotify/auth?key=<CRON_PRESHARED_KEY> to re-authorize`,
       "warning",
     );
 
