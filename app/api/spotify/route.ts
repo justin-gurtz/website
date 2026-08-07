@@ -3,6 +3,7 @@ import { addDays, differenceInDays, differenceInHours } from "date-fns";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
 import reduce from "lodash/reduce";
+import { revalidatePath } from "next/cache";
 import { Vibrant } from "node-vibrant/node";
 import { z } from "zod";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
@@ -299,6 +300,10 @@ export const POST = async () => {
       if (error) {
         throw new Error(error.message);
       }
+
+      // New song — purge the page; same-song timestamp bumps are covered by
+      // the widget polling /api/spotify/status instead
+      revalidatePath("/");
     }
   }
 

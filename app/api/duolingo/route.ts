@@ -1,5 +1,6 @@
 import { backOff } from "exponential-backoff";
 import isEqual from "lodash/isEqual";
+import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { DuolingoCourse, DuolingoStreak } from "@/types/models";
@@ -65,6 +66,8 @@ export const POST = async () => {
     if (insertError) {
       throw new Error(insertError.message);
     }
+
+    revalidatePath("/");
   }
 
   return new Response(null, {

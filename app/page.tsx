@@ -26,7 +26,9 @@ import type {
 } from "@/types/models";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
 
-export const revalidate = 60;
+// Hourly safety net only — crons purge the page on-demand via
+// revalidatePath("/") whenever their data actually changes
+export const revalidate = 3600;
 
 const getCurrentLocationName = (
   movement: Pick<Movement, "city" | "region" | "country">,

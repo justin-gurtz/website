@@ -1,6 +1,7 @@
 import { backOff } from "exponential-backoff";
 import { request } from "graphql-request";
 import isEqual from "lodash/isEqual";
+import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { GITHUB_ACCESS_TOKEN, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { GitHubContribution } from "@/types/models";
@@ -75,6 +76,8 @@ export const POST = async () => {
     if (insertError) {
       throw new Error(insertError.message);
     }
+
+    revalidatePath("/");
   }
 
   return new Response(null, {

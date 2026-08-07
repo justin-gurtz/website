@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
@@ -38,6 +39,9 @@ export const POST = async (request: Request) => {
   if (error) {
     throw new Error(error.message);
   }
+
+  // Every accepted article is a visible change on the page
+  revalidatePath("/");
 
   return new NextResponse(null, {
     status: 204,

@@ -127,17 +127,54 @@ const Spotify = ({
     return data.image === d.image ? d.updatedAt : data.updatedAt;
   }, [data.updatedAt, d.updatedAt, data.image, d.image]);
 
-  const [isPlaying, setIsPlaying] = useState(getIsPlaying(displayedUpdatedAt));
+  // The page only regenerates on song changes, so same-song updatedAt bumps
+  // never reach it — poll the uncached status endpoint to keep the
+  // playing/last-played display accurate between regenerations
+  const [polledUpdatedAt, setPolledUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsPlaying(getIsPlaying(displayedUpdatedAt));
+    if (!pageIsVisible) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/spotify/status");
+        if (!res.ok) return;
+        const { updatedAt } = await res.json();
+        if (!cancelled && updatedAt) setPolledUpdatedAt(updatedAt);
+      } catch {
+        // Keep the last known value
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 60000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [pageIsVisible]);
+
+  const effectiveUpdatedAt = useMemo(() => {
+    if (polledUpdatedAt && isAfter(polledUpdatedAt, displayedUpdatedAt)) {
+      return polledUpdatedAt;
+    }
+    return displayedUpdatedAt;
+  }, [polledUpdatedAt, displayedUpdatedAt]);
+
+  const [isPlaying, setIsPlaying] = useState(getIsPlaying(effectiveUpdatedAt));
+
+  useEffect(() => {
+    setIsPlaying(getIsPlaying(effectiveUpdatedAt));
 
     const interval = setInterval(() => {
-      setIsPlaying(getIsPlaying(displayedUpdatedAt));
+      setIsPlaying(getIsPlaying(effectiveUpdatedAt));
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [displayedUpdatedAt]);
+  }, [effectiveUpdatedAt]);
 
   useEffect(() => {
     if (!pageIsVisible) return;
@@ -189,7 +226,7 @@ const Spotify = ({
             <Timestamp
               ago
               className="text-white text-xs opacity-80"
-              date={displayedUpdatedAt}
+              date={effectiveUpdatedAt}
             />
           )}
         </div>

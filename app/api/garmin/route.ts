@@ -7,6 +7,7 @@ import type {
   IOauth2Token,
 } from "garmin-connect/dist/garmin/types";
 import map from "lodash/map";
+import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
   GARMIN_PASSWORD,
@@ -184,6 +185,19 @@ export const POST = async () => {
       (activity) => activity.vO2MaxValue,
     );
 
+    // The page shows the vo2Max of the newest activity — purge only when a
+    // new one appears
+    const { data: newestRow } = await supabase
+      .from("garmin")
+      .select("id")
+      .order("startTimeLocal", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const hasNewActivity =
+      validActivities.length > 0 &&
+      validActivities[0].activityId !== newestRow?.id;
+
     const data = map(validActivities, (activity) => ({
       id: activity.activityId,
       vo2MaxValue: activity.vO2MaxValue,
@@ -195,6 +209,10 @@ export const POST = async () => {
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (hasNewActivity) {
+      revalidatePath("/");
     }
   }
 

@@ -1,5 +1,6 @@
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
+import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
   STRAVA_CLIENT_ID,
@@ -52,7 +53,20 @@ export const POST = async () => {
     SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const data = map(activities, (activity: StravaActivity) => ({
+  // Strava returns newest-first; compare against the newest stored activity
+  // to detect whether this sync actually brought anything new
+  const { data: newestRow } = await supabase
+    .from("strava")
+    .select("id")
+    .order("startDate", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const typedActivities = activities as StravaActivity[];
+  const hasNewActivity =
+    typedActivities.length > 0 && typedActivities[0].id !== newestRow?.id;
+
+  const data = map(typedActivities, (activity) => ({
     id: activity.id,
     type: activity.type,
     startDate: activity.start_date, // API returns snake_case, we use camelCase
@@ -63,6 +77,10 @@ export const POST = async () => {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (hasNewActivity) {
+    revalidatePath("/");
   }
 
   return new Response(null, {
