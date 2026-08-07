@@ -25,6 +25,9 @@
 .DS_Store
 *.pem
 
+# env files (can contain secrets pulled from Vercel)
+.env*
+
 # debug
 npm-debug.log*
 yarn-debug.log*
