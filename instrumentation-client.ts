@@ -18,12 +18,9 @@ Sentry.init({
   // so full sampling costs both Sentry quota and Vercel function invocations
   tracesSampleRate: 0.1,
 
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-
-  // Define how likely Replay events are sampled when an error occurs.
+  // Don't record ordinary sessions — only upload replay footage when an
+  // error occurs, so there's visual context for every error at no idle cost
+  replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
