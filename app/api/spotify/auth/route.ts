@@ -1,6 +1,7 @@
+import { createHmac } from "node:crypto";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
-  CRON_PRESHARED_KEY,
+  SPOTIFY_AUTH_KEY,
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
   SUPABASE_SERVICE_ROLE_KEY,
@@ -9,6 +10,30 @@ import { safeEqual } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 const SCOPE = "user-read-currently-playing";
+const STATE_TTL_MS = 10 * 60 * 1000;
+
+// Self-verifying OAuth state: "<expiresAt>.<hmac(expiresAt)>". Nothing is
+// stored server-side; the signature proves this server minted the value and
+// the embedded expiry bounds how long a captured one could be replayed.
+const signState = (expiresAt: number) =>
+  createHmac("sha256", SPOTIFY_AUTH_KEY)
+    .update(expiresAt.toString())
+    .digest("hex");
+
+const createState = () => {
+  const expiresAt = Date.now() + STATE_TTL_MS;
+  return `${expiresAt}.${signState(expiresAt)}`;
+};
+
+const isValidState = (state: string) => {
+  const [expiresAtString, signature] = state.split(".");
+  if (!expiresAtString || !signature) return false;
+
+  const expiresAt = Number(expiresAtString);
+  if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
+
+  return safeEqual(signature, signState(expiresAt));
+};
 
 const getRedirectUri = (requestUrl: string) => {
   const url = new URL(requestUrl);
@@ -38,7 +63,7 @@ export const GET = async (request: Request) => {
 
   // First leg: no code yet, send the visitor to Spotify's consent page
   if (!code) {
-    if (!key || !safeEqual(key, CRON_PRESHARED_KEY)) {
+    if (!key || !safeEqual(key, SPOTIFY_AUTH_KEY)) {
       return new Response(null, { status: 401 });
     }
 
@@ -47,13 +72,13 @@ export const GET = async (request: Request) => {
     authorizeUrl.searchParams.set("response_type", "code");
     authorizeUrl.searchParams.set("redirect_uri", redirectUri);
     authorizeUrl.searchParams.set("scope", SCOPE);
-    authorizeUrl.searchParams.set("state", key);
+    authorizeUrl.searchParams.set("state", createState());
 
     return Response.redirect(authorizeUrl.toString(), 302);
   }
 
   // Second leg: Spotify redirected back with a code
-  if (!state || !safeEqual(state, CRON_PRESHARED_KEY)) {
+  if (!state || !isValidState(state)) {
     return new Response(null, { status: 401 });
   }
 

@@ -176,7 +176,7 @@ export const POST = async () => {
 
   if (daysLeft <= 14 && !alreadyWarnedToday) {
     Sentry.captureMessage(
-      `Spotify token expires ${expiresAt.toISOString().slice(0, 10)} (${daysLeft} days) — visit /api/spotify/auth?key=<CRON_PRESHARED_KEY> to re-authorize`,
+      `Spotify token expires ${expiresAt.toISOString().slice(0, 10)} (${daysLeft} days) — visit /api/spotify/auth?key=<SPOTIFY_AUTH_KEY> to re-authorize`,
       "warning",
     );
 
@@ -190,35 +190,51 @@ export const POST = async () => {
     }
   }
 
-  const { access_token: accessToken } = await backOff(
-    async () => {
-      const res = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          refresh_token: tokenRow.refreshToken,
-        }),
-      });
-      if (res.status === 400 || res.status === 401) {
-        throw new SpotifyReauthorizeError(
-          `Spotify refresh token rejected (${res.status}) — re-authorize at /api/spotify/auth`,
-        );
-      }
-      if (!res.ok)
-        throw new Error(`Spotify token request failed: ${res.status}`);
-      return res.json();
-    },
-    {
-      retry: (error) => !(error instanceof SpotifyReauthorizeError),
-    },
-  );
+  const { access_token: accessToken, refresh_token: rotatedRefreshToken } =
+    await backOff(
+      async () => {
+        const res = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: tokenRow.refreshToken,
+          }),
+        });
+        if (res.status === 400 || res.status === 401) {
+          throw new SpotifyReauthorizeError(
+            `Spotify refresh token rejected (${res.status}) — re-authorize at /api/spotify/auth`,
+          );
+        }
+        if (!res.ok)
+          throw new Error(`Spotify token request failed: ${res.status}`);
+        return res.json();
+      },
+      {
+        retry: (error) => !(error instanceof SpotifyReauthorizeError),
+      },
+    );
 
   if (!accessToken) {
     throw new Error("No Spotify access token");
+  }
+
+  // Spotify may rotate the refresh token on refresh; store it or the saved one
+  // silently goes stale. updatedAt/warnedAt are left alone on purpose — they
+  // track the last full re-authorization, and it's unknown whether rotation
+  // resets the 180-day lifetime, so the expiry warnings stay conservative.
+  if (rotatedRefreshToken && rotatedRefreshToken !== tokenRow.refreshToken) {
+    const { error } = await supabase
+      .from("spotifyTokens")
+      .update({ refreshToken: rotatedRefreshToken })
+      .eq("id", 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   const currentlyPlayingRes = await backOff(async () => {
