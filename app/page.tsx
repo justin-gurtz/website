@@ -22,6 +22,7 @@ import type {
   GitHubContribution,
   Movement,
   StravaActivity,
+  StravaRun,
 } from "@/types/models";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
 
@@ -161,7 +162,7 @@ const getDuolingo = async (supabase: SupabaseClient) => {
   };
 };
 
-const getStrava = async (supabase: SupabaseClient) => {
+const getStrava = async (supabase: SupabaseClient): Promise<StravaRun[]> => {
   const oneYearAgo = subYears(new Date(), 1);
 
   const { data, error } = await supabase
@@ -175,7 +176,18 @@ const getStrava = async (supabase: SupabaseClient) => {
     throw new Error(error.message);
   }
 
-  return map(data, ({ payload }) => payload) as StravaActivity[];
+  const activities = map(data, ({ payload }) => payload) as StravaActivity[];
+
+  // Only public runs, trimmed to the fields the map renders — the full payload
+  // includes start/end GPS coordinates and must not reach the browser
+  return activities
+    .filter((activity) => activity.visibility === "everyone")
+    .map(({ id, distance, moving_time, map: runMap }) => ({
+      id,
+      distance,
+      moving_time,
+      map: { summary_polyline: runMap.summary_polyline },
+    }));
 };
 
 const getGarmin = async (supabase: SupabaseClient) => {
@@ -313,7 +325,7 @@ const Page = async () => {
           <div className="flex flex-col gap-3 lg:flex-row-reverse">
             <div className="w-full lg:max-w-93">
               <div className="relative pb-[152%]">
-                <Strava activities={strava} />
+                <Strava runs={strava} />
               </div>
             </div>
             <div className="w-full flex flex-col gap-3">

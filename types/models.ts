@@ -30,6 +30,13 @@ export type StravaActivity = {
   };
 };
 
+// Subset of StravaActivity that is safe to serialize into the page — the full
+// payload includes start/end GPS coordinates and must stay on the server
+export type StravaRun = Pick<
+  StravaActivity,
+  "id" | "distance" | "moving_time" | "map"
+>;
+
 export type DuolingoStreak = {
   startDate: string;
   length: number;

@@ -18,7 +18,7 @@ import slice from "lodash/slice";
 import startsWith from "lodash/startsWith";
 import Link from "@/components/link";
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from "@/env/public";
-import type { StravaActivity } from "@/types/models";
+import type { StravaRun } from "@/types/models";
 import { mapboxDarkStyle, mapboxLightStyle } from "@/utils/mapbox-styles";
 import { cn } from "@/utils/tailwind";
 
@@ -81,8 +81,8 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-const Strava = ({ activities }: { activities: StravaActivity[] }) => {
-  const previousRuns = useRef<StravaActivity[]>([]);
+const Strava = ({ runs }: { runs: StravaRun[] }) => {
+  const previousRuns = useRef<StravaRun[]>([]);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapbox = useRef<mapboxgl.Map | null>(null);
   const isInitialStyleRef = useRef(true);
@@ -92,10 +92,6 @@ const Strava = ({ activities }: { activities: StravaActivity[] }) => {
   const [mapClassName, setMapClassName] = useState("opacity-0");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [styleVersion, setStyleVersion] = useState(0);
-
-  const runs = useMemo(() => {
-    return filter(activities, ({ visibility }) => visibility === "everyone");
-  }, [activities]);
 
   const { distance, pace, time, totalRuns } = useMemo(() => {
     const totalDistance = reduce(runs, (acc, run) => acc + run.distance, 0);
