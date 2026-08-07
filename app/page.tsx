@@ -346,7 +346,7 @@ const Page = async () => {
           </div>
         </div>
       </div>
-      <Refresh every={15} />
+      <Refresh every={60} />
     </>
   );
 };
