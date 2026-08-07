@@ -5,6 +5,7 @@ import {
   SPOTIFY_CLIENT_SECRET,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
+import { safeEqual } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 const SCOPE = "user-read-currently-playing";
@@ -37,7 +38,7 @@ export const GET = async (request: Request) => {
 
   // First leg: no code yet, send the visitor to Spotify's consent page
   if (!code) {
-    if (key !== CRON_PRESHARED_KEY) {
+    if (!key || !safeEqual(key, CRON_PRESHARED_KEY)) {
       return new Response(null, { status: 401 });
     }
 
@@ -52,7 +53,7 @@ export const GET = async (request: Request) => {
   }
 
   // Second leg: Spotify redirected back with a code
-  if (state !== CRON_PRESHARED_KEY) {
+  if (!state || !safeEqual(state, CRON_PRESHARED_KEY)) {
     return new Response(null, { status: 401 });
   }
 

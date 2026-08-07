@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { headers } from "next/headers";
 import {
   CLAUDE_PRESHARED_KEY,
@@ -9,6 +10,14 @@ const presharedKeys = {
   claude: CLAUDE_PRESHARED_KEY,
   cron: CRON_PRESHARED_KEY,
   nytimes: NYTIMES_PRESHARED_KEY,
+};
+
+// Hashing both sides first keeps the comparison constant-time even when the
+// inputs differ in length, which timingSafeEqual itself does not allow
+export const safeEqual = (a: string, b: string) => {
+  const hashA = createHash("sha256").update(a).digest();
+  const hashB = createHash("sha256").update(b).digest();
+  return timingSafeEqual(hashA, hashB);
 };
 
 /**
@@ -23,7 +32,7 @@ export const validatePresharedKey = async (
 
   const presharedKey = presharedKeys[key];
 
-  if (authorization !== `Bearer ${presharedKey}`) {
+  if (!authorization || !safeEqual(authorization, `Bearer ${presharedKey}`)) {
     return new Response(null, { status: 401 });
   }
 
