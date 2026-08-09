@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import mapboxgl from "mapbox-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -88,6 +89,7 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
   const isInitialStyleRef = useRef(true);
 
   const [mapIsReady, setMapIsReady] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
   const [hasAddedRunsToMap, setHasAddedRunsToMap] = useState(false);
   const [mapClassName, setMapClassName] = useState("opacity-0");
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -172,22 +174,30 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
       "(prefers-color-scheme: dark)",
     ).matches;
 
-    mapbox.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: prefersDark ? mapboxDarkStyle : mapboxLightStyle,
-      attributionControl: false,
-      logoPosition: "bottom-left",
-      center: nycPoint.geometry.coordinates as [number, number],
-      zoom: maxZoom,
-      interactive: false,
-      dragPan: false,
-      dragRotate: false,
-      scrollZoom: false,
-      keyboard: false,
-      doubleClickZoom: false,
-      touchPitch: false,
-      touchZoomRotate: false,
-    });
+    try {
+      mapbox.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: prefersDark ? mapboxDarkStyle : mapboxLightStyle,
+        attributionControl: false,
+        logoPosition: "bottom-left",
+        center: nycPoint.geometry.coordinates as [number, number],
+        zoom: maxZoom,
+        interactive: false,
+        dragPan: false,
+        dragRotate: false,
+        scrollZoom: false,
+        keyboard: false,
+        doubleClickZoom: false,
+        touchPitch: false,
+        touchZoomRotate: false,
+      });
+    } catch (error) {
+      // WebGL unavailable (headless browsers, GPU disabled, old hardware):
+      // skip the map and keep the rest of the card working
+      Sentry.captureException(error);
+      setMapFailed(true);
+      return;
+    }
 
     mapbox.current.on("load", () => {
       setMapIsReady(true);
@@ -326,6 +336,11 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
           </div>
         </div>
         <div className="w-full flex-1 bg-black/4 dark:bg-white/4 rounded-squircle-inside overflow-hidden relative">
+          {mapFailed && (
+            <p className="absolute inset-0 flex items-center justify-center text-xs text-neutral-400 dark:text-neutral-500">
+              Failed to load map
+            </p>
+          )}
           <div
             ref={mapContainer}
             className={cn(
