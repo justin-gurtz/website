@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+import { subYears } from "date-fns";
 import { backOff } from "exponential-backoff";
 import {
   Client,
@@ -7,14 +9,23 @@ import {
   PageOption,
   PublicMediaField,
 } from "instagram-graph-api";
+import { classifyImage, isOutOfCredits } from "@/app/api/instagram/classify";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
   INSTAGRAM_ACCESS_TOKEN,
   INSTAGRAM_PAGE_ID,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
+import type { Json } from "@/types/database";
+import type { InstagramImageMeta } from "@/types/models";
 import { validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
+
+// Classification can take a couple of minutes on a backfill run
+export const maxDuration = 300;
+
+const CLASSIFY_CONCURRENCY = 5;
+const MAX_CLASSIFICATIONS_PER_RUN = 100;
 
 // Upload image to Supabase Storage, returns the storage path
 const uploadImage = async (
@@ -198,6 +209,9 @@ export const POST = async () => {
     }
   }
 
+  // Upsert posts before classifying, and never write imageMeta here — it is
+  // updated per post below, so a timeout or crash mid-classification can
+  // neither lose new posts nor clobber previously stored classifications
   const postsData = posts.map((post) => ({
     id: post.id,
     postedAt: post.timestamp,
@@ -215,6 +229,88 @@ export const POST = async () => {
 
   if (postsError) {
     throw new Error(postsError.message);
+  }
+
+  // Classify new images (screenshot/revealing detection + face focal point),
+  // but only for posts recent enough to be displayed. Incremental by design:
+  // images that fail or exceed the per-run cap are picked up on the next run.
+  const displayCutoff = subYears(new Date(), 2);
+
+  const { data: existingRows, error: existingError } = await supabase
+    .from("instagram")
+    .select("id,imageMeta")
+    .gte("postedAt", displayCutoff.toISOString());
+
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  const existingMeta = new Map(
+    existingRows.map((row) => [
+      row.id,
+      (row.imageMeta ?? {}) as InstagramImageMeta,
+    ]),
+  );
+
+  const unclassified = posts.flatMap((post) => {
+    if (!post.timestamp || new Date(post.timestamp) < displayCutoff) return [];
+    const meta = existingMeta.get(post.id);
+    return post.images
+      .filter((path) => !meta?.[path])
+      .map((path) => ({ postId: post.id, path }));
+  });
+
+  const toClassify = unclassified.slice(0, MAX_CLASSIFICATIONS_PER_RUN);
+  const newMeta = new Map<string, InstagramImageMeta>();
+  let outOfCredits = false;
+
+  // Small worker pool to stay within OpenAI rate limits
+  let cursor = 0;
+  await Promise.all(
+    Array.from({ length: CLASSIFY_CONCURRENCY }, async () => {
+      while (cursor < toClassify.length && !outOfCredits) {
+        const { postId, path } = toClassify[cursor++];
+        const url = supabase.storage.from("instagram").getPublicUrl(path)
+          .data.publicUrl;
+        try {
+          const classification = await classifyImage(url);
+          const meta = newMeta.get(postId) ?? {};
+          meta[path] = classification;
+          newMeta.set(postId, meta);
+        } catch (error) {
+          if (isOutOfCredits(error)) {
+            if (!outOfCredits) {
+              outOfCredits = true;
+              Sentry.captureMessage(
+                "OpenAI credit balance exhausted — Instagram image classification paused until topped up",
+                "error",
+              );
+            }
+          } else {
+            console.error(`Failed to classify image: ${path}`, error);
+            Sentry.captureException(error);
+          }
+        }
+      }
+    }),
+  );
+
+  const metaUpdates = await Promise.all(
+    Array.from(newMeta.entries()).map(([postId, meta]) =>
+      supabase
+        .from("instagram")
+        .update({
+          imageMeta: { ...existingMeta.get(postId), ...meta } as Json,
+        })
+        .eq("id", postId),
+    ),
+  );
+
+  for (const { error } of metaUpdates) {
+    if (error) {
+      console.error(`Failed to save image classifications: ${error.message}`);
+      Sentry.captureException(new Error(error.message));
+    }
   }
 
   return new Response(null, {

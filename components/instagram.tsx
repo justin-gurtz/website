@@ -13,7 +13,11 @@ import {
 import ReactDOM from "react-dom";
 import { instagramUrl } from "@/constants";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
-import type { InstagramFollows, InstagramPost } from "@/types/models";
+import type {
+  InstagramDisplayImage,
+  InstagramFollows,
+  InstagramPost,
+} from "@/types/models";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
@@ -34,24 +38,19 @@ const InstagramLogo = ({ className }: { className?: string }) => {
   );
 };
 
-type Post = Pick<InstagramPost, "id" | "images" | "caption" | "postedAt">;
+type Post = Pick<InstagramPost, "id" | "caption" | "postedAt"> & {
+  images: InstagramDisplayImage[];
+};
 
 const imageSizes = "(min-width: 1024px) 180px, 100vw";
 
-const finalizePosts = (posts: Post[]) => {
-  const finalPosts: Post[] = [];
-
-  for (const post of posts) {
-    const imagesToInclude = Math.max(1, post.images.length - 2);
-    const images = post.images.slice(0, imagesToInclude);
-
-    finalPosts.push({ ...post, images });
-  }
-
-  return finalPosts;
-};
-
-const StoryBar = ({ index, images }: { index: number; images: string[] }) => {
+const StoryBar = ({
+  index,
+  images,
+}: {
+  index: number;
+  images: InstagramDisplayImage[];
+}) => {
   const [mounted, setMounted] = useState(false);
   const pageIsVisible = usePageIsVisible();
 
@@ -68,7 +67,7 @@ const StoryBar = ({ index, images }: { index: number; images: string[] }) => {
 
         return (
           <div
-            key={image}
+            key={image.url}
             className="relative flex-1 h-full bg-white/25 rounded-full overflow-hidden"
           >
             {isPast && (
@@ -161,12 +160,13 @@ const PostView = ({
   return (
     <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
       <NextImage
-        src={image}
+        src={image.url}
         alt={post.caption || "Instagram post"}
         fill
         sizes={imageSizes}
         priority={isInitial && imageIndex === 0}
         className="object-cover"
+        style={{ objectPosition: `${image.focus.x}% ${image.focus.y}%` }}
       />
       <div className="absolute inset-0 flex flex-col justify-between">
         <div className="relative px-3.5 pt-3.5 pb-2.5 @xs:px-4.5 @xs:pt-4.5 @xs:pb-3.5 flex flex-col gap-1.5 @xs:gap-2.5">
@@ -203,7 +203,7 @@ const Instagram = ({
     posts: Post[];
   };
 }) => {
-  const posts = useRef(finalizePosts(data.posts));
+  const posts = useRef(data.posts);
 
   const [postIndex, setPostIndex] = useState(0);
 
@@ -216,9 +216,9 @@ const Instagram = ({
       ...rest.map((p) => p.images[0]),
     ];
 
-    for (const src of upcoming) {
+    for (const image of upcoming) {
       const { props } = getImageProps({
-        src,
+        src: image.url,
         alt: "",
         width: 180,
         height: 180,

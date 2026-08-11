@@ -9,6 +9,25 @@ export type NYTimesData = Tables["nytimes"]["Row"];
 export type InstagramPost = Tables["instagram"]["Row"];
 export type InstagramFollows = Tables["instagramFollows"]["Row"];
 
+// Per-image classification produced at ingest time (stored in instagram.imageMeta,
+// keyed by storage path)
+export type InstagramImageClassification = {
+  isScreenshot: boolean;
+  isRevealing: boolean;
+  // Set when classification completed but produced no result (model refusal,
+  // unreadable file) — treated as filtered, never retried
+  unclassifiable?: boolean;
+  focus: { x: number; y: number };
+};
+
+export type InstagramImageMeta = Record<string, InstagramImageClassification>;
+
+// Shape passed to the Instagram component after filtering and URL resolution
+export type InstagramDisplayImage = {
+  url: string;
+  focus: { x: number; y: number };
+};
+
 export type CurrentLocation = {
   name: string;
   timeZoneId: string;

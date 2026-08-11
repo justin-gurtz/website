@@ -20,6 +20,7 @@ import type {
   DuolingoCourse,
   DuolingoStreak,
   GitHubContribution,
+  InstagramImageMeta,
   Movement,
   StravaActivity,
   StravaRun,
@@ -236,9 +237,43 @@ const getInstagram = async (supabase: SupabaseClient) => {
 
   const twoYearsAgo = subYears(new Date(), 2);
 
+  type PostRow = {
+    id: string;
+    images: string[];
+    imageMeta: unknown;
+    caption: string | null;
+    postedAt: string | null;
+  };
+
+  // Resolve storage paths to public URLs and attach the classified focal
+  // point. When filtered, drop images flagged at ingest as screenshots or
+  // shirtless; unclassified images pass through with a centered focus.
+  const toDisplayPost = (post: PostRow, { filtered = true } = {}) => {
+    const meta = (post.imageMeta ?? {}) as InstagramImageMeta;
+
+    const images = post.images
+      .filter((path) => {
+        if (!filtered) return true;
+        const m = meta[path];
+        return !(m?.isScreenshot || m?.isRevealing || m?.unclassifiable);
+      })
+      .map((path) => ({
+        url: supabase.storage.from("instagram").getPublicUrl(path).data
+          .publicUrl,
+        focus: meta[path]?.focus ?? { x: 50, y: 50 },
+      }));
+
+    return {
+      id: post.id,
+      caption: post.caption,
+      postedAt: post.postedAt,
+      images,
+    };
+  };
+
   const { data: recentPosts, error: recentError } = await supabase
     .from("instagram")
-    .select("id,images,caption,postedAt")
+    .select("id,images,imageMeta,caption,postedAt")
     .not("images", "eq", "{}")
     .gte("postedAt", twoYearsAgo.toISOString())
     .order("postedAt", { ascending: false, nullsFirst: false });
@@ -247,32 +282,36 @@ const getInstagram = async (supabase: SupabaseClient) => {
     throw new Error(recentError.message);
   }
 
-  let posts = recentPosts;
+  let posts = recentPosts
+    .map((post) => toDisplayPost(post))
+    .filter((post) => post.images.length > 0);
 
   if (!posts.length) {
+    // No limit: scan the whole (small) table so an older clean post is
+    // preferred over showing a flagged image unfiltered
     const { data: fallbackPosts, error: fallbackError } = await supabase
       .from("instagram")
-      .select("id,images,caption,postedAt")
+      .select("id,images,imageMeta,caption,postedAt")
       .not("images", "eq", "{}")
-      .order("postedAt", { ascending: false, nullsFirst: false })
-      .limit(1);
+      .order("postedAt", { ascending: false, nullsFirst: false });
 
     if (fallbackError) {
       throw new Error(fallbackError.message);
     }
 
-    posts = fallbackPosts;
+    posts = fallbackPosts
+      .map((post) => toDisplayPost(post))
+      .filter((post) => post.images.length > 0)
+      .slice(0, 1);
+
+    // Never render an empty card: if filtering removed everything, show the
+    // latest post unfiltered
+    if (!posts.length && fallbackPosts.length) {
+      posts = [toDisplayPost(fallbackPosts[0], { filtered: false })];
+    }
   }
 
-  const postsWithPublicUrls = posts.map((post) => ({
-    ...post,
-    images: post.images.map(
-      (path) =>
-        supabase.storage.from("instagram").getPublicUrl(path).data.publicUrl,
-    ),
-  }));
-
-  return { ...follows, posts: postsWithPublicUrls };
+  return { ...follows, posts };
 };
 
 const Page = async () => {

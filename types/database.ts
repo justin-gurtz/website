@@ -137,6 +137,7 @@ export type Database = {
           comment_count: number | null;
           created_at: string;
           id: string;
+          image_meta: Json;
           images: string[];
           like_count: number | null;
           media_type: string | null;
@@ -148,6 +149,7 @@ export type Database = {
           comment_count?: number | null;
           created_at?: string;
           id: string;
+          image_meta?: Json;
           images: string[];
           like_count?: number | null;
           media_type?: string | null;
@@ -159,6 +161,7 @@ export type Database = {
           comment_count?: number | null;
           created_at?: string;
           id?: string;
+          image_meta?: Json;
           images?: string[];
           like_count?: number | null;
           media_type?: string | null;
