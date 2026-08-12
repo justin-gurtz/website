@@ -118,10 +118,6 @@ const PostView = ({
   const [imageIndex, setImageIndex] = useState(0);
   const pageIsVisible = usePageIsVisible();
 
-  const image = useMemo(() => {
-    return post.images[imageIndex];
-  }, [post.images, imageIndex]);
-
   const formattedFollowers = useMemo(() => {
     const f = followerCount;
     if (f >= 1_000_000) return `${(f / 1_000_000).toFixed(1)}M`;
@@ -159,15 +155,22 @@ const PostView = ({
 
   return (
     <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
-      <NextImage
-        src={image.url}
-        alt={post.caption || "Instagram post"}
-        fill
-        sizes={imageSizes}
-        priority={isInitial && imageIndex === 0}
-        className="object-cover"
-        style={{ objectPosition: `${image.focus.x}% ${image.focus.y}%` }}
-      />
+      {/* Each image gets its own element (keyed by url) and earlier images stay
+          mounted underneath — reusing one img and swapping src makes the old
+          pixels briefly render with the next image's focal point while the new
+          src decodes */}
+      {post.images.slice(0, imageIndex + 1).map((image, i) => (
+        <NextImage
+          key={image.url}
+          src={image.url}
+          alt={post.caption || "Instagram post"}
+          fill
+          sizes={imageSizes}
+          priority={isInitial && i === 0}
+          className="object-cover"
+          style={{ objectPosition: `${image.focus.x}% ${image.focus.y}%` }}
+        />
+      ))}
       <div className="absolute inset-0 flex flex-col justify-between">
         <div className="relative px-3.5 pt-3.5 pb-2.5 @xs:px-4.5 @xs:pt-4.5 @xs:pb-3.5 flex flex-col gap-1.5 @xs:gap-2.5">
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0" />
