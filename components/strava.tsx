@@ -27,6 +27,8 @@ mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN;
 
 const href = "https://www.strava.com/athletes/gurtz";
 
+let hasReportedMapError = false;
+
 const maxZoom = 10.4;
 const nycPoint = turf.point([-73.97, 40.725]);
 
@@ -191,16 +193,25 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
         touchPitch: false,
         touchZoomRotate: false,
       });
-    } catch (error) {
+    } catch {
       // WebGL unavailable (headless browsers, GPU disabled, old hardware):
-      // skip the map and keep the rest of the card working
-      Sentry.captureException(error);
+      // expected per-device limitation, skip the map and keep the rest of
+      // the card working
       setMapFailed(true);
       return;
     }
 
     mapbox.current.on("load", () => {
       setMapIsReady(true);
+    });
+
+    mapbox.current.on("error", (e) => {
+      // Runtime map errors (invalid token, missing style, failed tiles)
+      // indicate systemic breakage worth alerting on, unlike the WebGL
+      // case above; report only the first per page load to avoid flooding
+      if (hasReportedMapError) return;
+      hasReportedMapError = true;
+      Sentry.captureException(e.error);
     });
   }, []);
 
