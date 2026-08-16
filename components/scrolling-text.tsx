@@ -206,8 +206,7 @@ const ScrollingText = ({
         // - (100% - parentPadding) to 100%: right fade zone (opaque → transparent)
         // The visible content area (middle section) is always fully opaque
         ...(parentPadding > 0 && {
-          maskImage: `linear-gradient(to right, transparent 0, transparent ${parentPadding / 2}px, black ${parentPadding}px, black calc(100% - ${parentPadding}px), transparent calc(100% - ${parentPadding / 2}px), transparent 100%)`,
-          WebkitMaskImage: `linear-gradient(to right, transparent 0, transparent ${parentPadding / 2}px, black ${parentPadding}px, black calc(100% - ${parentPadding}px), transparent calc(100% - ${parentPadding / 2}px), transparent 100%)`,
+          maskImage: `linear-gradient(to right, transparent 0px, transparent ${parentPadding / 2}px, black ${parentPadding}px, black calc(100% - ${parentPadding}px), transparent calc(100% - ${parentPadding / 2}px), transparent 100%)`,
         }),
       }}
     >
