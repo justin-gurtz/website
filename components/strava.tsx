@@ -107,7 +107,8 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
     const miles = turf.convertLength(totalDistance, "meters", "miles");
     const avgPace = miles === 0 ? 0 : (totalMovingTime * 60) / miles;
 
-    const milesString = miles.toLocaleString(undefined, {
+    // Fixed locale so the server and client renders match (hydration)
+    const milesString = miles.toLocaleString("en-US", {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,
     });

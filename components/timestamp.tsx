@@ -54,7 +54,13 @@ const Timestamp = ({
     return () => clearInterval(interval);
   }, [date, ago]);
 
-  return <p className={className}>{timestamp}</p>;
+  // Relative time drifts between the server render and hydration; the
+  // effect above recomputes it on mount, so skip the hydration diff
+  return (
+    <p className={className} suppressHydrationWarning>
+      {timestamp}
+    </p>
+  );
 };
 
 export default Timestamp;
