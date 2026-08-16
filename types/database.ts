@@ -191,6 +191,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      keystrokes: {
+        Row: {
+          count: number;
+          created_at: string;
+          device: string;
+          period: string;
+          updated_at: string;
+        };
+        Insert: {
+          count: number;
+          created_at?: string;
+          device: string;
+          period: string;
+          updated_at?: string;
+        };
+        Update: {
+          count?: number;
+          created_at?: string;
+          device?: string;
+          period?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       movements: {
         Row: {
           city: string | null;
