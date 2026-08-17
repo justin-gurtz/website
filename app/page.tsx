@@ -1,4 +1,5 @@
 import { subDays, subYears } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { backOff } from "exponential-backoff";
 import compact from "lodash/compact";
 import includes from "lodash/includes";
@@ -115,6 +116,23 @@ const getClaude = async (supabase: SupabaseClient) => {
     (acc, row) => acc + row.inputTokens + row.outputTokens,
     0,
   );
+};
+
+const getKeystrokes = async (supabase: SupabaseClient, timeZoneId: string) => {
+  // "Today" in the timezone I'm currently in; periods are hourly UTC buckets
+  const today = formatInTimeZone(new Date(), timeZoneId, "yyyy-MM-dd");
+  const startOfToday = fromZonedTime(`${today}T00:00:00`, timeZoneId);
+
+  const { data, error } = await supabase
+    .from("keystrokes")
+    .select("count")
+    .gte("period", startOfToday.toISOString());
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return reduce(data, (acc, row) => acc + row.count, 0);
 };
 
 const getSpotify = async (supabase: SupabaseClient) => {
@@ -322,9 +340,12 @@ const Page = async () => {
     SUPABASE_SERVICE_ROLE_KEY,
   );
 
+  const locationPromise = backOff(() => getLocation(supabase));
+
   const [
     location,
     totalTokens,
+    todayKeystrokes,
     spotify,
     strava,
     github,
@@ -333,8 +354,11 @@ const Page = async () => {
     nytimes,
     instagram,
   ] = await Promise.all([
-    backOff(() => getLocation(supabase)),
+    locationPromise,
     backOff(() => getClaude(supabase)),
+    locationPromise.then(({ timeZoneId }) =>
+      backOff(() => getKeystrokes(supabase, timeZoneId)),
+    ),
     backOff(() => getSpotify(supabase)),
     backOff(() => getStrava(supabase)),
     backOff(() => getGitHub(supabase)),
@@ -354,6 +378,7 @@ const Page = async () => {
                 <Header
                   locationName={location.name}
                   totalTokens={totalTokens}
+                  todayKeystrokes={todayKeystrokes}
                   vo2Max={vo2Max}
                   showSeriesACopy={showSeriesACopy}
                 />

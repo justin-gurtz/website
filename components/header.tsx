@@ -37,14 +37,22 @@ const Stat = ({
   );
 };
 
+// Fixed locale so the server and client renders match (hydration)
+const compactNumber = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 const Header = ({
   locationName,
   totalTokens,
+  todayKeystrokes,
   vo2Max,
   showSeriesACopy,
 }: {
   locationName: string;
   totalTokens: number;
+  todayKeystrokes: number;
   vo2Max: number;
   showSeriesACopy: boolean;
 }) => {
@@ -69,19 +77,27 @@ const Header = ({
       </p>
       <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
         <Stat label="Current location" value={locationName} />
+        <Stat
+          label="Typing since midnight"
+          value={`${todayKeystrokes.toLocaleString("en-US")} ${
+            todayKeystrokes === 1 ? "key" : "keys"
+          }`}
+        />
         {totalTokens > 0 && (
           <Stat
-            label="Claude Code, past week"
-            value={`${totalTokens.toLocaleString()} tokens`}
+            label="Weekly Claude use"
+            value={`${compactNumber.format(totalTokens)} ${
+              totalTokens === 1 ? "token" : "tokens"
+            }`}
           />
         )}
         <Stat
-          label={
+          label="Garmin fitness"
+          value={
             <>
-              Garmin VO<sub className="font-black">2</sub> Max
+              {vo2Max} VO<sub className="font-semibold">2</sub> max
             </>
           }
-          value={vo2Max}
         />
       </div>
     </div>

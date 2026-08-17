@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
@@ -34,6 +35,15 @@ export const POST = async (request: Request) => {
     SUPABASE_SERVICE_ROLE_KEY,
   );
 
+  // Read the previous updatedAt before the upsert overwrites it — used below
+  // to throttle page purges during heavy typing with frequent pushes
+  const { data: lastRow } = await supabase
+    .from("keystrokes")
+    .select("updatedAt")
+    .order("updatedAt", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const now = new Date().toISOString();
   const data = parsed.data.map((row) => ({ ...row, updatedAt: now }));
 
@@ -41,6 +51,14 @@ export const POST = async (request: Request) => {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  const throttled =
+    lastRow &&
+    Date.now() - new Date(lastRow.updatedAt).getTime() < 5 * 60 * 1000;
+
+  if (!throttled) {
+    revalidatePath("/");
   }
 
   return new Response(null, { status: 204 });
