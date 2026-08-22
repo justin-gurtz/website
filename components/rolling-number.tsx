@@ -75,14 +75,15 @@ const Digit = ({
     return () => controls.stop();
   }, [digit, trend, driven, reduced, y]);
 
+  // One pre-formatted text run rather than a stack of blocks: text selection
+  // serialises a line break for every block box it crosses, even ones whose
+  // text is unselectable
   return (
-    <motion.span className="block" style={{ y }}>
-      {STRIP.map((d, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static strip
-        <span key={i} className="block">
-          {d}
-        </span>
-      ))}
+    <motion.span
+      className="inline-block whitespace-pre align-top"
+      style={{ y }}
+    >
+      {STRIP.join("\n")}
     </motion.span>
   );
 };
@@ -200,37 +201,46 @@ const RollingNumber = ({
   );
 
   return (
-    <span className={cn("inline-flex tabular-nums", className)}>
-      <span className="sr-only">{formatted}</span>
-      <AnimatePresence initial={false}>
-        {slots.map((slot) => (
-          // Width animates so neighbouring text slides rather than jumps
-          // when a digit is added or removed
-          <motion.span
-            key={slot.key}
-            aria-hidden
-            // Fades digits at the top and bottom edges as they roll through
-            className="block h-lh overflow-clip [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: "auto", opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease }}
-          >
-            {slot.digit === null || slot.exp === null ? (
-              slot.char
-            ) : (
-              <Digit
-                digit={slot.digit}
-                trend={trend}
-                counter={counter}
-                exp={slot.exp}
-                lowestExp={-target.fractionDigits}
-                driven={countingUp}
-              />
-            )}
-          </motion.span>
-        ))}
-      </AnimatePresence>
+    <span className={cn("inline-block tabular-nums", className)}>
+      {/* The wheels are decorative and unselectable; this invisible copy
+          overflowing across them is what gets read, selected (its highlight
+          isn't faded by the mask) and copied. It's painted beneath the wheels
+          so the highlight sits behind the digits, and the wheels ignore the
+          pointer so clicks still land on the real text */}
+      <span className="inline-block w-0 whitespace-nowrap text-transparent">
+        {formatted}
+      </span>
+      <span className="select-none pointer-events-none">
+        <AnimatePresence initial={false}>
+          {slots.map((slot) => (
+            // Width animates so neighbouring text slides rather than jumps
+            // when a digit is added or removed
+            <motion.span
+              key={slot.key}
+              aria-hidden
+              // Fades digits at the top and bottom edges as they roll through
+              className="inline-block h-lh overflow-clip [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "auto", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.35, ease }}
+            >
+              {slot.digit === null || slot.exp === null ? (
+                slot.char
+              ) : (
+                <Digit
+                  digit={slot.digit}
+                  trend={trend}
+                  counter={counter}
+                  exp={slot.exp}
+                  lowestExp={-target.fractionDigits}
+                  driven={countingUp}
+                />
+              )}
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </span>
     </span>
   );
 };
