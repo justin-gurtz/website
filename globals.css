@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
-@theme {
+/* next/font sets these variables on <body>, not :root, so the theme must be
+   inline — a plain @theme would emit `--font-sans: var(--font-geist-sans)` on
+   :root, where it resolves to nothing and the site falls back to system fonts */
+@theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
 
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 }
