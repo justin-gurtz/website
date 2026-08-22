@@ -2,6 +2,7 @@ import { IconLungsFilled } from "@tabler/icons-react";
 import KeyboardIcon from "@/components/icons/keyboard";
 import LocationIcon from "@/components/icons/location";
 import SparklesIcon from "@/components/icons/sparkles";
+import RollingNumber from "@/components/rolling-number";
 import Timestamp from "@/components/timestamp";
 import { bodyBaseStyles } from "@/constants";
 import { cn } from "@/utils/tailwind";
@@ -51,11 +52,10 @@ const Stat = ({
   );
 };
 
-// Fixed locale so the server and client renders match (hydration)
-const compactNumber = new Intl.NumberFormat("en-US", {
+const compactFormatOptions: Intl.NumberFormatOptions = {
   notation: "compact",
   maximumFractionDigits: 1,
-});
+};
 
 const Header = ({
   locationName,
@@ -98,18 +98,28 @@ const Header = ({
       <div className="grid grid-cols-1 sm:grid-flow-col sm:grid-rows-2 sm:grid-cols-[repeat(2,auto)] sm:w-fit gap-x-8 gap-y-2 pt-1">
         <Stat
           icon={<KeyboardIcon className={iconClassName} />}
-          value={`${todayKeystrokes.toLocaleString("en-US")} ${
-            todayKeystrokes === 1 ? "key" : "keys"
-          }`}
+          value={
+            <>
+              <RollingNumber value={todayKeystrokes} intro />{" "}
+              {todayKeystrokes === 1 ? "key" : "keys"}
+            </>
+          }
         >
           typed today
         </Stat>
         {totalTokens > 0 && (
           <Stat
             icon={<SparklesIcon className={iconClassName} />}
-            value={`${compactNumber.format(totalTokens)} ${
-              totalTokens === 1 ? "token" : "tokens"
-            }`}
+            value={
+              <>
+                <RollingNumber
+                  value={totalTokens}
+                  formatOptions={compactFormatOptions}
+                  intro
+                />{" "}
+                {totalTokens === 1 ? "token" : "tokens"}
+              </>
+            }
           >
             used on AI this week
           </Stat>
@@ -124,7 +134,8 @@ const Header = ({
           icon={<IconLungsFilled className={iconClassName} />}
           value={
             <>
-              {vo2Max} VO<sub className="font-semibold">2</sub> max
+              <RollingNumber value={vo2Max} intro /> VO
+              <sub className="font-semibold">2</sub> max
             </>
           }
         />
