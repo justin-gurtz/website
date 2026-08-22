@@ -17,6 +17,7 @@ import type {
   InstagramFollows,
   InstagramPost,
 } from "@/types/models";
+import { cn } from "@/utils/tailwind";
 import Link from "./link";
 import Timestamp from "./timestamp";
 
@@ -71,9 +72,11 @@ const warmImage = (image: InstagramDisplayImage) => {
 const StoryBar = ({
   index,
   images,
+  running,
 }: {
   index: number;
   images: InstagramDisplayImage[];
+  running: boolean;
 }) => {
   const [mounted, setMounted] = useState(false);
   const pageIsVisible = usePageIsVisible();
@@ -103,9 +106,10 @@ const StoryBar = ({
                 className="absolute inset-0 bg-white rounded-full"
                 style={{
                   transform: "translateX(calc(-100% - 0.125rem))",
-                  animation: mounted
-                    ? "story-progress 5s linear forwards"
-                    : "none",
+                  animation:
+                    mounted && running
+                      ? "story-progress 5s linear forwards"
+                      : "none",
                 }}
               />
             )}
@@ -126,6 +130,22 @@ const StoryBar = ({
   );
 };
 
+// The intro is modelled on Pow's "snapshot" transition: the photo starts
+// blown out and comes down through the exposure so the darkest tones
+// resolve first, while it sharpens and gains contrast and colour. The
+// exposure is an additive white layer (plus-lighter), since CSS brightness()
+// only scales, and scaling can't clip highlights.
+const developDuration = "1.8s ease-in-out forwards";
+const undevelopedFilter = "saturate(0.5) contrast(0.5) blur(3px)";
+// Blur samples past the edge of the image, leaving a soft fringe that the
+// placeholder shows through. Oversizing the image while it's blurred pushes
+// the fringe outside the clip (Pow's `opaque: true`).
+const undevelopedTransform = "scale(1.07)";
+const undevelopedExposure = 0.85;
+// The text, gradients and story bar fade in alongside the photo rather than
+// sitting on the blown-out print
+const undevelopedChromeOpacity = 0;
+
 const PostView = ({
   followerCount,
   post,
@@ -133,6 +153,8 @@ const PostView = ({
   postsCount,
   nextPostImages,
   isInitial,
+  intro,
+  onIntroDone,
 }: {
   followerCount: number;
   post: Post;
@@ -140,9 +162,22 @@ const PostView = ({
   postsCount: number;
   nextPostImages: InstagramDisplayImage[];
   isInitial: boolean;
+  intro: boolean;
+  onIntroDone: () => void;
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const pageIsVisible = usePageIsVisible();
+
+  // Intro: the first photo develops like an instant print once it has
+  // loaded. The story timer waits for it so the finished photo still gets
+  // its full turn.
+  const [develop, setDevelop] = useState<"pending" | "running" | "done">(
+    intro ? "pending" : "done",
+  );
+  const developDone = () => {
+    setDevelop("done");
+    onIntroDone();
+  };
 
   const formattedFollowers = useMemo(() => {
     const f = followerCount;
@@ -158,6 +193,7 @@ const PostView = ({
   useEffect(() => {
     if (!hasMultipleImages) return;
     if (!pageIsVisible) return;
+    if (develop !== "done") return;
 
     const interval = setInterval(() => {
       if (imageIndex < post.images.length - 1) {
@@ -177,6 +213,7 @@ const PostView = ({
     postsCount,
     pageIsVisible,
     hasMultipleImages,
+    develop,
   ]);
 
   // Keep the next few images warm, whichever post they belong to. Bounded per
@@ -189,29 +226,129 @@ const PostView = ({
   }, [post.images, imageIndex, nextPostImages, hasMultipleImages]);
 
   return (
-    <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
+    <div className="relative isolate block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
       {/* Each image gets its own element (keyed by url) and earlier images stay
           mounted underneath — reusing one img and swapping src makes the old
           pixels briefly render with the next image's focal point while the new
           src decodes */}
-      {post.images.slice(0, imageIndex + 1).map((image, i) => (
-        <NextImage
-          key={image.url}
-          src={image.url}
-          alt={post.caption || "Instagram post"}
-          fill
-          sizes={imageSizes}
-          preload={isInitial && i === 0}
-          fetchPriority={isInitial && i === 0 ? "high" : undefined}
-          className="object-cover"
-          style={{ objectPosition: `${image.focus.x}% ${image.focus.y}%` }}
+      {post.images.slice(0, imageIndex + 1).map((image, i) => {
+        const developing = i === 0 && develop !== "done";
+        return (
+          <NextImage
+            key={image.url}
+            src={image.url}
+            alt={post.caption || "Instagram post"}
+            fill
+            sizes={imageSizes}
+            preload={isInitial && i === 0}
+            fetchPriority={isInitial && i === 0 ? "high" : undefined}
+            className="object-cover"
+            style={{
+              objectPosition: `${image.focus.x}% ${image.focus.y}%`,
+              // The undeveloped look is also set statically so no developed
+              // frame can slip in between the image loading and the
+              // animation starting
+              ...(developing && {
+                filter: undevelopedFilter,
+                transform: undevelopedTransform,
+                animation:
+                  develop === "running"
+                    ? `develop ${developDuration}`
+                    : undefined,
+              }),
+            }}
+            onLoad={developing ? () => setDevelop("running") : undefined}
+            onError={developing ? developDone : undefined}
+            onAnimationEnd={developing ? developDone : undefined}
+          />
+        );
+      })}
+      {develop !== "done" && (
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-white mix-blend-plus-lighter"
+          style={{
+            opacity: undevelopedExposure,
+            animation:
+              develop === "running"
+                ? `develop-exposure ${developDuration}`
+                : undefined,
+          }}
         />
-      ))}
-      <div className="absolute inset-0 flex flex-col justify-between">
+      )}
+      {/* The blown-out print is nearly the page colour in light mode, so a
+          hairline outlines it until the photo has developed enough to stand
+          on its own. Dark mode already has a permanent border. */}
+      {develop !== "done" && (
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-squircle-outside border-[1px] lg:border-[0.5px] border-neutral-200 lg:border-neutral-300 dark:hidden pointer-events-none"
+          style={{
+            animation:
+              develop === "running"
+                ? `develop-hairline ${developDuration}`
+                : undefined,
+          }}
+        />
+      )}
+      <style jsx>{`
+        @keyframes develop {
+          from {
+            filter: ${undevelopedFilter};
+            transform: ${undevelopedTransform};
+          }
+          to {
+            filter: saturate(1) contrast(1) blur(0);
+            transform: scale(1);
+          }
+        }
+        @keyframes develop-exposure {
+          from {
+            opacity: ${undevelopedExposure};
+          }
+          to {
+            opacity: 0;
+          }
+        }
+        @keyframes develop-hairline {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+        @keyframes develop-chrome {
+          from {
+            opacity: ${undevelopedChromeOpacity};
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
+      <div
+        className="absolute inset-0 flex flex-col justify-between"
+        style={
+          develop !== "done"
+            ? {
+                opacity: undevelopedChromeOpacity,
+                animation:
+                  develop === "running"
+                    ? `develop-chrome ${developDuration}`
+                    : undefined,
+              }
+            : undefined
+        }
+      >
         <div className="relative px-3.5 pt-3.5 pb-2.5 @xs:px-4.5 @xs:pt-4.5 @xs:pb-3.5 flex flex-col gap-1.5 @xs:gap-2.5">
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 dark:from-black/60 to-black/0" />
           {hasMultipleImages && (
-            <StoryBar index={imageIndex} images={post.images} />
+            <StoryBar
+              index={imageIndex}
+              images={post.images}
+              running={develop === "done"}
+            />
           )}
           <div className="relative flex items-center gap-1.5 text-xs text-white">
             <p className="font-semibold">@gurtz</p>
@@ -245,6 +382,7 @@ const Instagram = ({
   const posts = useRef(data.posts);
 
   const [postIndex, setPostIndex] = useState(0);
+  const [introPending, setIntroPending] = useState(true);
 
   const post = useMemo(() => {
     return posts.current[postIndex];
@@ -257,7 +395,12 @@ const Instagram = ({
   return (
     <Link
       href={instagramUrl}
-      className="@container w-full lg:w-45 aspect-square bg-black"
+      // Black backs the cube flips, but while the intro's blown-out print is
+      // near white it would show as dark anti-aliased pixels in the corners
+      className={cn(
+        "@container w-full lg:w-45 aspect-square",
+        introPending ? "bg-white" : "bg-black",
+      )}
       contentBrightness="dark"
       style={{ containerType: "inline-size" }}
     >
@@ -286,6 +429,8 @@ const Instagram = ({
                 postsCount={posts.current.length}
                 nextPostImages={nextPostImages}
                 isInitial={postIndex === 0}
+                intro={introPending}
+                onIntroDone={() => setIntroPending(false)}
               />
             </motion.div>
           </AnimatePresence>
