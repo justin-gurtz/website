@@ -73,36 +73,47 @@ const AlbumArtImage = ({
 
 const AlbumArt = ({
   data,
+  intro,
   onAnimationComplete: handleAnimationComplete,
 }: {
   data: Pick<SpotifyData, "image" | "name">;
+  // A song change turns the old sleeve over to the new one. On first load
+  // there's nothing to turn away, so the slot stays empty until the art has
+  // loaded, then it springs up into place like a cover when playback starts.
+  intro: boolean;
   onAnimationComplete: () => void;
 }) => {
   return (
     <AnimatePresence mode="sync" initial={false}>
-      <motion.div
-        key={data.image || "no-image"}
-        className="absolute inset-0 [backface-visibility:hidden] rounded-md shadow-md overflow-hidden"
-        initial={{ rotateY: 180 }}
-        animate={{ rotateY: 0 }}
-        exit={{ rotateY: -180 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d" }}
-        onAnimationComplete={handleAnimationComplete}
-      >
-        {data.image ? (
-          <AlbumArtImage image={data.image} name={data.name} />
-        ) : (
-          <div
-            className={cn(
-              "size-full flex items-center justify-center",
-              albumArtBgClassName,
-            )}
-          >
-            <QuarterNote className="size-1/3 stroke-neutral-900 fill-neutral-900 dark:fill-white dark:stroke-white opacity-50" />
-          </div>
-        )}
-      </motion.div>
+      {(data.image || !intro) && (
+        <motion.div
+          key={data.image || "no-image"}
+          className="absolute inset-0 [backface-visibility:hidden] rounded-md shadow-md overflow-hidden"
+          initial={intro ? { scale: 0.5, opacity: 0 } : { rotateY: 180 }}
+          animate={{ rotateY: 0, scale: 1, opacity: 1 }}
+          exit={{ rotateY: -180 }}
+          transition={
+            intro
+              ? { type: "spring", stiffness: 260, damping: 18 }
+              : { duration: 0.5, ease: "easeInOut" }
+          }
+          style={{ transformStyle: "preserve-3d" }}
+          onAnimationComplete={handleAnimationComplete}
+        >
+          {data.image ? (
+            <AlbumArtImage image={data.image} name={data.name} />
+          ) : (
+            <div
+              className={cn(
+                "size-full flex items-center justify-center",
+                albumArtBgClassName,
+              )}
+            >
+              <QuarterNote className="size-1/3 stroke-neutral-900 fill-neutral-900 dark:fill-white dark:stroke-white opacity-50" />
+            </div>
+          )}
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 };
@@ -116,7 +127,11 @@ const Spotify = ({
 }: {
   data: Pick<SpotifyData, "updatedAt" | "image" | "name" | "by" | "color">;
 }) => {
-  const [data, setData] = useState(d);
+  // Intro: mount without the art so the first render goes through the same
+  // load-then-animate path as a song change. Nothing to reveal when the
+  // track has no art.
+  const [data, setData] = useState(d.image ? { ...d, image: null } : d);
+  const [intro, setIntro] = useState(!!d.image);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const pageIsVisible = usePageIsVisible();
@@ -199,6 +214,7 @@ const Spotify = ({
 
   const handleAnimationComplete = useCallback(() => {
     setIsAnimating(false);
+    setIntro(false);
   }, []);
 
   const style = useMemo(() => {
@@ -234,6 +250,7 @@ const Spotify = ({
           <div className="absolute inset-y-0 left-0 aspect-square perspective-normal">
             <AlbumArt
               data={data}
+              intro={intro}
               onAnimationComplete={handleAnimationComplete}
             />
           </div>
