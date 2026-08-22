@@ -93,6 +93,7 @@ const getLocation = async (supabase: SupabaseClient) => {
     return {
       name: currentLocationName,
       timeZoneId: data.timeZoneId,
+      movedAt: data.movedAt,
     };
   };
 
@@ -377,6 +378,7 @@ const Page = async () => {
               <div className="w-full [@media(min-height:56.25rem)]:absolute [@media(min-height:56.25rem)]:left-14 [@media(min-height:56.25rem)]:top-14">
                 <Header
                   locationName={location.name}
+                  locationMovedAt={location.movedAt}
                   totalTokens={totalTokens}
                   todayKeystrokes={todayKeystrokes}
                   vo2Max={vo2Max}

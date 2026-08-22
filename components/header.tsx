@@ -1,3 +1,8 @@
+import { IconLungsFilled } from "@tabler/icons-react";
+import KeyboardIcon from "@/components/icons/keyboard";
+import LocationIcon from "@/components/icons/location";
+import SparklesIcon from "@/components/icons/sparkles";
+import Timestamp from "@/components/timestamp";
 import { bodyBaseStyles } from "@/constants";
 import { cn } from "@/utils/tailwind";
 
@@ -20,19 +25,28 @@ const Link = ({
   );
 };
 
+const iconClassName = "size-4 shrink-0 text-neutral-800 dark:text-white";
+
 const Stat = ({
-  label,
+  icon,
   value,
+  children,
 }: {
-  label: React.ReactNode;
+  icon: React.ReactNode;
   value: React.ReactNode;
+  children?: React.ReactNode;
 }) => {
   return (
-    <div>
-      <p className="text-[0.625rem] uppercase tracking-wider font-bold text-neutral-400 dark:text-neutral-500">
-        {label}
+    <div className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+      <span className="contents" aria-hidden>
+        {icon}
+      </span>
+      <p>
+        <span className="font-medium text-neutral-800 dark:text-white">
+          {value}
+        </span>
+        {children && <> {children}</>}
       </p>
-      <p className="text-sm font-medium leading-snug">{value}</p>
     </div>
   );
 };
@@ -45,12 +59,14 @@ const compactNumber = new Intl.NumberFormat("en-US", {
 
 const Header = ({
   locationName,
+  locationMovedAt,
   totalTokens,
   todayKeystrokes,
   vo2Max,
   showSeriesACopy,
 }: {
   locationName: string;
+  locationMovedAt: string;
   totalTokens: number;
   todayKeystrokes: number;
   vo2Max: number;
@@ -75,24 +91,37 @@ const Header = ({
         . <br className="hidden lg:block" />I like to collect data about my life
         using APIs and custom software.
       </p>
-      <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
-        <Stat label="Current location" value={locationName} />
+      {/* Fills down the first column, then the second. Columns hug their
+          content (`auto` + w-fit) so the second column starts right after the
+          first instead of at half the header width, but can still shrink and
+          wrap rather than overflow on narrow screens */}
+      <div className="grid grid-cols-1 sm:grid-flow-col sm:grid-rows-2 sm:grid-cols-[repeat(2,auto)] sm:w-fit gap-x-8 gap-y-2 pt-1">
         <Stat
-          label="Typing since midnight"
+          icon={<KeyboardIcon className={iconClassName} />}
           value={`${todayKeystrokes.toLocaleString("en-US")} ${
             todayKeystrokes === 1 ? "key" : "keys"
           }`}
-        />
+        >
+          typed today
+        </Stat>
         {totalTokens > 0 && (
           <Stat
-            label="Weekly Claude use"
+            icon={<SparklesIcon className={iconClassName} />}
             value={`${compactNumber.format(totalTokens)} ${
               totalTokens === 1 ? "token" : "tokens"
             }`}
-          />
+          >
+            used on AI this week
+          </Stat>
         )}
         <Stat
-          label="Garmin fitness"
+          icon={<LocationIcon className={iconClassName} />}
+          value={locationName}
+        >
+          – <Timestamp ago as="span" date={locationMovedAt} />
+        </Stat>
+        <Stat
+          icon={<IconLungsFilled className={iconClassName} />}
           value={
             <>
               {vo2Max} VO<sub className="font-semibold">2</sub> max

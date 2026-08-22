@@ -35,10 +35,12 @@ const getTimestamp = (date: string | Date, ago: boolean) => {
 
 const Timestamp = ({
   ago = false,
+  as: Component = "p",
   className,
   date,
 }: {
   ago?: boolean;
+  as?: "p" | "span";
   className?: string;
   date: string | Date;
 }) => {
@@ -57,9 +59,9 @@ const Timestamp = ({
   // Relative time drifts between the server render and hydration; the
   // effect above recomputes it on mount, so skip the hydration diff
   return (
-    <p className={className} suppressHydrationWarning>
+    <Component className={className} suppressHydrationWarning>
       {timestamp}
-    </p>
+    </Component>
   );
 };
 

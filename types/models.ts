@@ -31,6 +31,7 @@ export type InstagramDisplayImage = {
 export type CurrentLocation = {
   name: string;
   timeZoneId: string;
+  movedAt: string;
 };
 
 // JSON payload types (from third-party APIs - keep original casing)
