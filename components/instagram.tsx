@@ -10,7 +10,6 @@ import {
   useRef,
   useState,
 } from "react";
-import ReactDOM from "react-dom";
 import { instagramUrl } from "@/constants";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type {
@@ -43,6 +42,31 @@ type Post = Pick<InstagramPost, "id" | "caption" | "postedAt"> & {
 };
 
 const imageSizes = "(min-width: 1024px) 180px, 100vw";
+
+// How many images ahead of the current one to keep warm. Each shows for 5s,
+// so 2 gives a 10s window for the fetch to land on slow connections.
+const warmLookahead = 2;
+
+// Warm the cache for an upcoming image so the transition to it is instant.
+// Uses getImageProps so the URL/srcSet match what NextImage will request.
+// Fetched via an off-DOM Image rather than <link rel="preload"> — the image
+// isn't consumed for several seconds, so preload links trigger "preloaded but
+// not used within a few seconds" console warnings.
+const warmImage = (image: InstagramDisplayImage) => {
+  const { props } = getImageProps({
+    src: image.url,
+    alt: "",
+    width: 180,
+    height: 180,
+    sizes: imageSizes,
+  });
+  const img = new Image();
+  img.fetchPriority = "low";
+  // sizes must be set before srcset so candidate selection uses it
+  if (props.sizes) img.sizes = props.sizes;
+  if (props.srcSet) img.srcset = props.srcSet;
+  img.src = props.src;
+};
 
 const StoryBar = ({
   index,
@@ -107,12 +131,14 @@ const PostView = ({
   post,
   setPostIndex,
   postsCount,
+  nextPostImages,
   isInitial,
 }: {
   followerCount: number;
   post: Post;
   setPostIndex: Dispatch<SetStateAction<number>>;
   postsCount: number;
+  nextPostImages: InstagramDisplayImage[];
   isInitial: boolean;
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
@@ -153,6 +179,15 @@ const PostView = ({
     hasMultipleImages,
   ]);
 
+  // Keep the next few images warm, whichever post they belong to. Bounded per
+  // transition rather than warming everything up front, since the number of
+  // posts/images is unbounded.
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+    const upcoming = [...post.images.slice(imageIndex + 1), ...nextPostImages];
+    for (const image of upcoming.slice(0, warmLookahead)) warmImage(image);
+  }, [post.images, imageIndex, nextPostImages, hasMultipleImages]);
+
   return (
     <div className="relative block size-full rounded-squircle-outside overflow-hidden bg-neutral-400 dark:bg-neutral-800">
       {/* Each image gets its own element (keyed by url) and earlier images stay
@@ -166,7 +201,8 @@ const PostView = ({
           alt={post.caption || "Instagram post"}
           fill
           sizes={imageSizes}
-          priority={isInitial && i === 0}
+          preload={isInitial && i === 0}
+          fetchPriority={isInitial && i === 0 ? "high" : undefined}
           className="object-cover"
           style={{ objectPosition: `${image.focus.x}% ${image.focus.y}%` }}
         />
@@ -210,34 +246,12 @@ const Instagram = ({
 
   const [postIndex, setPostIndex] = useState(0);
 
-  // Warm the cache for upcoming images so carousel transitions are instant.
-  // Uses getImageProps so the preloaded URL/srcSet match what NextImage will request.
-  useEffect(() => {
-    const [firstPost, ...rest] = posts.current;
-    const upcoming = [
-      ...firstPost.images.slice(1),
-      ...rest.map((p) => p.images[0]),
-    ];
-
-    for (const image of upcoming) {
-      const { props } = getImageProps({
-        src: image.url,
-        alt: "",
-        width: 180,
-        height: 180,
-        sizes: imageSizes,
-      });
-      ReactDOM.preload(props.src, {
-        as: "image",
-        imageSrcSet: props.srcSet,
-        imageSizes: props.sizes,
-        fetchPriority: "low",
-      });
-    }
-  }, []);
-
   const post = useMemo(() => {
     return posts.current[postIndex];
+  }, [postIndex]);
+
+  const nextPostImages = useMemo(() => {
+    return posts.current[(postIndex + 1) % posts.current.length].images;
   }, [postIndex]);
 
   return (
@@ -270,6 +284,7 @@ const Instagram = ({
                 post={post}
                 setPostIndex={setPostIndex}
                 postsCount={posts.current.length}
+                nextPostImages={nextPostImages}
                 isInitial={postIndex === 0}
               />
             </motion.div>
