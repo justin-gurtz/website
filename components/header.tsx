@@ -97,6 +97,23 @@ const Header = ({
           wrap rather than overflow on narrow screens */}
       <div className="grid grid-cols-1 sm:grid-flow-col sm:grid-rows-2 sm:grid-cols-[repeat(2,auto)] sm:w-fit gap-x-8 gap-y-2 pt-1">
         <Stat
+          icon={<LocationIcon className={iconClassName} />}
+          value={locationName}
+        >
+          – <Timestamp ago as="span" date={locationMovedAt} />
+        </Stat>
+        <Stat
+          icon={<IconLungsFilled className={iconClassName} />}
+          value={
+            <>
+              <RollingNumber value={vo2Max} intro /> VO
+              <sub className="font-semibold">2</sub> max
+            </>
+          }
+        >
+          (cardio fitness)
+        </Stat>
+        <Stat
           icon={<KeyboardIcon className={iconClassName} />}
           value={
             <>
@@ -124,23 +141,6 @@ const Header = ({
             burned on AI this week
           </Stat>
         )}
-        <Stat
-          icon={<LocationIcon className={iconClassName} />}
-          value={locationName}
-        >
-          – <Timestamp ago as="span" date={locationMovedAt} />
-        </Stat>
-        <Stat
-          icon={<IconLungsFilled className={iconClassName} />}
-          value={
-            <>
-              <RollingNumber value={vo2Max} intro /> VO
-              <sub className="font-semibold">2</sub> max
-            </>
-          }
-        >
-          (cardio fitness)
-        </Stat>
       </div>
     </div>
   );
