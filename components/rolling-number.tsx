@@ -42,19 +42,32 @@ const Digit = ({
   const reduced = useReducedMotion();
   const y = useMotionValue(pct(HOME + digit));
   const prev = useRef(digit);
+  const wasDriven = useRef(driven);
 
   useMotionValueEvent(counter, "change", (v) => {
     if (!driven) return;
     const scaled = v / 10 ** exp;
-    // The lowest wheel spins continuously; higher wheels step when the
-    // one below wraps, like a mechanical odometer
-    const pos = exp === lowestExp ? scaled % 10 : Math.floor(scaled) % 10;
-    y.set(pct(HOME + pos));
+    // Like a mechanical odometer: a wheel turns in step with the one below
+    // while that one passes from 9 to 0, i.e. during the last lowest-wheel
+    // step before this wheel's own digit changes. `unit` is that step in
+    // this wheel's scale (1 for the lowest wheel, which spins continuously).
+    const unit = 10 ** (lowestExp - exp);
+    const frac = scaled - Math.floor(scaled);
+    const carry = Math.max(0, 1 - (1 - frac) / unit);
+    y.set(pct(HOME + (Math.floor(scaled) % 10) + carry));
   });
 
   useEffect(() => {
-    if (driven) {
+    const handoff = wasDriven.current && !driven;
+    wasDriven.current = driven;
+
+    // While driven the digit prop is stale (it only tracks the string's
+    // shape), so don't roll from it when the count-up ends — the counter
+    // has already brought the wheel to its final digit; just settle it
+    // exactly on home
+    if (driven || handoff) {
       prev.current = digit;
+      if (handoff) y.set(pct(HOME + digit));
       return;
     }
 
