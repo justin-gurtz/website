@@ -101,8 +101,9 @@ const Digit = ({
   );
 };
 
-// Slots are keyed by position from the right so the ones digit is the
-// anchor and a new leading digit appears on the left
+// Digits are keyed by their power of ten and literals by position from the
+// right, so the ones digit is the anchor: a new leading digit appears on the
+// left and a fraction slides in on the right without remounting any wheel
 const toSlots = (formatted: string, fractionDigits: number) => {
   const chars = [...formatted];
   const digitCount = chars.filter((c) => /\d/.test(c)).length;
@@ -112,7 +113,7 @@ const toSlots = (formatted: string, fractionDigits: number) => {
     const digit = /\d/.test(char) ? Number(char) : null;
     const exp =
       digit === null ? null : digitCount - 1 - digitsSeen++ - fractionDigits;
-    return { key: `${pos}-${digit === null ? "l" : "d"}`, digit, char, exp };
+    return { key: exp === null ? `l${pos}` : `d${exp}`, digit, char, exp };
   });
 };
 
@@ -175,15 +176,17 @@ const RollingNumber = ({
     [format, shown],
   );
 
-  // Intro: count up from 0 in the formatted unit ("0.0M" → "3.7M"). Only
-  // structural changes (a new digit, a separator) re-render; wheel
+  // Intro: count up from 0 in the formatted unit ("0M" → "0.1M" → "3.7M").
+  // Only structural changes (a new digit, a separator) re-render; wheel
   // positions are written straight from the counter.
   const [countingUp, setCountingUp] = useState(intro);
   const counter = useMotionValue(0);
   const countUpString = (v: number) => {
     const fixed = v.toFixed(target.fractionDigits);
     const [int, frac] = fixed.split(".");
-    return `${target.prefix}${group(int)}${frac ? `.${frac}` : ""}${target.suffix}`;
+    // Start from a bare "0"; the fraction slides in once the count leaves it
+    const showFrac = frac && Number(fixed) !== 0;
+    return `${target.prefix}${group(int)}${showFrac ? `.${frac}` : ""}${target.suffix}`;
   };
   const [structure, setStructure] = useState(() => countUpString(0));
   useMotionValueEvent(counter, "change", (v) => {
@@ -210,7 +213,7 @@ const RollingNumber = ({
 
   const slots = toSlots(
     countingUp ? structure : formatted,
-    target.fractionDigits,
+    countingUp && !structure.includes(".") ? 0 : target.fractionDigits,
   );
 
   return (
