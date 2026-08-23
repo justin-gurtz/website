@@ -4,6 +4,9 @@ import {
   differenceInSeconds,
   format,
   formatDistanceToNowStrict,
+  isAfter,
+  startOfDay,
+  subYears,
 } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -21,9 +24,14 @@ const getTimestamp = (date: string | Date, ago: boolean) => {
     value = parts[0];
     const fullUnit = parts[1];
 
-    // If 1 month or greater, show the date instead
+    // If 1 month or greater, show the date instead. Within the last year
+    // a bare "Aug 23" is unambiguous; on or before this calendar day last
+    // year it isn't, so include the year. Compared by calendar day so the
+    // time of day can't flip it, and subYears handles Feb 29 (-> Feb 28)
     if (fullUnit.startsWith("month") || fullUnit.startsWith("year")) {
-      return format(d, "MMM d");
+      const cutoff = startOfDay(subYears(new Date(), 1));
+      const withinYear = isAfter(startOfDay(d), cutoff);
+      return format(d, withinYear ? "MMM d" : "MMM d, yyyy");
     }
 
     unit = fullUnit.slice(0, 1);
