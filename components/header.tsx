@@ -121,7 +121,7 @@ const Header = ({
               </>
             }
           >
-            used on AI this week
+            burned on AI this week
           </Stat>
         )}
         <Stat
