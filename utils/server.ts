@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import {
   CLAUDE_PRESHARED_KEY,
   CRON_PRESHARED_KEY,
+  DATABASE_PRESHARED_KEY,
   KEYSTROKES_PRESHARED_KEY,
   NYTIMES_PRESHARED_KEY,
 } from "@/env/secret";
@@ -10,6 +11,7 @@ import {
 const presharedKeys = {
   claude: CLAUDE_PRESHARED_KEY,
   cron: CRON_PRESHARED_KEY,
+  database: DATABASE_PRESHARED_KEY,
   keystrokes: KEYSTROKES_PRESHARED_KEY,
   nytimes: NYTIMES_PRESHARED_KEY,
 };

@@ -3,6 +3,7 @@ import { z } from "zod";
 const schema = z.object({
   CLAUDE_PRESHARED_KEY: z.string().min(1),
   CRON_PRESHARED_KEY: z.string().min(1),
+  DATABASE_PRESHARED_KEY: z.string().min(1),
   INSTAGRAM_ACCESS_TOKEN: z.string().min(1),
   INSTAGRAM_PAGE_ID: z.string().min(1),
   GARMIN_PASSWORD: z.string().min(1),
@@ -24,6 +25,7 @@ const schema = z.object({
 export const {
   CLAUDE_PRESHARED_KEY,
   CRON_PRESHARED_KEY,
+  DATABASE_PRESHARED_KEY,
   INSTAGRAM_ACCESS_TOKEN,
   INSTAGRAM_PAGE_ID,
   GARMIN_PASSWORD,
