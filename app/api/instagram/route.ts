@@ -9,6 +9,7 @@ import {
   PageOption,
   PublicMediaField,
 } from "instagram-graph-api";
+import { revalidatePath } from "next/cache";
 import { classifyImage, isOutOfCredits } from "@/app/api/instagram/classify";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
@@ -179,6 +180,9 @@ export const POST = async () => {
     }),
   );
 
+  // Purge the page only when something it renders actually changed
+  let changed = false;
+
   const followerCount = pageInfo.getFollowers() ?? 0;
   const followingCount = pageInfo.getFollows() ?? 0;
 
@@ -207,6 +211,8 @@ export const POST = async () => {
     if (insertError) {
       throw new Error(insertError.message);
     }
+
+    changed = true;
   }
 
   // Upsert posts before classifying, and never write imageMeta here — it is
@@ -222,6 +228,22 @@ export const POST = async () => {
     commentCount: post.comments_count,
     url: post.permalink,
   }));
+
+  const { data: knownPosts, error: knownError } = await supabase
+    .from("instagram")
+    .select("id")
+    .in(
+      "id",
+      postsData.map((post) => post.id),
+    );
+
+  if (knownError) {
+    throw new Error(knownError.message);
+  }
+
+  if (knownPosts.length < postsData.length) {
+    changed = true;
+  }
 
   const { error: postsError } = await supabase
     .from("instagram")
@@ -310,7 +332,13 @@ export const POST = async () => {
     if (error) {
       console.error(`Failed to save image classifications: ${error.message}`);
       Sentry.captureException(new Error(error.message));
+    } else {
+      changed = true;
     }
+  }
+
+  if (changed) {
+    revalidatePath("/");
   }
 
   return new Response(null, {
