@@ -138,7 +138,9 @@ const Header = ({
               <sub className="font-semibold">2</sub> max
             </>
           }
-        />
+        >
+          (cardio fitness)
+        </Stat>
       </div>
     </div>
   );
