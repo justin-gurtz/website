@@ -235,7 +235,10 @@ const RollingNumber = ({
               key={slot.key}
               aria-hidden
               // Fades digits at the top and bottom edges as they roll through
-              className="inline-block h-lh overflow-clip [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]"
+              // align-top: Safari synthesizes an overflow-clip inline-block's
+              // baseline at its bottom edge (CSS 2.1), unlike Chrome/Firefox,
+              // so don't sit these boxes on the baseline at all
+              className="inline-block h-lh align-top overflow-clip [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]"
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: "auto", opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
