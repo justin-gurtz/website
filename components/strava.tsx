@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import polyline from "@mapbox/polyline";
 import * as turf from "@turf/turf";
+import clamp from "lodash/clamp";
 import filter from "lodash/filter";
 import forEach from "lodash/forEach";
 import includes from "lodash/includes";
@@ -16,6 +17,7 @@ import map from "lodash/map";
 import padStart from "lodash/padStart";
 import reduce from "lodash/reduce";
 import slice from "lodash/slice";
+import sortBy from "lodash/sortBy";
 import startsWith from "lodash/startsWith";
 import Link from "@/components/link";
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from "@/env/public";
@@ -30,7 +32,31 @@ const href = "https://www.strava.com/athletes/gurtz";
 let hasReportedMapError = false;
 
 const maxZoom = 10.4;
+const framePadding = 50;
 const nycPoint = turf.point([-73.97, 40.725]);
+
+// Web Mercator projection to normalized [0, 1] world coordinates, where
+// screen distance is uniform (unlike raw lat/lng), so viewport math works
+const toWorld = ([lng, lat]: [number, number]) => {
+  const sin = Math.sin((lat * Math.PI) / 180);
+
+  return {
+    x: (lng + 180) / 360,
+    y: 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI),
+  };
+};
+
+const fromWorld = (x: number, y: number): [number, number] => [
+  x * 360 - 180,
+  (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI,
+];
+
+const median = (values: number[]) => {
+  const sorted = sortBy(values);
+  const mid = Math.floor(sorted.length / 2);
+
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
 
 const padded = (value: number, radix?: number) =>
   padStart(value.toString(radix), 2, "0");
@@ -225,7 +251,8 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
 
     const currentMap = mapbox.current;
 
-    const bounds = new mapboxgl.LngLatBounds();
+    const lastRunBounds = new mapboxgl.LngLatBounds();
+    const worldPoints: { x: number; y: number }[] = [];
 
     const style = currentMap.getStyle();
 
@@ -258,13 +285,18 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
       const layerId = `run-layer-${run.id}`;
 
       const decoded = polyline.decode(run.map.summary_polyline);
-      const coordinates = map(decoded, ([lat, lng]) => [lng, lat]);
+      const coordinates = map(
+        decoded,
+        ([lat, lng]) => [lng, lat] as [number, number],
+      );
 
-      if (index === array.length - 1) {
-        forEach(coordinates, (coord) => {
-          bounds.extend(coord as [number, number]);
-        });
-      }
+      forEach(coordinates, (coord) => {
+        worldPoints.push(toWorld(coord));
+
+        if (index === array.length - 1) {
+          lastRunBounds.extend(coord);
+        }
+      });
 
       currentMap.addSource(sourceId, {
         type: "geojson",
@@ -297,12 +329,88 @@ const Strava = ({ runs }: { runs: StravaRun[] }) => {
       );
     });
 
-    if (!bounds.isEmpty()) {
-      mapbox.current.fitBounds(bounds, {
-        padding: 50,
-        animate: hasAddedRunsToMap,
+    if (!lastRunBounds.isEmpty()) {
+      // Zoom to fit the last run, but center on the median of all reachable
+      // run points, shifted back just enough to keep the last run in frame
+      const camera = currentMap.cameraForBounds(lastRunBounds, {
+        padding: framePadding,
         maxZoom,
       });
+
+      if (camera?.zoom !== undefined) {
+        const zoom = camera.zoom as number;
+        const worldSize = 512 * 2 ** zoom;
+        const container = currentMap.getContainer();
+        const width = container.clientWidth / worldSize;
+        const height = container.clientHeight / worldSize;
+        const pad = framePadding / worldSize;
+
+        // Top-left and bottom-right of the last run in world coordinates
+        // (north has the smaller y in Web Mercator)
+        const sw = lastRunBounds.getSouthWest();
+        const ne = lastRunBounds.getNorthEast();
+        const min = toWorld([sw.lng, ne.lat]);
+        const max = toWorld([ne.lng, sw.lat]);
+
+        // Centers that keep the last run fully in frame with padding;
+        // cameraForBounds guarantees it fits, so the ranges only invert on
+        // floating-point error
+        const cxMin = Math.min(
+          max.x + pad - width / 2,
+          min.x - pad + width / 2,
+        );
+        const cxMax = Math.max(
+          max.x + pad - width / 2,
+          min.x - pad + width / 2,
+        );
+        const cyMin = Math.min(
+          max.y + pad - height / 2,
+          min.y - pad + height / 2,
+        );
+        const cyMax = Math.max(
+          max.y + pad - height / 2,
+          min.y - pad + height / 2,
+        );
+
+        // Points that could appear in frame for some allowed center. The
+        // last run's own points always qualify, so when it's isolated the
+        // median collapses to its own center and the map behaves as before
+        const xs: number[] = [];
+        const ys: number[] = [];
+
+        forEach(worldPoints, (p) => {
+          if (
+            p.x >= cxMin - width / 2 &&
+            p.x <= cxMax + width / 2 &&
+            p.y >= cyMin - height / 2 &&
+            p.y <= cyMax + height / 2
+          ) {
+            xs.push(p.x);
+            ys.push(p.y);
+          }
+        });
+
+        const center = fromWorld(
+          clamp(median(xs), cxMin, cxMax),
+          clamp(median(ys), cyMin, cyMax),
+        );
+
+        // Padding must be set on the camera (not just the bounds math) to
+        // match the old fitBounds behavior: the reveal effect below re-fits
+        // from 50px to 25px padding, which nets a slight zoom in
+        currentMap.easeTo({
+          center,
+          zoom,
+          padding: framePadding,
+          animate: hasAddedRunsToMap,
+        });
+      } else {
+        currentMap.fitBounds(lastRunBounds, {
+          padding: framePadding,
+          animate: hasAddedRunsToMap,
+          maxZoom,
+        });
+      }
     }
 
     setHasAddedRunsToMap(true);
