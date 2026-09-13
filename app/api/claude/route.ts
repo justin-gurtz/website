@@ -9,7 +9,8 @@ const rowSchema = z.object({
   period: z.string(),
   device: z.string(),
   model: z.string(),
-  provider: z.string().default("claude"),
+  // Vendor key (anthropic, openai). Defaults for app builds that predate the field
+  provider: z.string().default("anthropic"),
   inputTokens: z.number().int().min(0),
   outputTokens: z.number().int().min(0),
   // Optional so app builds that predate cache tracking keep syncing; absent
@@ -65,7 +66,8 @@ export const POST = async (request: Request) => {
   const now = new Date().toISOString();
   const data = parsed.data.map((row) => ({
     ...row,
-    model: row.provider === "claude" ? displayModelName(row.model) : row.model,
+    model:
+      row.provider === "anthropic" ? displayModelName(row.model) : row.model,
     updatedAt: now,
   }));
 
