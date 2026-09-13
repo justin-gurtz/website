@@ -104,7 +104,7 @@ const getClaude = async (supabase: SupabaseClient) => {
   const oneWeekAgo = subDays(new Date(), 7);
 
   const { data, error } = await supabase
-    .from("claude")
+    .from("aiUsage")
     .select("inputTokens,outputTokens")
     .gte("period", oneWeekAgo.toISOString());
 

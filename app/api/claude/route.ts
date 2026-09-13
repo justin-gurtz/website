@@ -9,8 +9,12 @@ const rowSchema = z.object({
   period: z.string(),
   device: z.string(),
   model: z.string(),
+  provider: z.string().default("claude"),
   inputTokens: z.number().int().min(0),
   outputTokens: z.number().int().min(0),
+  // Optional so app builds that predate cache tracking keep syncing
+  cacheReadTokens: z.number().int().min(0).default(0),
+  cacheCreationTokens: z.number().int().min(0).default(0),
 });
 
 const bodySchema = z.array(rowSchema).min(1);
@@ -40,7 +44,7 @@ export const POST = async (request: Request) => {
   // Read the previous updatedAt before the upsert overwrites it — used below
   // to throttle page purges during heavy sessions with frequent pushes
   const { data: lastRow } = await supabase
-    .from("claude")
+    .from("aiUsage")
     .select("updatedAt")
     .order("updatedAt", { ascending: false })
     .limit(1)
@@ -49,7 +53,7 @@ export const POST = async (request: Request) => {
   const now = new Date().toISOString();
   const data = parsed.data.map((row) => ({ ...row, updatedAt: now }));
 
-  const { error } = await supabase.from("claude").upsert(data);
+  const { error } = await supabase.from("aiUsage").upsert(data);
 
   if (error) {
     throw new Error(error.message);

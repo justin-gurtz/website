@@ -14,32 +14,41 @@ export type Database = {
   };
   public: {
     Tables: {
-      claude: {
+      ai_usage: {
         Row: {
+          cache_creation_tokens: number;
+          cache_read_tokens: number;
           created_at: string;
           device: string;
           input_tokens: number;
           model: string;
           output_tokens: number;
           period: string;
+          provider: string;
           updated_at: string;
         };
         Insert: {
+          cache_creation_tokens?: number;
+          cache_read_tokens?: number;
           created_at?: string;
           device: string;
           input_tokens: number;
           model: string;
           output_tokens: number;
           period: string;
+          provider?: string;
           updated_at?: string;
         };
         Update: {
+          cache_creation_tokens?: number;
+          cache_read_tokens?: number;
           created_at?: string;
           device?: string;
           input_tokens?: number;
           model?: string;
           output_tokens?: number;
           period?: string;
+          provider?: string;
           updated_at?: string;
         };
         Relationships: [];
