@@ -1,7 +1,7 @@
+import { cn } from "cn";
 import startsWith from "lodash/startsWith";
 import NextLink from "next/link";
 import { useMemo } from "react";
-import { cn } from "@/utils/tailwind";
 
 const Link = ({
   href,

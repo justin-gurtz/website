@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { formatInTimeZone } from "date-fns-tz";
 import compact from "lodash/compact";
 import forEach from "lodash/forEach";
@@ -12,7 +13,6 @@ import type {
   DuolingoCourse,
   DuolingoStreak,
 } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 import DuolingoOwl from "./duolingo-owl";
 
 const dinRoundPro = localFont({

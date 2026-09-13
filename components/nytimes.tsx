@@ -1,11 +1,11 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import localFont from "next/font/local";
 import { useCallback, useEffect, useRef, useState } from "react";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { NYTimesData } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 import Link from "./link";
 
 const cheltenham = localFont({

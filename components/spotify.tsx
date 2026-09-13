@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { isAfter, subMinutes } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -9,7 +10,6 @@ import ScrollingText from "@/components/scrolling-text";
 import Soundbars from "@/components/soundbars";
 import usePageIsVisible from "@/hooks/use-page-is-visible";
 import type { SpotifyData } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 import Timestamp from "./timestamp";
 
 const SpotifyLogo = ({ className }: { className?: string }) => (

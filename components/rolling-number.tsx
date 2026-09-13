@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import {
   AnimatePresence,
   animate,
@@ -10,7 +11,6 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/utils/tailwind";
 
 // Three copies of 0–9: the middle copy is "home", the outer copies let a
 // digit roll through 0 (or 9) on a wrap before silently snapping back home

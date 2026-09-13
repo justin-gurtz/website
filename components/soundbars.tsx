@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/utils/tailwind";
+import { cn } from "cn";
 
 const minHeight = "3px";
 const sharedClassName = "w-[1.5px] h-[3px] rounded-full bg-white";

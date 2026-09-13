@@ -1,11 +1,11 @@
 import { IconLungsFilled } from "@tabler/icons-react";
+import { cn } from "cn";
 import KeyboardIcon from "@/components/icons/keyboard";
 import LocationIcon from "@/components/icons/location";
 import SparklesIcon from "@/components/icons/sparkles";
 import RollingNumber from "@/components/rolling-number";
 import Timestamp from "@/components/timestamp";
 import { bodyBaseStyles } from "@/constants";
-import { cn } from "@/utils/tailwind";
 
 const Link = ({
   href,

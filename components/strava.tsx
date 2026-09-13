@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import polyline from "@mapbox/polyline";
 import * as turf from "@turf/turf";
+import { cn } from "cn";
 import clamp from "lodash/clamp";
 import filter from "lodash/filter";
 import forEach from "lodash/forEach";
@@ -23,7 +24,6 @@ import Link from "@/components/link";
 import { NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN } from "@/env/public";
 import type { StravaRun } from "@/types/models";
 import { mapboxDarkStyle, mapboxLightStyle } from "@/utils/mapbox-styles";
-import { cn } from "@/utils/tailwind";
 
 mapboxgl.accessToken = NEXT_PUBLIC_MAPBOX_MAPS_ACCESS_TOKEN;
 

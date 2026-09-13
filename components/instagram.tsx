@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import NextImage, { getImageProps } from "next/image";
 import {
@@ -17,7 +18,6 @@ import type {
   InstagramFollows,
   InstagramPost,
 } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 import Link from "./link";
 import Timestamp from "./timestamp";
 

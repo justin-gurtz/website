@@ -1,7 +1,7 @@
 "use client";
 
+import { cn } from "cn";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/utils/tailwind";
 
 const ScrollingText = ({
   children,

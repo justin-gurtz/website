@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "cn";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { cn } from "@/utils/tailwind";
 
 const DuolingoOwl = () => {
   const [isLoaded, setIsLoaded] = useState(false);

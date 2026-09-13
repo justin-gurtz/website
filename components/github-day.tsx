@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "cn";
 import { useEffect, useMemo, useState } from "react";
 import type { GitContributionLevel } from "@/types/models";
-import { cn } from "@/utils/tailwind";
 
 const Day = ({
   contributionLevel,
