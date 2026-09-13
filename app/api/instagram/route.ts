@@ -28,21 +28,22 @@ export const maxDuration = 300;
 const CLASSIFY_CONCURRENCY = 5;
 const MAX_CLASSIFICATIONS_PER_RUN = 100;
 
-// Upload image to Supabase Storage, returns the storage path
+// Upload image to Supabase Storage, returns the storage path.
+// `knownPaths` holds every path already recorded in the `instagram` table, so
+// images we have stored before are skipped without touching the Storage API.
+// (This used to be a Storage `list` call per image on every hourly run — the
+// single largest consumer of database time on the project.) A path missing
+// from the table is re-uploaded with upsert, which is harmless.
 const uploadImage = async (
   supabase: ReturnType<typeof createClient>,
+  knownPaths: ReadonlySet<string>,
   postId: string,
   imageIndex: number,
   imageUrl: string,
 ): Promise<string | null> => {
   const storagePath = `${postId}/${imageIndex}.jpg`;
 
-  // Check if file already exists
-  const { data: existingFile } = await supabase.storage
-    .from("instagram")
-    .list(postId, { limit: 1, search: `${imageIndex}.jpg` });
-
-  if (existingFile && existingFile.length > 0) {
+  if (knownPaths.has(storagePath)) {
     return storagePath;
   }
 
@@ -125,6 +126,23 @@ export const POST = async () => {
 
   await fetchAllMedia(pageMediaRequest);
 
+  // One query for what we already have: which of these posts are stored, and
+  // which image paths are already in Storage (the `images` column records
+  // every path that uploaded successfully)
+  const { data: knownPosts, error: knownError } = await supabase
+    .from("instagram")
+    .select("id,images")
+    .in(
+      "id",
+      allMedia.map((post) => post.id),
+    );
+
+  if (knownError) {
+    throw new Error(knownError.message);
+  }
+
+  const knownPaths = new Set(knownPosts.flatMap((post) => post.images));
+
   // Fetch images for each post (including carousel children) and upload to storage
   const posts = await Promise.all(
     allMedia.map(async (post) => {
@@ -168,7 +186,7 @@ export const POST = async () => {
       // Upload images to Supabase Storage
       const storagePaths = await Promise.all(
         imageUrls.map((url, index) =>
-          uploadImage(supabase, post.id, index, url),
+          uploadImage(supabase, knownPaths, post.id, index, url),
         ),
       );
 
@@ -228,18 +246,6 @@ export const POST = async () => {
     commentCount: post.comments_count,
     url: post.permalink,
   }));
-
-  const { data: knownPosts, error: knownError } = await supabase
-    .from("instagram")
-    .select("id")
-    .in(
-      "id",
-      postsData.map((post) => post.id),
-    );
-
-  if (knownError) {
-    throw new Error(knownError.message);
-  }
 
   if (knownPosts.length < postsData.length) {
     changed = true;
