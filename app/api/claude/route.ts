@@ -8,29 +8,18 @@ import { createClient } from "@/utils/supabase";
 const rowSchema = z.object({
   period: z.string(),
   device: z.string(),
-  model: z.string(),
-  // Vendor key (anthropic, openai). Defaults for app builds that predate the field
-  provider: z.string().default("anthropic"),
+  // Display name, e.g. "Opus 5" or "GPT-6 Astra"; the app normalizes model IDs
+  model: z.string().min(1),
+  // Lowercase vendor key: anthropic, openai
+  provider: z.string().min(1),
   inputTokens: z.number().int().min(0),
   outputTokens: z.number().int().min(0),
-  // Optional so app builds that predate cache tracking keep syncing; absent
-  // means unknown and is stored as NULL, never 0
-  cacheReadTokens: z.number().int().min(0).optional(),
-  cacheCreationTokens: z.number().int().min(0).optional(),
+  // Nullable in the table only for rows that predate cache tracking (NULL means unknown)
+  cacheReadTokens: z.number().int().min(0),
+  cacheCreationTokens: z.number().int().min(0),
 });
 
 const bodySchema = z.array(rowSchema).min(1);
-
-// "claude-haiku-4-5-20251001" -> "Haiku 4.5", "claude-opus-5" -> "Opus 5". Older
-// app builds still send raw IDs; normalizing here keeps every row keyed on the
-// display name. Unrecognized shapes pass through so new schemes show up as-is.
-const displayModelName = (raw: string) => {
-  const match = raw.match(/^claude-([a-z]+)((?:-\d+)+?)(?:-\d{8})?$/);
-  if (!match) return raw;
-  const [, family, version] = match;
-  const name = family.charAt(0).toUpperCase() + family.slice(1);
-  return `${name} ${version.slice(1).replaceAll("-", ".")}`;
-};
 
 export const POST = async (request: Request) => {
   const authError = await validatePresharedKey("claude");
@@ -64,12 +53,7 @@ export const POST = async (request: Request) => {
     .maybeSingle();
 
   const now = new Date().toISOString();
-  const data = parsed.data.map((row) => ({
-    ...row,
-    model:
-      row.provider === "anthropic" ? displayModelName(row.model) : row.model,
-    updatedAt: now,
-  }));
+  const data = parsed.data.map((row) => ({ ...row, updatedAt: now }));
 
   const { error } = await supabase.from("aiUsage").upsert(data);
 
