@@ -16,8 +16,8 @@ export type Database = {
     Tables: {
       ai_usage: {
         Row: {
-          cache_creation_tokens: number;
-          cache_read_tokens: number;
+          cache_creation_tokens: number | null;
+          cache_read_tokens: number | null;
           created_at: string;
           device: string;
           input_tokens: number;
@@ -28,8 +28,8 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          cache_creation_tokens?: number;
-          cache_read_tokens?: number;
+          cache_creation_tokens?: number | null;
+          cache_read_tokens?: number | null;
           created_at?: string;
           device: string;
           input_tokens: number;
@@ -40,8 +40,8 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          cache_creation_tokens?: number;
-          cache_read_tokens?: number;
+          cache_creation_tokens?: number | null;
+          cache_read_tokens?: number | null;
           created_at?: string;
           device?: string;
           input_tokens?: number;

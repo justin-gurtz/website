@@ -12,12 +12,24 @@ const rowSchema = z.object({
   provider: z.string().default("claude"),
   inputTokens: z.number().int().min(0),
   outputTokens: z.number().int().min(0),
-  // Optional so app builds that predate cache tracking keep syncing
-  cacheReadTokens: z.number().int().min(0).default(0),
-  cacheCreationTokens: z.number().int().min(0).default(0),
+  // Optional so app builds that predate cache tracking keep syncing; absent
+  // means unknown and is stored as NULL, never 0
+  cacheReadTokens: z.number().int().min(0).optional(),
+  cacheCreationTokens: z.number().int().min(0).optional(),
 });
 
 const bodySchema = z.array(rowSchema).min(1);
+
+// "claude-haiku-4-5-20251001" -> "Haiku 4.5", "claude-opus-5" -> "Opus 5". Older
+// app builds still send raw IDs; normalizing here keeps every row keyed on the
+// display name. Unrecognized shapes pass through so new schemes show up as-is.
+const displayModelName = (raw: string) => {
+  const match = raw.match(/^claude-([a-z]+)((?:-\d+)+?)(?:-\d{8})?$/);
+  if (!match) return raw;
+  const [, family, version] = match;
+  const name = family.charAt(0).toUpperCase() + family.slice(1);
+  return `${name} ${version.slice(1).replaceAll("-", ".")}`;
+};
 
 export const POST = async (request: Request) => {
   const authError = await validatePresharedKey("claude");
@@ -51,7 +63,11 @@ export const POST = async (request: Request) => {
     .maybeSingle();
 
   const now = new Date().toISOString();
-  const data = parsed.data.map((row) => ({ ...row, updatedAt: now }));
+  const data = parsed.data.map((row) => ({
+    ...row,
+    model: row.provider === "claude" ? displayModelName(row.model) : row.model,
+    updatedAt: now,
+  }));
 
   const { error } = await supabase.from("aiUsage").upsert(data);
 
