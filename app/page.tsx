@@ -100,21 +100,28 @@ const getLocation = async (supabase: SupabaseClient) => {
   return getCurrentLocation();
 };
 
-const getClaude = async (supabase: SupabaseClient) => {
+const getAiUsage = async (supabase: SupabaseClient) => {
   const oneWeekAgo = subDays(new Date(), 7);
 
   const { data, error } = await supabase
     .from("aiUsage")
-    .select("inputTokens,outputTokens")
+    .select("inputTokens,outputTokens,cacheReadTokens,cacheCreationTokens")
     .gte("period", oneWeekAgo.toISOString());
 
   if (error) {
     throw new Error(error.message);
   }
 
+  // All four usage fields. Cache columns are NULL on rows that predate cache
+  // tracking, which just means those hours contribute input + output only
   return reduce(
     data,
-    (acc, row) => acc + row.inputTokens + row.outputTokens,
+    (acc, row) =>
+      acc +
+      row.inputTokens +
+      row.outputTokens +
+      (row.cacheReadTokens ?? 0) +
+      (row.cacheCreationTokens ?? 0),
     0,
   );
 };
@@ -356,7 +363,7 @@ const Page = async () => {
     instagram,
   ] = await Promise.all([
     locationPromise,
-    backOff(() => getClaude(supabase)),
+    backOff(() => getAiUsage(supabase)),
     locationPromise.then(({ timeZoneId }) =>
       backOff(() => getKeystrokes(supabase, timeZoneId)),
     ),
