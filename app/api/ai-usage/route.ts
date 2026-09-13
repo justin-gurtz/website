@@ -22,7 +22,7 @@ const rowSchema = z.object({
 const bodySchema = z.array(rowSchema).min(1);
 
 export const POST = async (request: Request) => {
-  const authError = await validatePresharedKey("claude");
+  const authError = await validatePresharedKey("aiUsage");
   if (authError) return authError;
 
   let body: unknown;

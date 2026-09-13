@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const schema = z.object({
-  CLAUDE_PRESHARED_KEY: z.string().min(1),
+  AI_USAGE_PRESHARED_KEY: z.string().min(1),
   CRON_PRESHARED_KEY: z.string().min(1),
   DATABASE_PRESHARED_KEY: z.string().min(1),
   INSTAGRAM_ACCESS_TOKEN: z.string().min(1),
@@ -23,7 +23,7 @@ const schema = z.object({
 });
 
 export const {
-  CLAUDE_PRESHARED_KEY,
+  AI_USAGE_PRESHARED_KEY,
   CRON_PRESHARED_KEY,
   DATABASE_PRESHARED_KEY,
   INSTAGRAM_ACCESS_TOKEN,
