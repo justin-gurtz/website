@@ -105,23 +105,21 @@ const getAiUsage = async (supabase: SupabaseClient) => {
 
   const { data, error } = await supabase
     .from("aiUsage")
-    .select("inputTokens,outputTokens,cacheReadTokens,cacheCreationTokens")
+    .select("inputTokens,outputTokens,cacheCreationTokens")
     .gte("period", oneWeekAgo.toISOString());
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // All four usage fields. Cache columns are NULL on rows that predate cache
-  // tracking, which just means those hours contribute input + output only
+  // Tokens the model saw for the first time or produced. Cache writes count
+  // because Anthropic bills nearly all fresh input as cache creation; cache
+  // reads don't, since they're the same context resent every turn. The cache
+  // column is NULL on rows that predate cache tracking
   return reduce(
     data,
     (acc, row) =>
-      acc +
-      row.inputTokens +
-      row.outputTokens +
-      (row.cacheReadTokens ?? 0) +
-      (row.cacheCreationTokens ?? 0),
+      acc + row.inputTokens + row.outputTokens + (row.cacheCreationTokens ?? 0),
     0,
   );
 };
