@@ -205,8 +205,8 @@ const getStrava = async (supabase: SupabaseClient): Promise<StravaRun[]> => {
 
   const activities = map(data, ({ payload }) => payload) as StravaActivity[];
 
-  // Only public runs, trimmed to the fields the map renders — the full payload
-  // includes start/end GPS coordinates and must not reach the browser
+  // Only public runs, trimmed to the fields the map renders — the rest of the
+  // payload must not reach the browser
   return activities
     .filter((activity) => activity.visibility === "everyone")
     .map(({ id, distance, moving_time, map: runMap }) => ({

@@ -40,7 +40,6 @@ export type StravaActivity = {
   type: string;
   name: string;
   start_date: string;
-  start_latlng: [number, number];
   distance: number;
   moving_time: number;
   elapsed_time: number;
@@ -50,8 +49,8 @@ export type StravaActivity = {
   };
 };
 
-// Subset of StravaActivity that is safe to serialize into the page — the full
-// payload includes start/end GPS coordinates and must stay on the server
+// Subset of StravaActivity that is safe to serialize into the page — the rest
+// of the payload stays on the server
 export type StravaRun = Pick<
   StravaActivity,
   "id" | "distance" | "moving_time" | "map"

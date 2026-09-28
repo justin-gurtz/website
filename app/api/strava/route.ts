@@ -1,5 +1,6 @@
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
+import omit from "lodash/omit";
 import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
@@ -70,7 +71,9 @@ export const POST = async () => {
     id: activity.id,
     type: activity.type,
     startDate: activity.start_date, // API returns snake_case, we use camelCase
-    payload: activity, // Payload stored as-is (not transformed)
+    // Payload stored as-is, minus the exact start/end coordinates: Strava
+    // trims the route line to hide them but returns these untrimmed
+    payload: omit(activity, "start_latlng", "end_latlng"),
   }));
 
   const { error } = await supabase.from("strava").upsert(data);
