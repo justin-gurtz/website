@@ -7,6 +7,7 @@ import type {
   IOauth2Token,
 } from "garmin-connect/dist/garmin/types";
 import map from "lodash/map";
+import omit from "lodash/omit";
 import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import {
@@ -202,7 +203,14 @@ export const POST = async () => {
       id: activity.activityId,
       vo2MaxValue: activity.vO2MaxValue,
       startTimeLocal: activity.startTimeLocal,
-      payload: activity as unknown as Json,
+      // Nothing reads the exact start/end coordinates, and they pinpoint home
+      payload: omit(
+        activity,
+        "startLatitude",
+        "startLongitude",
+        "endLatitude",
+        "endLongitude",
+      ) as unknown as Json,
     }));
 
     const { error } = await supabase.from("garmin").upsert(data);

@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { addDays, differenceInDays, differenceInHours } from "date-fns";
 import { backOff } from "exponential-backoff";
 import map from "lodash/map";
+import omit from "lodash/omit";
 import reduce from "lodash/reduce";
 import { revalidatePath } from "next/cache";
 import { Vibrant } from "node-vibrant/node";
@@ -294,7 +295,12 @@ export const POST = async () => {
         name: item.name,
         by: sanitized.by,
         color,
-        payload: currentlyPlaying,
+        // The country lists (~185 codes each for the track and its album) are
+        // over half the payload and nothing uses them
+        payload: omit(currentlyPlaying, [
+          "item.available_markets",
+          "item.album.available_markets",
+        ]),
       });
 
       if (error) {
