@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { DuolingoCourse, DuolingoStreak } from "@/types/models";
-import { validatePresharedKey } from "@/utils/server";
+import {
+  HttpError,
+  retryUnlessClientError,
+  validatePresharedKey,
+} from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 const fetchDuolingoData = async (username: string) => {
@@ -13,7 +17,7 @@ const fetchDuolingoData = async (username: string) => {
   );
 
   if (!res.ok) {
-    throw new Error(`Duolingo API error: ${res.status}`);
+    throw new HttpError(`Duolingo API error: ${res.status}`, res.status);
   }
 
   const data = await res.json();
@@ -33,8 +37,9 @@ export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const { streak, courses } = await backOff(() =>
-    fetchDuolingoData("JustinGurtz"),
+  const { streak, courses } = await backOff(
+    () => fetchDuolingoData("JustinGurtz"),
+    { retry: retryUnlessClientError },
   );
 
   const newData = { streak, courses } as {

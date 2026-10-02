@@ -13,7 +13,11 @@ import {
   SPOTIFY_CLIENT_SECRET,
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
-import { validatePresharedKey } from "@/utils/server";
+import {
+  HttpError,
+  retryUnlessClientError,
+  validatePresharedKey,
+} from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 const ImageSchema = z.object({
@@ -212,11 +216,16 @@ export const POST = async () => {
           );
         }
         if (!res.ok)
-          throw new Error(`Spotify token request failed: ${res.status}`);
+          throw new HttpError(
+            `Spotify token request failed: ${res.status}`,
+            res.status,
+          );
         return res.json();
       },
       {
-        retry: (error) => !(error instanceof SpotifyReauthorizeError),
+        retry: (error) =>
+          !(error instanceof SpotifyReauthorizeError) &&
+          retryUnlessClientError(error),
       },
     );
 
@@ -239,18 +248,25 @@ export const POST = async () => {
     }
   }
 
-  const currentlyPlayingRes = await backOff(async () => {
-    const res = await fetch(
-      "https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+  const currentlyPlayingRes = await backOff(
+    async () => {
+      const res = await fetch(
+        "https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      },
-    );
-    if (!res.ok) throw new Error(`Spotify currently playing: ${res.status}`);
-    return res;
-  });
+      );
+      if (!res.ok)
+        throw new HttpError(
+          `Spotify currently playing: ${res.status}`,
+          res.status,
+        );
+      return res;
+    },
+    { retry: retryUnlessClientError },
+  );
 
   if (currentlyPlayingRes.status === 204) {
     return new Response(null, { status: 204 });

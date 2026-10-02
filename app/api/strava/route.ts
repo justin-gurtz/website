@@ -10,44 +10,61 @@ import {
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
 import type { StravaActivity } from "@/types/models";
-import { validatePresharedKey } from "@/utils/server";
+import {
+  HttpError,
+  retryUnlessClientError,
+  validatePresharedKey,
+} from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const { access_token: accessToken } = await backOff(async () => {
-    const res = await fetch("https://www.strava.com/oauth/token", {
-      method: "POST",
-      body: new URLSearchParams({
-        client_id: STRAVA_CLIENT_ID,
-        client_secret: STRAVA_CLIENT_SECRET,
-        refresh_token: STRAVA_REFRESH_TOKEN,
-        grant_type: "refresh_token",
-      }),
-    });
-    if (!res.ok) throw new Error(`Strava token request failed: ${res.status}`);
-    return res.json();
-  });
+  const { access_token: accessToken } = await backOff(
+    async () => {
+      const res = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({
+          client_id: STRAVA_CLIENT_ID,
+          client_secret: STRAVA_CLIENT_SECRET,
+          refresh_token: STRAVA_REFRESH_TOKEN,
+          grant_type: "refresh_token",
+        }),
+      });
+      if (!res.ok)
+        throw new HttpError(
+          `Strava token request failed: ${res.status}`,
+          res.status,
+        );
+      return res.json();
+    },
+    { retry: retryUnlessClientError },
+  );
 
   if (!accessToken) {
     throw new Error("No Strava access token");
   }
 
-  const activities = await backOff(async () => {
-    const res = await fetch(
-      "https://www.strava.com/api/v3/athlete/activities",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+  const activities = await backOff(
+    async () => {
+      const res = await fetch(
+        "https://www.strava.com/api/v3/athlete/activities",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      },
-    );
-    if (!res.ok)
-      throw new Error(`Strava activities request failed: ${res.status}`);
-    return res.json();
-  });
+      );
+      if (!res.ok)
+        throw new HttpError(
+          `Strava activities request failed: ${res.status}`,
+          res.status,
+        );
+      return res.json();
+    },
+    { retry: retryUnlessClientError },
+  );
 
   const supabase = createClient(
     NEXT_PUBLIC_SUPABASE_URL,

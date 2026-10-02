@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { NEXT_PUBLIC_SUPABASE_URL } from "@/env/public";
 import { GITHUB_ACCESS_TOKEN, SUPABASE_SERVICE_ROLE_KEY } from "@/env/secret";
 import type { GitHubContribution } from "@/types/models";
-import { validatePresharedKey } from "@/utils/server";
+import { retryUnlessClientError, validatePresharedKey } from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 type GitHubData = {
@@ -41,10 +41,12 @@ export const POST = async () => {
   const authError = await validatePresharedKey("cron");
   if (authError) return authError;
 
-  const res = await backOff(() =>
-    request<GitHubData>("https://api.github.com/graphql", query, undefined, {
-      Authorization: `Bearer ${GITHUB_ACCESS_TOKEN}`,
-    }),
+  const res = await backOff(
+    () =>
+      request<GitHubData>("https://api.github.com/graphql", query, undefined, {
+        Authorization: `Bearer ${GITHUB_ACCESS_TOKEN}`,
+      }),
+    { retry: retryUnlessClientError },
   );
 
   const newData = {

@@ -17,7 +17,11 @@ import {
   SUPABASE_SERVICE_ROLE_KEY,
 } from "@/env/secret";
 import type { Json } from "@/types/database";
-import { validatePresharedKey } from "@/utils/server";
+import {
+  getHttpStatus,
+  retryUnlessClientError,
+  validatePresharedKey,
+} from "@/utils/server";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
 
 const ALGORITHM = "aes-256-gcm";
@@ -148,11 +152,17 @@ export const POST = async () => {
 
       // Try to fetch activities to verify tokens are still valid
       // The library should handle token refresh automatically if needed
-      activities = await backOff(() => GCClient.getActivities());
+      activities = await backOff(() => GCClient.getActivities(), {
+        retry: retryUnlessClientError,
+      });
     } catch (error) {
+      // Rate limited, not a token problem: logging in would only add more
+      // requests, and repeated logins are what get Cloudflare to ban us
+      if (getHttpStatus(error) === 429) throw error;
+
       // Tokens are invalid or expired, fall back to login
       console.warn("Stored tokens invalid, logging in:", error);
-      await backOff(() => GCClient.login());
+      await backOff(() => GCClient.login(), { retry: retryUnlessClientError });
 
       // Save the new tokens after successful login
       const oauth1Token = GCClient.client.oauth1Token;
@@ -163,11 +173,13 @@ export const POST = async () => {
       }
 
       // Fetch activities after login
-      activities = await backOff(() => GCClient.getActivities());
+      activities = await backOff(() => GCClient.getActivities(), {
+        retry: retryUnlessClientError,
+      });
     }
   } else {
     // No stored tokens, login required
-    await backOff(() => GCClient.login());
+    await backOff(() => GCClient.login(), { retry: retryUnlessClientError });
 
     // Save the new tokens after successful login
     const oauth1Token = GCClient.client.oauth1Token;
@@ -178,7 +190,9 @@ export const POST = async () => {
     }
 
     // Fetch activities after login
-    activities = await backOff(() => GCClient.getActivities());
+    activities = await backOff(() => GCClient.getActivities(), {
+      retry: retryUnlessClientError,
+    });
   }
 
   if (activities.length > 0) {

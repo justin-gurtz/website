@@ -24,6 +24,41 @@ export const safeEqual = (a: string, b: string) => {
   return timingSafeEqual(hashA, hashB);
 };
 
+// Thrown for a non-2xx upstream response, keeping the status so
+// retryUnlessClientError can tell a client error from a transient failure
+export class HttpError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// Reads the status from an HttpError, a graphql-request ClientError
+// (`response.status`), or a garmin-connect error, which only carries it in its
+// message: "ERROR: (429), Too Many Requests, …"
+export const getHttpStatus = (error: unknown): number | undefined => {
+  if (error instanceof HttpError) return error.status;
+  if (!(error instanceof Error)) return undefined;
+
+  const { response } = error as { response?: { status?: unknown } };
+  if (typeof response?.status === "number") return response.status;
+
+  const match = error.message.match(/^ERROR: \((\d{3})\)/);
+  return match ? Number(match[1]) : undefined;
+};
+
+/**
+ * `retry` option for backOff that gives up on 4xx responses. A rejected token
+ * or a rate limit fails the same way on every attempt, and retrying a 429 only
+ * spends more of the quota; the next cron run is minutes away anyway.
+ */
+export const retryUnlessClientError = (error: unknown) => {
+  const status = getHttpStatus(error);
+  return status === undefined || status < 400 || status >= 500;
+};
+
 /**
  * Validates the Authorization header against a preshared key.
  * Returns a 401 Response if invalid, or null if valid.

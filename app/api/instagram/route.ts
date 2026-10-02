@@ -19,7 +19,11 @@ import {
 } from "@/env/secret";
 import type { Json } from "@/types/database";
 import type { InstagramImageMeta } from "@/types/models";
-import { validatePresharedKey } from "@/utils/server";
+import {
+  HttpError,
+  retryUnlessClientError,
+  validatePresharedKey,
+} from "@/utils/server";
 import { createClient } from "@/utils/supabase";
 
 // Classification can take a couple of minutes on a backfill run
@@ -50,11 +54,18 @@ const uploadImage = async (
   // Download image from Instagram CDN
   let response: Response;
   try {
-    response = await backOff(async () => {
-      const res = await fetch(imageUrl);
-      if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
-      return res;
-    });
+    response = await backOff(
+      async () => {
+        const res = await fetch(imageUrl);
+        if (!res.ok)
+          throw new HttpError(
+            `Failed to fetch image: ${res.status}`,
+            res.status,
+          );
+        return res;
+      },
+      { retry: retryUnlessClientError },
+    );
   } catch {
     console.error(`Failed to fetch image: ${imageUrl}`);
     return null;
