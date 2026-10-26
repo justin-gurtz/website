@@ -24,6 +24,13 @@ import {
 } from "@/utils/server";
 import { createClient, type SupabaseClient } from "@/utils/supabase";
 
+const MAX_METRICS_URL =
+  "https://connectapi.garmin.com/metrics-service/metrics/maxmet/daily";
+
+type MaxMetrics = {
+  generic: { calendarDate: string; vo2MaxPreciseValue: number | null } | null;
+}[];
+
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96 bits for GCM
 
@@ -200,22 +207,30 @@ export const POST = async () => {
       (activity) => activity.vO2MaxValue,
     );
 
-    // The page shows the vo2Max of the newest activity — purge only when a
-    // new one appears
-    const { data: newestRow } = await supabase
-      .from("garmin")
-      .select("id")
-      .order("startTimeLocal", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Activities round vO2MaxValue to a whole number; the daily max metrics
+    // carry the precise value (e.g. 55.1), keyed by local calendar date
+    const toDate = (activity: IActivity) =>
+      activity.startTimeLocal.slice(0, 10);
+    const preciseVo2Max = new Map<string, number>();
 
-    const hasNewActivity =
-      validActivities.length > 0 &&
-      validActivities[0].activityId !== newestRow?.id;
+    if (validActivities.length > 0) {
+      const start = toDate(validActivities[validActivities.length - 1]);
+      const end = toDate(validActivities[0]);
+      const maxMetrics = await backOff(
+        () => GCClient.get<MaxMetrics>(`${MAX_METRICS_URL}/${start}/${end}`),
+        { retry: retryUnlessClientError },
+      );
+
+      for (const { generic } of maxMetrics) {
+        if (generic?.vo2MaxPreciseValue) {
+          preciseVo2Max.set(generic.calendarDate, generic.vo2MaxPreciseValue);
+        }
+      }
+    }
 
     const data = map(validActivities, (activity) => ({
       id: activity.activityId,
-      vo2MaxValue: activity.vO2MaxValue,
+      vo2MaxValue: preciseVo2Max.get(toDate(activity)) ?? activity.vO2MaxValue,
       startTimeLocal: activity.startTimeLocal,
       // Nothing reads the exact start/end coordinates, and they pinpoint home
       payload: omit(
@@ -227,13 +242,27 @@ export const POST = async () => {
       ) as unknown as Json,
     }));
 
+    // The page shows the vo2Max of the newest activity — purge only when that
+    // changes (a new activity, or a precise value replacing a rounded one)
+    const { data: newestRow } = await supabase
+      .from("garmin")
+      .select("id, vo2MaxValue")
+      .order("startTimeLocal", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const hasNewVo2Max =
+      data.length > 0 &&
+      (data[0].id !== newestRow?.id ||
+        data[0].vo2MaxValue !== newestRow?.vo2MaxValue);
+
     const { error } = await supabase.from("garmin").upsert(data);
 
     if (error) {
       throw new Error(error.message);
     }
 
-    if (hasNewActivity) {
+    if (hasNewVo2Max) {
       revalidatePath("/");
     }
   }

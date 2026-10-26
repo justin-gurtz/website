@@ -106,7 +106,8 @@ const Header = ({
           icon={<IconLungsFilled className={iconClassName} />}
           value={
             <>
-              <RollingNumber value={vo2Max} intro /> VO
+              {/* Stored to one decimal; rounded like Garmin Connect shows it */}
+              <RollingNumber value={Math.round(vo2Max)} intro /> VO
               <sub className="font-semibold">2</sub> max
             </>
           }
